@@ -620,6 +620,7 @@ input,select,textarea{font:inherit;color:inherit}
       <div class="gap"></div>
       <div class="settings-g-lbl">Your data</div>
       <div class="card settings-list">
+        <button class="settings-row" data-act="open-sheet" data-sheet="sh-account"><div class="settings-ic">☁</div><div class="settings-lbl">Cloud sync<span id="acct-sub" style="display:block;font-size:11px;color:var(--t3);margin-top:1px">Off</span></div><div class="settings-arr">›</div></button>
         <button class="settings-row" data-act="open-sheet" data-sheet="sh-backup"><div class="settings-ic">⇅</div><div class="settings-lbl">Backup and restore</div><div class="settings-arr">›</div></button>
         <button class="settings-row" data-act="reset"><div class="settings-ic">🗑</div><div class="settings-lbl danger-txt">Reset all data</div><div class="settings-arr">›</div></button>
       </div>
@@ -735,6 +736,14 @@ input,select,textarea{font:inherit;color:inherit}
   </div>
 </div>
 
+<div class="overlay" id="sh-account" data-act="overlay-close">
+  <div class="sheet" role="dialog" aria-modal="true" aria-label="Cloud sync">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Cloud sync</div>
+    <div class="sheet-body" id="acct-body"></div>
+  </div>
+</div>
+
 <div class="overlay" id="sh-backup" data-act="overlay-close">
   <div class="sheet" role="dialog" aria-modal="true" aria-label="Backup and restore">
     <div class="sheet-handle"></div>
@@ -822,16 +831,29 @@ let TODAY_KEY=dateStr(new Date());
 
 // ===== STATE =====
 let NO_SAVE=false;
+// Stable text form of a state, with keys sorted and _rev left out.
+// Used to tell whether the data really changed, and to compare local and cloud copies.
+function canon(o){
+  const walk=v=>Array.isArray(v)?v.map(walk):(v&&typeof v==='object')
+    ?Object.keys(v).sort().reduce((a,k)=>{if(k!=='_rev')a[k]=walk(v[k]);return a;},{}):v;
+  return JSON.stringify(walk(o));
+}
+var LAST_SIG='',SYNC_READY=false,pushTimer=null;
 function save(){
   if(NO_SAVE)return;
+  // _rev marks the last real change. It moves only when the data changes.
+  const sig=canon(S);
+  if(sig!==LAST_SIG){S._rev=new Date().toISOString();LAST_SIG=sig;}
   try{localStorage.setItem(KEY,JSON.stringify(S));}
   catch(e){toast('Could not save. Your storage may be full.');}
+  schedulePush();
 }
 function load(){
   try{const v=JSON.parse(localStorage.getItem(KEY));return v&&typeof v==='object'&&!Array.isArray(v)?v:{};}
   catch(e){return {};}
 }
 let S=load();
+LAST_SIG=canon(S);
 
 const DEF={history:{},catlog:{},hlog:{},focusLog:{},checked:{},todayDate:'',sessions:[],focusTotal:0,journal:[],plan:{},name:'',why:'',avatar:'',onboarded:false};
 
@@ -983,6 +1005,7 @@ function goTo(t){
 function openSheet(id){
   if(id==='sh-profile'){$('pf-name').value=S.name||'';$('pf-why').value=S.why||'';}
   if(id==='sh-habits')renderManage();
+  if(id==='sh-account')renderAccount();
   $(id).classList.add('show');
 }
 function closeSheet(id){$(id).classList.remove('show');}
@@ -1629,10 +1652,219 @@ function importBackup(input){
   r.readAsText(f);
 }
 function resetAll(){
-  if(!confirm('Reset everything? All habits, history and reflections on this device will be erased.'))return;
+  if(!confirm('Reset everything? All habits, history and reflections on this device will be erased. Your cloud copy stays. Sign in again to restore it.'))return;
   NO_SAVE=true;
-  try{[KEY,'dny-notif'].concat(Object.values(TK)).forEach(k=>localStorage.removeItem(k));}catch(e){}
+  try{[KEY,'dny-notif','dny-auth','dny-sync'].concat(Object.values(TK)).forEach(k=>localStorage.removeItem(k));}catch(e){}
   location.reload();
+}
+
+// ===== CLOUD SYNC (Supabase, plain fetch) =====
+// The URL and publishable key are public by design. Row level security in the
+// database lets each login read and write only its own row in user_data.
+const SB_URL='https://qfktrqaieioxkdrnyrmq.supabase.co';
+const SB_KEY='sb_publishable_Cxp_J9eiA73ny_TgvvSi4w_5BbIXskS';
+var SYNCING=false,SYNC_ERR='',LAST_SYNC_TRY=0;
+
+function getAuth(){
+  try{const a=JSON.parse(localStorage.getItem('dny-auth'));return a&&a.access_token&&a.refresh_token&&a.user&&a.user.id?a:null;}
+  catch(e){return null;}
+}
+function setAuth(a){
+  try{if(a)localStorage.setItem('dny-auth',JSON.stringify(a));else localStorage.removeItem('dny-auth');}catch(e){}
+}
+function getSyncMeta(){
+  try{const m=JSON.parse(localStorage.getItem('dny-sync'));return m&&typeof m==='object'?m:{};}catch(e){return {};}
+}
+function setSyncMeta(m){try{localStorage.setItem('dny-sync',JSON.stringify(m));}catch(e){}}
+function authFromResponse(j){
+  if(!j||!j.access_token||!j.refresh_token||!j.user||!j.user.id)return null;
+  return {
+    access_token:j.access_token,refresh_token:j.refresh_token,
+    expires_at:j.expires_at||Math.floor(Date.now()/1000)+(j.expires_in||3600),
+    user:{id:j.user.id,email:j.user.email||''}
+  };
+}
+async function sbFetch(path,o){
+  o=o||{};
+  const r=await fetch(SB_URL+path,{
+    method:o.method||'GET',
+    headers:Object.assign({apikey:SB_KEY,'Content-Type':'application/json'},o.headers||{}),
+    body:o.body?JSON.stringify(o.body):undefined
+  });
+  let j=null;
+  try{const t=await r.text();j=t?JSON.parse(t):null;}catch(e){}
+  return {ok:r.ok,status:r.status,json:j};
+}
+function authErrText(r){
+  const j=r.json||{};
+  const m=String(j.error_description||j.msg||j.message||j.error||'');
+  if(/invalid login/i.test(m))return 'Email or password is wrong.';
+  if(/already registered|already been registered/i.test(m))return 'This email already has an account. Tap Sign in.';
+  if(/rate limit|too many|seconds/i.test(m))return 'Too many tries. Wait a few minutes and try again.';
+  if(/password/i.test(m))return 'Use a password of at least 6 characters.';
+  if(/email/i.test(m)&&/valid/i.test(m))return 'Enter a valid email.';
+  return 'Could not complete that. '+(m||'Try again.');
+}
+async function validAuth(){
+  const a=getAuth();
+  if(!a)return null;
+  if(a.expires_at-60>Date.now()/1000)return a;
+  const r=await sbFetch('/auth/v1/token?grant_type=refresh_token',{method:'POST',body:{refresh_token:a.refresh_token}});
+  const n=r.ok?authFromResponse(r.json):null;
+  if(n){setAuth(n);return n;}
+  if(r.status>=400&&r.status<500){setAuth(null);SYNC_ERR='Your session ended. Sign in again.';return null;}
+  throw new Error('refresh failed');
+}
+async function pullRemote(a){
+  const r=await sbFetch('/rest/v1/user_data?select=data,updated_at&user_id=eq.'+encodeURIComponent(a.user.id),{headers:{Authorization:'Bearer '+a.access_token}});
+  if(!r.ok)throw new Error('pull '+r.status);
+  return Array.isArray(r.json)&&r.json.length?r.json[0]:null;
+}
+async function pushRemote(a,data){
+  const r=await sbFetch('/rest/v1/user_data?on_conflict=user_id',{
+    method:'POST',
+    headers:{Authorization:'Bearer '+a.access_token,Prefer:'resolution=merge-duplicates,return=minimal'},
+    body:{user_id:a.user.id,data,updated_at:new Date().toISOString()}
+  });
+  if(!r.ok)throw new Error('push '+r.status);
+}
+
+// Combine this device's data with the cloud copy. No day of history is ever dropped.
+// The side with the later _rev wins for settings, habits and anything edited on both.
+// On the first link of a device to an account, the cloud copy wins those.
+function mergeStates(local,remote,first){
+  const remoteWins=first||String(remote._rev||'')>String(local._rev||'');
+  const newer=remoteWins?remote:local,older=remoteWins?local:remote;
+  const out=clone(newer);
+  ['history','catlog','hlog','focusLog','plan'].forEach(m=>{
+    out[m]=Object.assign({},older[m]&&typeof older[m]==='object'?older[m]:{},newer[m]&&typeof newer[m]==='object'?newer[m]:{});
+  });
+  const byDate={};
+  [older.journal,newer.journal].forEach(list=>{
+    if(Array.isArray(list))list.forEach(e=>{if(e&&typeof e.date==='string')byDate[e.date]=e;});
+  });
+  out.journal=Object.keys(byDate).sort().map(k=>clone(byDate[k]));
+  out.focusTotal=Math.max(+local.focusTotal||0,+remote.focusTotal||0);
+  // Today's ticks belong to whichever side holds the later day.
+  if(older.todayDate&&(!newer.todayDate||older.todayDate>newer.todayDate)){
+    out.todayDate=older.todayDate;
+    out.checked=clone(older.checked||{});
+    out.sessions=clone(older.sessions||[]);
+  }
+  out._rev=String(local._rev||'')>String(remote._rev||'')?local._rev:remote._rev;
+  return out;
+}
+
+function applyMerged(m){
+  S=m;
+  migrate();
+  if(S.todayDate&&S.todayDate<TODAY_KEY)rollover();
+  S.todayDate=TODAY_KEY;
+  LAST_SIG=canon(S);
+  try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}
+  if(started){renderToday();renderProgress();renderFocus();renderPlan();renderProfile();}
+}
+
+async function syncNow(){
+  if(SYNCING||!getAuth())return;
+  clearTimeout(pushTimer);
+  SYNCING=true;LAST_SYNC_TRY=Date.now();SYNC_ERR='';
+  renderAccount();
+  try{
+    const a=await validAuth();
+    if(!a)return;
+    const meta=getSyncMeta();
+    const first=meta.uid!==a.user.id;
+    const row=await pullRemote(a);
+    const remote=row&&row.data&&typeof row.data==='object'&&!Array.isArray(row.data)?row.data:null;
+    if(remote){
+      const merged=mergeStates(S,remote,first);
+      if(canon(merged)!==canon(S))applyMerged(merged);
+    }
+    // Link this phone to the account as soon as the merge is in, so a failed push
+    // does not make the next sync treat this phone as new again.
+    setSyncMeta(Object.assign({},meta,{uid:a.user.id}));
+    if(!remote||canon(S)!==canon(remote))await pushRemote(a,S);
+    setSyncMeta({uid:a.user.id,at:Date.now()});
+  }catch(e){
+    SYNC_ERR=(e instanceof TypeError)?'No connection. DNY will try again.':'Sync failed. DNY will try again.';
+  }finally{
+    SYNCING=false;
+    renderAccount();
+  }
+}
+
+function schedulePush(){
+  if(!SYNC_READY||!getAuth())return;
+  clearTimeout(pushTimer);
+  pushTimer=setTimeout(syncNow,4000);
+}
+
+function acctMsg(t){setText('acct-msg',t);}
+function renderAccount(){
+  const a=getAuth();
+  const sub=$('acct-sub');
+  if(sub)sub.textContent=a?(SYNCING?'Syncing':SYNC_ERR||a.user.email):'Off';
+  const body=$('acct-body');
+  if(!body)return;
+  // Keep the form intact while someone is typing.
+  if(!a){
+    if(!$('acct-email')){
+      body.innerHTML='<div class="info-box">Sign in to keep your habits safe and use DNY on more than one phone. Your data also stays on this device.</div>'
+        +'<label class="sheet-lbl" for="acct-email">Email</label>'
+        +'<input class="sheet-input" id="acct-email" type="email" autocomplete="username" autocapitalize="off" maxlength="120"/>'
+        +'<label class="sheet-lbl" for="acct-pass">Password</label>'
+        +'<input class="sheet-input" id="acct-pass" type="password" autocomplete="current-password" maxlength="72"/>'
+        +'<div class="sheet-note" id="acct-msg"></div>'
+        +'<button class="sheet-btn" data-act="acct-signin">Sign in</button>'
+        +'<button class="sheet-btn soft" data-act="acct-signup">Create account</button>'
+        +'<div class="sheet-note">Use a password of at least 6 characters. There is no password reset yet, so keep it safe.</div>'
+        +'<button class="sheet-btn ghost" data-act="close-sheet" data-sheet="sh-account">Close</button>';
+    }
+    if(SYNC_ERR&&$('acct-msg'))acctMsg(SYNC_ERR);
+    return;
+  }
+  const at=getSyncMeta().at;
+  const line=SYNCING?'Syncing now.':SYNC_ERR||(at?'Last synced at '+new Date(at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+'.':'Not synced yet.');
+  body.innerHTML='<div class="info-box">Signed in as '+esc(a.user.email)+'. DNY syncs when you open it and a few seconds after you make a change.</div>'
+    +'<div class="sheet-note" id="acct-msg" style="margin:0 0 8px">'+esc(line)+'</div>'
+    +'<button class="sheet-btn" data-act="acct-sync">Sync now</button>'
+    +'<button class="sheet-btn danger" data-act="acct-signout">Sign out</button>'
+    +'<button class="sheet-btn ghost" data-act="close-sheet" data-sheet="sh-account">Close</button>';
+}
+
+async function doAuth(mode){
+  const email=$('acct-email').value.trim(),pw=$('acct-pass').value;
+  if(!/^\S+@\S+\.\S+$/.test(email)){acctMsg('Enter a valid email.');return;}
+  if(pw.length<6){acctMsg('Use a password of at least 6 characters.');return;}
+  acctMsg('Please wait.');
+  try{
+    const r=mode==='signup'
+      ?await sbFetch('/auth/v1/signup',{method:'POST',body:{email,password:pw}})
+      :await sbFetch('/auth/v1/token?grant_type=password',{method:'POST',body:{email,password:pw}});
+    if(!r.ok){acctMsg(authErrText(r));return;}
+    const a=authFromResponse(r.json);
+    if(!a){acctMsg('No session started. If you already have an account, tap Sign in. Otherwise check your email to confirm it.');return;}
+    const meta=getSyncMeta();
+    if(meta.uid&&meta.uid!==a.user.id){
+      acctMsg('This phone holds data from a different account. Sign in with that account, or use Reset all data first.');
+      return;
+    }
+    setAuth(a);
+    SYNC_ERR='';
+    renderAccount();renderProfile();
+    toast(mode==='signup'?'Account created':'Signed in');
+    await syncNow();
+  }catch(e){
+    acctMsg('No connection. Try again.');
+  }
+}
+function signOut(){
+  if(!confirm('Sign out? Your data stays on this phone. It stops syncing until you sign in again.'))return;
+  clearTimeout(pushTimer);
+  setAuth(null);SYNC_ERR='';
+  renderAccount();renderProfile();
+  toast('Signed out');
 }
 
 // ===== TOAST =====
@@ -1770,6 +2002,10 @@ const ACTIONS={
       :'Reminder turned off.');
   },
   'notif-save':()=>{closeSheet('sh-notif');toast('Reminders saved');},
+  'acct-signin':()=>doAuth('signin'),
+  'acct-signup':()=>doAuth('signup'),
+  'acct-sync':()=>syncNow(),
+  'acct-signout':signOut,
   'export':exportBackup,
   'import-pick':()=>$('import-file').click(),
   'reset':resetAll,
@@ -1813,6 +2049,9 @@ function initApp(){
   updateTimer();
   renderToday();renderFocus();renderPlan();renderProgress();renderProfile();
   loadNotifPrefs();
+  SYNC_READY=true;
+  renderAccount();
+  syncNow();
 }
 
 let splashDone=false;
@@ -1840,12 +2079,15 @@ function registerSW(){
 
 document.addEventListener('visibilitychange',()=>{
   if(document.hidden){
-    if(started)recordToday();
+    if(started){recordToday();syncNow();}
     return;
   }
   if(dateStr(new Date())!==TODAY_KEY){location.reload();return;}
   if(tRun&&tEnd)tick();
-  if(started)renderToday();
+  if(started){
+    renderToday();
+    if(Date.now()-LAST_SYNC_TRY>20000)syncNow();
+  }
 });
 
 registerSW();
