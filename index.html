@@ -89,7 +89,7 @@ input,select,textarea{font:inherit;color:inherit}
 .btn.ghost{background:transparent;color:var(--t2);border:1px solid var(--line);font-weight:500;margin-top:8px;padding:12px;font-size:14px}
 
 /* ===== APP SHELL ===== */
-.app{max-width:480px;margin:0 auto;height:100dvh;display:none;flex-direction:column;overflow:hidden;background:var(--bg)}
+.app{position:fixed;inset:0;max-width:480px;margin:0 auto;display:none;flex-direction:column;overflow:hidden;background:var(--bg)}
 .screens{flex:1;overflow:hidden;position:relative}
 .screen{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding-bottom:24px;display:none}
 .screen.active{display:block}
@@ -102,7 +102,7 @@ input,select,textarea{font:inherit;color:inherit}
 .pill{display:flex;align-items:center;gap:5px;background:var(--gold-dim);border-radius:20px;padding:5px 11px;font-size:13px;font-weight:600;color:var(--gold)}
 .icon-btn{width:34px;height:34px;border-radius:50%;background:var(--s3);color:var(--t2);display:flex;align-items:center;justify-content:center;font-size:15px}
 
-.nav{flex-shrink:0;background:var(--bg);border-top:1px solid var(--line);display:flex;padding:6px 0 calc(6px + var(--safe-bot))}
+.nav{flex-shrink:0;background:var(--bg);border-top:1px solid var(--line);display:flex;padding:6px 0 calc(4px + min(var(--safe-bot),24px))}
 .nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 2px;text-align:center}
 .nav-btn svg{width:22px;height:22px;stroke:var(--t3);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .nav-lbl{font-size:10px;font-weight:600;color:var(--t3)}
@@ -298,6 +298,7 @@ input,select,textarea{font:inherit;color:inherit}
 
 /* ===== SHEETS ===== */
 .overlay{position:fixed;inset:0;background:var(--scrim);z-index:500;display:none;align-items:flex-end}
+#sh-account{z-index:9500}
 .overlay.show{display:flex}
 .sheet{background:var(--s1);border-radius:20px 20px 0 0;width:100%;max-width:480px;margin:0 auto;padding-bottom:calc(16px + var(--safe-bot));max-height:90dvh;display:flex;flex-direction:column;animation:slide-up .25s cubic-bezier(.16,1,.3,1)}
 @keyframes slide-up{from{transform:translateY(100%)}to{transform:none}}
@@ -381,6 +382,7 @@ input,select,textarea{font:inherit;color:inherit}
       </div>
       <div class="ob-spacer"></div>
       <button class="btn" data-act="ob-next" data-step="2">Get started</button>
+      <button class="btn ghost" data-act="open-sheet" data-sheet="sh-account">I already have an account</button>
     </div>
 
     <div class="ob-screen" id="ob2">
@@ -1855,6 +1857,12 @@ async function doAuth(mode){
     renderAccount();renderProfile();
     toast(mode==='signup'?'Account created':'Signed in');
     await syncNow();
+    // A new install that signed in from the first screen: skip setup when the cloud copy was set up already.
+    if(S.onboarded&&$('onboarding').style.display==='flex'){
+      closeSheet('sh-account');
+      $('onboarding').style.display='none';
+      showApp();
+    }
   }catch(e){
     acctMsg('No connection. Try again.');
   }
@@ -2091,7 +2099,6 @@ document.addEventListener('visibilitychange',()=>{
 });
 
 registerSW();
-setTimeout(skipSplash,2200);
 </script>
 </body>
 </html>
