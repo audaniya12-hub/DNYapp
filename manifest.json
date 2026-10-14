@@ -1,24 +1,31 @@
 {
-  "name": "DNY \u2014 Discipline Every Day",
+  "name": "DNY: Discipline Every Day",
   "short_name": "DNY",
-  "description": "Your daily discipline tracker. Arise, Hunter.",
-  "start_url": "https://audaniya12-hub-dny-app.vercel.app/index.html",
+  "description": "Your daily habit and discipline tracker.",
+  "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
-  "background_color": "#080810",
-  "theme_color": "#080810",
   "orientation": "portrait",
+  "background_color": "#F7F3EA",
+  "theme_color": "#F7F3EA",
   "icons": [
     {
-      "src": "https://audaniya12-hub-dny-app.vercel.app/icon.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "https://audaniya12-hub-dny-app.vercel.app/icon.png",
-      "sizes": "180x180",
+      "src": "./icon-192.png",
+      "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
+    },
+    {
+      "src": "./icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }
