@@ -1,4 +1,4 @@
-const CACHE = 'dny-v2';
+const CACHE = 'dny-v3';
 const ASSETS = ['./', './index.html', './manifest.json', './icon.png'];
 
 self.addEventListener('install', e => {
@@ -61,4 +61,31 @@ self.addEventListener('fetch', e => {
       }))
     );
   }
+});
+
+// Phone reminders. The server sends a small JSON payload.
+self.addEventListener('push', e => {
+  let d = {};
+  try { d = e.data ? e.data.json() : {}; } catch (err) {}
+  const title = d.title || 'DNY';
+  e.waitUntil(self.registration.showNotification(title, {
+    body: d.body || '',
+    tag: d.tag || 'dny',
+    icon: './icon-192.png',
+    badge: './icon-192.png',
+    data: { url: d.url || './' }
+  }));
+});
+
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  const target = new URL((e.notification.data && e.notification.data.url) || './', self.registration.scope).href;
+  e.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
+      for (const c of list) {
+        if (c.url.startsWith(self.registration.scope) && 'focus' in c) return c.focus();
+      }
+      return self.clients.openWindow(target);
+    })
+  );
 });

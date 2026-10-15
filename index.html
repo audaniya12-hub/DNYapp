@@ -735,7 +735,7 @@ input,select,textarea{font:inherit;color:inherit}
     <div class="sheet-handle"></div>
     <div class="sheet-title">Reminders</div>
     <div class="sheet-body">
-      <div class="info-box" id="notif-status">Reminders show as a banner inside DNY. They appear only while the app is open.</div>
+      <div class="info-box" id="notif-status">Turn on a reminder to get a notification on your phone, even when DNY is closed.</div>
       <div class="notif-box">
         <div class="notif-top">
           <div class="nt"><b>Morning reminder</b><span>Start your day with your habits</span></div>
@@ -1705,10 +1705,11 @@ function importBackup(input){
   };
   r.readAsText(f);
 }
-function resetAll(){
+async function resetAll(){
   if(!confirm('Reset everything? All habits, history and reflections on this device will be erased. Your cloud copy stays. Sign in again to restore it.'))return;
   NO_SAVE=true;
-  try{[KEY,'dny-notif','dny-auth','dny-sync'].concat(Object.values(TK)).forEach(k=>localStorage.removeItem(k));}catch(e){}
+  await removePush();
+  try{[KEY,'dny-notif','dny-push','dny-auth','dny-sync'].concat(Object.values(TK)).forEach(k=>localStorage.removeItem(k));}catch(e){}
   location.reload();
 }
 
@@ -1909,6 +1910,7 @@ async function doAuth(mode){
     renderAccount();renderProfile();
     toast(mode==='signup'?'Account created':'Signed in');
     await syncNow();
+    syncPush();
     // A new install that signed in from the first screen: skip setup when the cloud copy was set up already.
     if(S.onboarded&&$('onboarding').style.display==='flex'){
       closeSheet('sh-account');
@@ -1919,10 +1921,12 @@ async function doAuth(mode){
     acctMsg('No connection. Try again.');
   }
 }
-function signOut(){
+async function signOut(){
   if(!confirm('Sign out? Your data stays on this phone. It stops syncing until you sign in again.'))return;
   clearTimeout(pushTimer);
+  await removePush();
   setAuth(null);SYNC_ERR='';
+  setPushState(getNotif().morning.enabled||getNotif().evening.enabled?'signin':'off');
   renderAccount();renderProfile();
   toast('Signed out');
 }
@@ -1960,7 +1964,7 @@ function scheduleNotif(key){
   if(next<=new Date())next.setDate(next.getDate()+1);
   const target=next.getTime();
   notifTimers[key]=setTimeout(()=>{
-    if(Date.now()-target<30*60*1000)showBanner(NOTIF_MSG[key][0],NOTIF_MSG[key][1]);
+    if(!PUSH_ACTIVE&&Date.now()-target<30*60*1000)showBanner(NOTIF_MSG[key][0],NOTIF_MSG[key][1]);
     scheduleNotif(key);
   },target-Date.now());
 }
@@ -1984,6 +1988,109 @@ function showBanner(title,msg){
   bannerTimer=setTimeout(dismissBanner,5000);
 }
 function dismissBanner(){$('notif-banner').classList.remove('show');clearTimeout(bannerTimer);}
+
+// ===== PHONE REMINDERS (web push) =====
+// The phone subscribes to push. A Supabase job asks the Vercel function to send each reminder at the chosen time.
+const VAPID_PUBLIC='BAoGQTzD_AkvYS-bLUDynwikajHYji5Vp6CY_fsJ1tzCcEcDncUcASkFd3QUM6esGdbYovoFpncTY3SWZvignes';
+let PUSH_ACTIVE=false,PUSH_STATE='off',PUSH_BUSY=false,PUSH_AGAIN=null;
+function pushSupported(){return 'serviceWorker' in navigator&&'PushManager' in window&&'Notification' in window;}
+function isIOS(){return /iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);}
+function isStandalone(){return !!navigator.standalone||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches);}
+function b64uToBytes(b){
+  const p='='.repeat((4-b.length%4)%4),r=(b+p).replace(/-/g,'+').replace(/_/g,'/'),raw=atob(r);
+  return Uint8Array.from(raw,c=>c.charCodeAt(0));
+}
+function bytesToB64u(buf){
+  let t='';new Uint8Array(buf).forEach(b=>t+=String.fromCharCode(b));
+  return btoa(t).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+}
+function clampTime(t){return t>'23:45'?'23:45':t;}
+function setPushState(st){
+  PUSH_STATE=st;PUSH_ACTIVE=st==='active';
+  const prefs=getNotif();
+  const times=['morning','evening'].filter(k=>prefs[k].enabled).map(k=>fmtTime(clampTime(prefs[k].time)));
+  const txt={
+    off:'Turn on a reminder to get a notification on your phone, even when DNY is closed.',
+    signin:'Sign in under Profile, then Cloud sync. Your phone reminders start after that.',
+    install:'On iPhone, add DNY to your Home Screen and open it from there. Then turn the reminder on.',
+    unsupported:'This browser cannot send phone reminders. A banner shows while DNY is open.',
+    blocked:'Notifications are blocked for DNY. Allow them in your phone settings.',
+    active:'Reminders are on. You get a notification at '+times.join(' and ')+'.',
+    error:'Could not set up reminders. Check your connection and try again.'
+  }[st]||'';
+  setText('notif-status',txt);
+}
+async function pushRequest(path,o,a){
+  o=o||{};
+  o.headers=Object.assign({Authorization:'Bearer '+a.access_token},o.headers||{});
+  return sbFetch(path,o);
+}
+// opts.ask: the person tapped a toggle, so asking for permission is allowed.
+// opts.reset: list of kinds ('morning','evening') the person changed, so they can fire again today.
+async function syncPush(opts){
+  opts=opts||{};
+  if(PUSH_BUSY){PUSH_AGAIN=opts;return;}
+  PUSH_BUSY=true;
+  try{
+    const prefs=getNotif();
+    const any=prefs.morning.enabled||prefs.evening.enabled;
+    if(!any){await removePush();setPushState('off');return;}
+    if(!pushSupported()){setPushState('unsupported');return;}
+    if(isIOS()&&!isStandalone()){setPushState('install');return;}
+    if(!getAuth()){setPushState('signin');return;}
+    // Must run before any await so the tap still counts.
+    let perm=Notification.permission;
+    if(perm==='default'&&opts.ask){
+      try{perm=await Notification.requestPermission();}catch(e){perm='default';}
+    }
+    if(perm==='denied'){setPushState('blocked');return;}
+    if(perm!=='granted'){setPushState('off');return;}
+    const a=await validAuth();
+    if(!a){setPushState('signin');return;}
+    const reg=await navigator.serviceWorker.ready;
+    let sub=await reg.pushManager.getSubscription();
+    if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64uToBytes(VAPID_PUBLIC)});
+    const p256=sub.getKey('p256dh'),au=sub.getKey('auth');
+    if(!p256||!au)throw new Error('no keys');
+    const row={
+      user_id:a.user.id,endpoint:sub.endpoint,p256dh:bytesToB64u(p256),auth:bytesToB64u(au),
+      tz:(Intl.DateTimeFormat().resolvedOptions().timeZone)||'Africa/Lagos',
+      morning_on:prefs.morning.enabled,morning_time:clampTime(prefs.morning.time),
+      evening_on:prefs.evening.enabled,evening_time:clampTime(prefs.evening.time),
+      updated_at:new Date().toISOString()
+    };
+    (opts.reset||[]).forEach(k=>{row['last_'+k]=null;});
+    const r=await pushRequest('/rest/v1/push_subscriptions?on_conflict=endpoint',{
+      method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:row},a);
+    if(!r.ok)throw new Error('save '+r.status);
+    try{localStorage.setItem('dny-push',sub.endpoint);}catch(e){}
+    setPushState('active');
+  }catch(e){
+    setPushState('error');
+  }finally{
+    PUSH_BUSY=false;
+    if(PUSH_AGAIN){const o=PUSH_AGAIN;PUSH_AGAIN=null;syncPush(o);}
+  }
+}
+// Removes this phone from the reminder list. Best effort, never blocks for long.
+async function removePush(){
+  let ep=null;
+  try{ep=localStorage.getItem('dny-push');}catch(e){}
+  try{localStorage.removeItem('dny-push');}catch(e){}
+  PUSH_ACTIVE=false;
+  if(!ep||!pushSupported())return;
+  const work=(async()=>{
+    let sub=null;
+    try{sub=await (await navigator.serviceWorker.ready).pushManager.getSubscription();}catch(e){}
+    ep=(sub&&sub.endpoint)||ep;
+    const a=getAuth();
+    if(ep&&a){
+      try{const v=await validAuth();if(v)await pushRequest('/rest/v1/push_subscriptions?endpoint=eq.'+encodeURIComponent(ep),{method:'DELETE'},v);}catch(e){}
+    }
+    if(sub){try{await sub.unsubscribe();}catch(e){}}
+  })();
+  await Promise.race([work,new Promise(r=>setTimeout(r,2500))]);
+}
 
 // ===== ONBOARDING =====
 function obStep(n){
@@ -2066,9 +2173,7 @@ const ACTIONS={
     el.classList.toggle('on',p[key].enabled);
     el.setAttribute('aria-checked',String(p[key].enabled));
     scheduleNotif(key);
-    setText('notif-status',p[key].enabled
-      ?'Reminder set for '+fmtTime(p[key].time)+'. It shows as a banner while DNY is open.'
-      :'Reminder turned off.');
+    syncPush({ask:p[key].enabled,reset:[key]});
   },
   'notif-save':()=>{closeSheet('sh-notif');toast('Reminders saved');},
   'acct-signin':()=>doAuth('signin'),
@@ -2097,6 +2202,7 @@ document.querySelectorAll('[data-notif-time]').forEach(inp=>{
     p[key].time=inp.value;
     setNotif(p);
     scheduleNotif(key);
+    if(p[key].enabled)syncPush({reset:[key]});
   });
 });
 
@@ -2121,6 +2227,7 @@ function initApp(){
   SYNC_READY=true;
   renderAccount();
   syncNow();
+  syncPush();
 }
 
 let splashDone=false;
