@@ -296,6 +296,13 @@ input,select,textarea{font:inherit;color:inherit}
 .settings-arr{font-size:16px;color:var(--t3)}
 .danger-txt{color:var(--danger)}
 
+/* ===== SELECT MODE (Manage habits) ===== */
+.sel-chk{width:22px;height:22px;border-radius:6px;border:1.5px solid var(--t3);flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.sel-chk.on{background:var(--accent);border-color:var(--accent)}
+.sel-chk.on::after{content:'\2713';color:var(--accent-ink);font-size:14px;font-weight:700;line-height:1}
+.sheet-btn:disabled{opacity:.4}
+#hs-delwrap{padding:8px 18px 0;border-top:1px solid var(--line)}
+
 /* ===== SHEETS ===== */
 .overlay{position:fixed;inset:0;background:var(--scrim);z-index:500;display:none;align-items:flex-end}
 #sh-account{z-index:9500}
@@ -677,9 +684,19 @@ input,select,textarea{font:inherit;color:inherit}
     <div class="sheet-handle"></div>
     <div class="sheet-title">Manage habits</div>
     <div class="sheet-body">
-      <button class="sheet-btn" style="margin-top:0" data-act="habit-new">Add a habit</button>
+      <div class="btn-row" id="hs-top">
+        <button class="sheet-btn" style="margin-top:0" data-act="habit-new">Add a habit</button>
+        <button class="sheet-btn soft" style="margin-top:0" data-act="sel-start">Select</button>
+      </div>
+      <div class="btn-row hidden" id="hs-sel">
+        <button class="sheet-btn soft" style="margin-top:0" data-act="sel-all">Select all</button>
+        <button class="sheet-btn ghost" style="margin-top:0" data-act="sel-cancel">Cancel</button>
+      </div>
       <div id="habits-body"></div>
       <div class="sheet-note">Past days keep their history when you edit or delete a habit.</div>
+    </div>
+    <div id="hs-delwrap" class="hidden">
+      <button class="sheet-btn danger" style="margin-top:0" id="hs-del" data-act="sel-delete" disabled>Delete selected</button>
     </div>
   </div>
 </div>
@@ -1006,7 +1023,7 @@ function goTo(t){
 }
 function openSheet(id){
   if(id==='sh-profile'){$('pf-name').value=S.name||'';$('pf-why').value=S.why||'';}
-  if(id==='sh-habits')renderManage();
+  if(id==='sh-habits'){SEL_MODE=false;SEL.clear();renderManage();}
   if(id==='sh-account')renderAccount();
   $(id).classList.add('show');
 }
@@ -1499,10 +1516,45 @@ function renderManage(){
     if(!list.length){h+='<div class="empty-note">No habits in this area.</div>';return;}
     h+='<div class="mlist">'+list.map(x=>{
       const dayTxt=x.days?' · '+x.days.slice().sort((a,b)=>a-b).map(d=>DAYS_S[d]).join(', '):'';
-      return '<button class="mrow" data-act="habit-edit" data-id="'+esc(x.id)+'"><span class="mrow-main"><span class="mrow-t" style="display:block">'+esc(x.title)+'</span><span class="mrow-s" style="display:block">'+esc(TIME_LBL[x.time])+(x.sub?' · '+esc(x.sub):'')+esc(dayTxt)+'</span></span><span class="tag t-'+x.tier+'">'+TIER_LBL[x.tier]+'</span></button>';
+      const chk=SEL_MODE?'<span class="sel-chk'+(SEL.has(x.id)?' on':'')+'"></span>':'';
+      return '<button class="mrow" data-act="'+(SEL_MODE?'sel-toggle':'habit-edit')+'" data-id="'+esc(x.id)+'">'+chk+'<span class="mrow-main"><span class="mrow-t" style="display:block">'+esc(x.title)+'</span><span class="mrow-s" style="display:block">'+esc(TIME_LBL[x.time])+(x.sub?' · '+esc(x.sub):'')+esc(dayTxt)+'</span></span><span class="tag t-'+x.tier+'">'+TIER_LBL[x.tier]+'</span></button>';
     }).join('')+'</div>';
   });
   $('habits-body').innerHTML=h;
+  updateSelUI();
+}
+
+// Select several habits and delete them together.
+let SEL_MODE=false;
+const SEL=new Set();
+function updateSelUI(){
+  $('hs-top').classList.toggle('hidden',SEL_MODE);
+  $('hs-sel').classList.toggle('hidden',!SEL_MODE);
+  $('hs-delwrap').classList.toggle('hidden',!SEL_MODE);
+  const n=SEL.size;
+  const b=$('hs-del');
+  b.disabled=!n;
+  b.textContent=n?'Delete selected ('+n+')':'Delete selected';
+  const all=$('hs-sel').querySelector('[data-act=sel-all]');
+  if(all)all.textContent=(S.habits.length&&n===S.habits.length)?'Clear all':'Select all';
+}
+function selToggle(el){
+  const id=el.dataset.id;
+  if(SEL.has(id))SEL.delete(id);else SEL.add(id);
+  const c=el.querySelector('.sel-chk');
+  if(c)c.classList.toggle('on',SEL.has(id));
+  updateSelUI();
+}
+function selDelete(){
+  const ids=S.habits.filter(h=>SEL.has(h.id)).map(h=>h.id);
+  if(!ids.length)return;
+  if(!confirm('Delete '+ids.length+(ids.length===1?' habit':' habits')+'? Past history stays.'))return;
+  S.habits=S.habits.filter(h=>!SEL.has(h.id));
+  ids.forEach(id=>{delete S.checked[id];});
+  SEL_MODE=false;SEL.clear();
+  recordToday();
+  renderManage();renderToday();renderFocus();
+  toast(ids.length+(ids.length===1?' habit deleted':' habits deleted'));
 }
 
 function fillSelect(id,obj){$(id).innerHTML=Object.keys(obj).map(k=>'<option value="'+k+'">'+esc(obj[k])+'</option>').join('');}
@@ -1968,6 +2020,15 @@ const ACTIONS={
   'close-sheet':el=>closeSheet(el.dataset.sheet),
   'overlay-close':(el,e)=>{if(e.target===el)el.classList.remove('show');},
   'save-profile':saveProfile,
+  'sel-start':()=>{SEL_MODE=true;SEL.clear();renderManage();},
+  'sel-cancel':()=>{SEL_MODE=false;SEL.clear();renderManage();},
+  'sel-toggle':selToggle,
+  'sel-all':()=>{
+    if(S.habits.length&&SEL.size===S.habits.length)SEL.clear();
+    else S.habits.forEach(h=>SEL.add(h.id));
+    renderManage();
+  },
+  'sel-delete':selDelete,
   'habit-new':()=>openHabitEditor(null),
   'habit-edit':el=>openHabitEditor(el.dataset.id),
   'habit-save':saveHabit,
