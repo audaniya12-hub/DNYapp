@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"/>
 <meta name="mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
@@ -42,7 +42,7 @@
     --c-faith:#6FC3A0;--c-mind:#7FB2D6;--c-body:#D6B066;--c-mental:#B5A5DD;--c-life:#E0907F;
   }
 }
-html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--t1);font-family:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;font-size:14px;-webkit-font-smoothing:antialiased;line-height:1.45}
+html,body{height:100%;overflow:hidden;touch-action:pan-x pan-y;overscroll-behavior:none;background:var(--bg);color:var(--t1);font-family:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;font-size:14px;-webkit-font-smoothing:antialiased;line-height:1.45}
 button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;text-align:inherit}
 input,select,textarea{font:inherit;color:inherit}
 .serif{font-family:'Lora',Georgia,'Times New Roman',serif}
@@ -2207,6 +2207,8 @@ document.querySelectorAll('[data-notif-time]').forEach(inp=>{
 });
 
 // ===== INIT =====
+// Stop pinch zoom so the app stays fixed on iPhone.
+['gesturestart','gesturechange','gestureend'].forEach(t=>document.addEventListener(t,e=>e.preventDefault()));
 let started=false;
 function showApp(){
   $('main-app').style.display='flex';
