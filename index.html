@@ -11,6 +11,7 @@
 <meta name="theme-color" content="#F7F3EA" media="(prefers-color-scheme: light)"/>
 <meta name="theme-color" content="#0E1714" media="(prefers-color-scheme: dark)"/>
 <title>DNY</title>
+<script>try{var _t=localStorage.getItem("dny-theme");if(_t==="light"||_t==="dark")document.documentElement.setAttribute("data-theme",_t);}catch(e){}</script>
 <link rel="apple-touch-icon" href="icon.png"/>
 <link rel="icon" type="image/png" href="icon.png"/>
 <link rel="manifest" href="manifest.json"/>
@@ -32,7 +33,7 @@
   --safe-top:env(safe-area-inset-top,0px);--safe-bot:env(safe-area-inset-bottom,0px);
 }
 @media (prefers-color-scheme:dark){
-  :root{
+  :root:not([data-theme=light]){
     --bg:#0E1714;--s1:#14211C;--s2:#182720;--s3:#1F322A;--s4:#284038;
     --t1:#EDE8DC;--t2:#B2BEB6;--t3:#8A9A91;
     --accent:#6FC3A0;--accent-ink:#0E1714;--accent-dim:rgba(111,195,160,.12);--accent-line:rgba(111,195,160,.32);
@@ -42,6 +43,8 @@
     --c-faith:#6FC3A0;--c-mind:#7FB2D6;--c-body:#D6B066;--c-mental:#B5A5DD;--c-life:#E0907F;
   }
 }
+:root[data-theme=dark]{color-scheme:dark;    --bg:#0E1714;--s1:#14211C;--s2:#182720;--s3:#1F322A;--s4:#284038;    --t1:#EDE8DC;--t2:#B2BEB6;--t3:#8A9A91;    --accent:#6FC3A0;--accent-ink:#0E1714;--accent-dim:rgba(111,195,160,.12);--accent-line:rgba(111,195,160,.32);    --gold:#D6B066;--gold-dim:rgba(214,176,102,.14);    --ok:#5DB38F;--danger:#E0907F;--danger-dim:rgba(224,144,127,.12);    --line:rgba(237,232,220,.09);--scrim:rgba(0,0,0,.6);    --c-faith:#6FC3A0;--c-mind:#7FB2D6;--c-body:#D6B066;--c-mental:#B5A5DD;--c-life:#E0907F;}
+:root[data-theme=light]{color-scheme:light}
 html,body{height:100%;overflow:hidden;touch-action:pan-x pan-y;overscroll-behavior:none;background:var(--bg);color:var(--t1);font-family:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;font-size:14px;-webkit-font-smoothing:antialiased;line-height:1.45}
 button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;text-align:inherit}
 input,select,textarea{font:inherit;color:inherit}
@@ -329,6 +332,11 @@ input,select,textarea{font:inherit;color:inherit}
 .day-btn{padding:11px 0;background:var(--s2);border:1px solid var(--line);border-radius:var(--r-sm);font-size:11px;font-weight:600;color:var(--t3);text-align:center}
 .day-btn.on{background:var(--accent-dim);border-color:var(--accent-line);color:var(--accent)}
 .mlist{background:var(--s2);border:1px solid var(--line);border-radius:var(--r-sm);overflow:hidden}
+.add-habit{display:block;width:calc(100% - 36px);margin:14px 18px 0;padding:13px;border:1.5px dashed var(--accent-line);border-radius:var(--r);background:var(--accent-dim);color:var(--accent);font:inherit;font-size:14px;font-weight:600;text-align:center}
+.seg.in{margin:0 0 10px}
+.timerow{display:flex;gap:8px;align-items:center}
+.timerow .sheet-input{flex:1;margin:0}
+.timerow .clr{padding:11px 14px;border-radius:var(--r-sm);background:var(--s3);color:var(--t2);font-size:12px;font-weight:600}
 .mrow{width:100%;display:flex;align-items:center;gap:10px;padding:11px 13px;border-top:1px solid var(--line)}
 .mrow:first-child{border-top:none}
 .mrow:active{background:var(--s3)}
@@ -379,7 +387,7 @@ input,select,textarea{font:inherit;color:inherit}
   <div class="ob-wrap">
     <div class="ob-screen active" id="ob1">
       <div class="ob-logo">DNY</div>
-      <div class="ob-prog"><div class="ob-pip on"></div><div class="ob-pip"></div><div class="ob-pip"></div><div class="ob-pip"></div></div>
+      <div class="ob-prog"><div class="ob-pip on"></div><div class="ob-pip"></div><div class="ob-pip"></div><div class="ob-pip"></div><div class="ob-pip"></div></div>
       <div class="ob-title">Welcome to DNY</div>
       <div class="ob-sub">Build your day around the habits that matter. Small steps, done every day, add up.</div>
       <div class="ob-list">
@@ -394,7 +402,7 @@ input,select,textarea{font:inherit;color:inherit}
 
     <div class="ob-screen" id="ob2">
       <div class="ob-logo">DNY</div>
-      <div class="ob-prog"><div class="ob-pip on"></div><div class="ob-pip on"></div><div class="ob-pip"></div><div class="ob-pip"></div></div>
+      <div class="ob-prog"><div class="ob-pip on"></div><div class="ob-pip on"></div><div class="ob-pip"></div><div class="ob-pip"></div><div class="ob-pip"></div></div>
       <div class="ob-title">What should we call you?</div>
       <div class="ob-sub">Your name appears in your daily greeting and on your profile.</div>
       <div class="ob-lbl">Your name</div>
@@ -403,9 +411,23 @@ input,select,textarea{font:inherit;color:inherit}
       <button class="btn" data-act="ob-name">Continue</button>
     </div>
 
+    <div class="ob-screen" id="ob5">
+      <div class="ob-logo">DNY</div>
+      <div class="ob-prog"><div class="ob-pip on"></div><div class="ob-pip on"></div><div class="ob-pip on"></div><div class="ob-pip"></div><div class="ob-pip"></div></div>
+      <div class="ob-title">Choose your habits</div>
+      <div class="ob-sub">Tick the habits you want. Essential ones are ticked for you. You can add or change habits any time.</div>
+      <div class="btn-row" style="margin-bottom:10px">
+        <button class="sheet-btn soft" style="margin-top:0" data-act="pick-all" data-ctx="ob">Select all</button>
+        <button class="sheet-btn soft" style="margin-top:0" data-act="pick-none" data-ctx="ob">Clear</button>
+      </div>
+      <div id="pick-ob"></div>
+      <div class="ob-spacer"></div>
+      <button class="btn" style="margin-top:14px" data-act="ob-pick" id="ob-pick-btn">Continue</button>
+    </div>
+
     <div class="ob-screen" id="ob3">
       <div class="ob-logo">DNY</div>
-      <div class="ob-prog"><div class="ob-pip on"></div><div class="ob-pip on"></div><div class="ob-pip on"></div><div class="ob-pip"></div></div>
+      <div class="ob-prog"><div class="ob-pip on"></div><div class="ob-pip on"></div><div class="ob-pip on"></div><div class="ob-pip on"></div><div class="ob-pip"></div></div>
       <div class="ob-title">Set your workout days</div>
       <div class="ob-sub">Workout only shows on the days you pick. You can change this later in Manage habits.</div>
       <div class="ob-day-grid" id="ob-days">
@@ -423,7 +445,7 @@ input,select,textarea{font:inherit;color:inherit}
 
     <div class="ob-screen" id="ob4">
       <div class="ob-logo">DNY</div>
-      <div class="ob-prog"><div class="ob-pip on"></div><div class="ob-pip on"></div><div class="ob-pip on"></div><div class="ob-pip on"></div></div>
+      <div class="ob-prog"><div class="ob-pip on"></div><div class="ob-pip on"></div><div class="ob-pip on"></div><div class="ob-pip on"></div><div class="ob-pip on"></div></div>
       <div class="ob-title">Why are you doing this?</div>
       <div class="ob-sub">Write your reason in your own words. DNY shows it on hard days.</div>
       <div class="ob-lbl">My why</div>
@@ -622,8 +644,9 @@ input,select,textarea{font:inherit;color:inherit}
       <div class="gap"></div>
       <div class="settings-g-lbl">Customise</div>
       <div class="card settings-list">
-        <button class="settings-row" data-act="open-sheet" data-sheet="sh-habits"><div class="settings-ic">✎</div><div class="settings-lbl">Manage habits</div><div class="settings-arr">›</div></button>
+        <button class="settings-row" data-act="open-sheet" data-sheet="sh-habits"><div class="settings-ic">✎</div><div class="settings-lbl">Manage habits<span style="display:block;font-size:11px;color:var(--t3);margin-top:1px">Add, edit or delete</span></div><div class="settings-arr">›</div></button>
         <button class="settings-row" data-act="open-sheet" data-sheet="sh-profile"><div class="settings-ic">☺</div><div class="settings-lbl">Name and my why</div><div class="settings-arr">›</div></button>
+        <button class="settings-row" data-act="open-sheet" data-sheet="sh-theme"><div class="settings-ic">◐</div><div class="settings-lbl">Appearance<span id="theme-sub" style="display:block;font-size:11px;color:var(--t3);margin-top:1px">Auto</span></div><div class="settings-arr">›</div></button>
         <button class="settings-row" data-act="open-sheet" data-sheet="sh-notif"><div class="settings-ic">🔔</div><div class="settings-lbl">Reminders</div><div class="settings-arr">›</div></button>
       </div>
       <div class="gap"></div>
@@ -688,6 +711,7 @@ input,select,textarea{font:inherit;color:inherit}
         <button class="sheet-btn" style="margin-top:0" data-act="habit-new">Add a habit</button>
         <button class="sheet-btn soft" style="margin-top:0" data-act="sel-start">Select</button>
       </div>
+      <button class="sheet-btn soft" id="hs-sug" data-act="open-sheet" data-sheet="sh-suggest">Add from suggested habits</button>
       <div class="btn-row hidden" id="hs-sel">
         <button class="sheet-btn soft" style="margin-top:0" data-act="sel-all">Select all</button>
         <button class="sheet-btn ghost" style="margin-top:0" data-act="sel-cancel">Cancel</button>
@@ -697,6 +721,22 @@ input,select,textarea{font:inherit;color:inherit}
     </div>
     <div id="hs-delwrap" class="hidden">
       <button class="sheet-btn danger" style="margin-top:0" id="hs-del" data-act="sel-delete" disabled>Delete selected</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="sh-suggest" data-act="overlay-close">
+  <div class="sheet" role="dialog" aria-modal="true" aria-label="Suggested habits">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Suggested habits</div>
+    <div class="sheet-body">
+      <div class="btn-row">
+        <button class="sheet-btn soft" style="margin-top:0" data-act="pick-all" data-ctx="sg">Select all</button>
+        <button class="sheet-btn soft" style="margin-top:0" data-act="pick-none" data-ctx="sg">Clear</button>
+      </div>
+      <div id="pick-sg"></div>
+      <button class="sheet-btn" id="sg-add" data-act="sg-add" disabled>Add selected</button>
+      <button class="sheet-btn ghost" data-act="close-sheet" data-sheet="sh-suggest">Close</button>
     </div>
   </div>
 </div>
@@ -712,10 +752,20 @@ input,select,textarea{font:inherit;color:inherit}
       <input class="sheet-input" id="hb-sub" maxlength="60" placeholder="e.g. 30 min"/>
       <label class="sheet-lbl" for="hb-cat">Area</label>
       <select class="sheet-input" id="hb-cat"></select>
-      <label class="sheet-lbl" for="hb-tier">Importance</label>
-      <select class="sheet-input" id="hb-tier"></select>
+      <div class="sheet-lbl">Importance</div>
+      <div class="seg in" id="hb-tier-seg">
+        <button data-act="tier-pick" data-tier="core">Essential</button>
+        <button data-act="tier-pick" data-tier="standard">Regular</button>
+        <button data-act="tier-pick" data-tier="bonus">Extra</button>
+      </div>
+      <select id="hb-tier" class="hidden" aria-hidden="true" tabindex="-1"></select>
+      <label class="sheet-lbl" for="hb-at">Start time (optional)</label>
+      <div class="timerow"><input class="sheet-input" type="time" id="hb-at"/><button class="clr" type="button" data-act="at-clear">Clear</button></div>
+      <label class="sheet-lbl" for="hb-dur">Duration in minutes (optional)</label>
+      <input class="sheet-input" type="number" id="hb-dur" inputmode="numeric" min="1" max="600" step="1" placeholder="e.g. 30"/>
       <label class="sheet-lbl" for="hb-time">Time of day</label>
       <select class="sheet-input" id="hb-time"></select>
+      <div class="sheet-note" id="hb-time-note">With a start time, DNY places the habit in Morning, Anytime or Evening for you. Habits are listed in time order.</div>
       <div class="sheet-lbl">Days</div>
       <div class="day-grid" id="hb-days"></div>
       <div class="sheet-note">Turn off the days you want to skip. Essential and Regular habits count toward your score. Extra habits do not.</div>
@@ -726,6 +776,22 @@ input,select,textarea{font:inherit;color:inherit}
       </div>
       <button class="sheet-btn danger" id="hb-delete" data-act="habit-delete">Delete habit</button>
       <button class="sheet-btn ghost" data-act="close-sheet" data-sheet="sh-habit">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="sh-theme" data-act="overlay-close">
+  <div class="sheet" role="dialog" aria-modal="true" aria-label="Appearance">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Appearance</div>
+    <div class="sheet-body">
+      <div class="seg in" id="theme-seg">
+        <button data-act="theme-set" data-mode="auto">Auto</button>
+        <button data-act="theme-set" data-mode="light">Light</button>
+        <button data-act="theme-set" data-mode="dark">Dark</button>
+      </div>
+      <div class="sheet-note">Auto follows your phone. Light and Dark stay as you set them on this phone.</div>
+      <button class="sheet-btn ghost" data-act="close-sheet" data-sheet="sh-theme">Close</button>
     </div>
   </div>
 </div>
@@ -876,6 +942,10 @@ LAST_SIG=canon(S);
 
 const DEF={history:{},catlog:{},hlog:{},focusLog:{},checked:{},todayDate:'',sessions:[],focusTotal:0,journal:[],plan:{},name:'',why:'',avatar:'',onboarded:false};
 
+const AT_RE=/^([01]\d|2[0-3]):[0-5]\d$/;
+function timeGroup(at){const h=+at.slice(0,2);return h<12?'morning':h>=17?'evening':'any';}
+function fmtDur(m){return m<60?m+' min':(m%60?Math.floor(m/60)+' hr '+(m%60)+' min':(m/60)+' hr');}
+function habitWhen(h){return [h.at?fmtTime(h.at):'',h.dur?fmtDur(h.dur):''].filter(Boolean).join(' · ');}
 function normHabit(h){
   if(!h||typeof h!=='object')return null;
   const id=typeof h.id==='string'&&h.id?h.id:null;
@@ -894,6 +964,9 @@ function normHabit(h){
     time:typeof h.time==='string'&&has(TIME_LBL,h.time)?h.time:'any',
     days
   };
+  if(typeof h.at==='string'&&AT_RE.test(h.at))out.at=h.at;
+  const dn=Math.round(Number(h.dur));
+  if(Number.isFinite(dn)&&dn>=1&&dn<=600)out.dur=dn;
   if(h.auto==='journal'||h.auto==='plan')out.auto=h.auto;
   return out;
 }
@@ -1024,6 +1097,7 @@ function goTo(t){
 function openSheet(id){
   if(id==='sh-profile'){$('pf-name').value=S.name||'';$('pf-why').value=S.why||'';}
   if(id==='sh-habits'){SEL_MODE=false;SEL.clear();renderManage();}
+  if(id==='sh-suggest'){PICK.sg.clear();renderPicker('sg');}
   if(id==='sh-account')renderAccount();
   $(id).classList.add('show');
 }
@@ -1079,7 +1153,7 @@ function buildTaskList(){
   }
   let html='';
   TIME_ORDER.forEach(tm=>{
-    const list=all.filter(h=>h.time===tm);
+    const list=all.filter(h=>h.time===tm).map((h,i)=>({h,i})).sort((a,b)=>(a.h.at&&b.h.at?(a.h.at<b.h.at?-1:a.h.at>b.h.at?1:a.i-b.i):a.h.at?-1:b.h.at?1:a.i-b.i)).map(x=>x.h);
     if(!list.length)return;
     const done=list.filter(h=>S.checked[h.id]).length;
     const open=ACC[tm];
@@ -1093,13 +1167,13 @@ function buildTaskList(){
         return '<button class="task-row'+(d?' done':'')+'" data-act="toggle-habit" data-id="'+esc(h.id)+'" aria-pressed="'+d+'">'
           +'<span class="task-chk"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></span>'
           +'<span class="task-info"><span class="task-name">'+esc(h.title)+'</span>'
-          +'<span class="task-sub"><span class="dot cat-'+h.cat+'"></span>'+esc(h.sub||CAT_SHORT[h.cat])+'</span></span>'
+          +'<span class="task-sub"><span class="dot cat-'+h.cat+'"></span>'+esc(habitWhen(h)?habitWhen(h)+(h.sub?' · '+h.sub:''):(h.sub||CAT_SHORT[h.cat]))+'</span></span>'
           +'<span class="tag t-'+h.tier+'">'+TIER_LBL[h.tier]+'</span></button>';
       }).join('')+'</div>';
     }
     html+='</div>';
   });
-  root.innerHTML=html;
+  root.innerHTML=html+'<button class="add-habit" data-act="habit-new">+ Add a habit</button>';
 }
 
 function toggleHabit(id){
@@ -1505,6 +1579,66 @@ function saveReflection(){
   toast(e?'Reflection updated':'Reflection saved');
 }
 
+// ===== HABIT PICKER (new users and suggested habits) =====
+const PICK={ob:new Set(),sg:new Set()};
+function pickList(ctx){
+  if(ctx==='ob')return DEFAULT_HABITS;
+  const have=new Set(S.habits.map(h=>h.id));
+  return DEFAULT_HABITS.filter(h=>!have.has(h.id));
+}
+function renderPicker(ctx){
+  const root=$('pick-'+ctx);
+  const list=pickList(ctx);
+  const ids=new Set(list.map(h=>h.id));
+  [...PICK[ctx]].forEach(id=>{if(!ids.has(id))PICK[ctx].delete(id);});
+  let h='';
+  if(!list.length)h='<div class="empty-note">You already have all the suggested habits.</div>';
+  Object.keys(CATS).forEach(c=>{
+    const g=list.filter(x=>x.cat===c);
+    if(!g.length)return;
+    h+='<div class="sheet-lbl">'+esc(CATS[c])+'</div><div class="mlist">'+g.map(x=>{
+      const when=x.days?' · Training days':'';
+      return '<button class="mrow" data-act="pick-toggle" data-ctx="'+ctx+'" data-id="'+esc(x.id)+'"><span class="sel-chk'+(PICK[ctx].has(x.id)?' on':'')+'"></span><span class="mrow-main"><span class="mrow-t" style="display:block">'+esc(x.title)+'</span><span class="mrow-s" style="display:block">'+esc(TIME_LBL[x.time]+(x.sub?' · '+x.sub:'')+when)+'</span></span><span class="tag t-'+x.tier+'">'+TIER_LBL[x.tier]+'</span></button>';
+    }).join('')+'</div>';
+  });
+  root.innerHTML=h;
+  updatePickUI(ctx);
+}
+function updatePickUI(ctx){
+  const n=PICK[ctx].size;
+  if(ctx==='ob'){
+    const b=$('ob-pick-btn');
+    if(b)b.textContent=n?'Continue with '+n+(n===1?' habit':' habits'):'Continue without habits';
+  }else{
+    const b=$('sg-add');
+    if(b){b.disabled=!n;b.textContent=n?'Add '+n+(n===1?' habit':' habits'):'Add selected';}
+  }
+}
+function pickToggle(el){
+  const ctx=el.dataset.ctx,id=el.dataset.id;
+  if(PICK[ctx].has(id))PICK[ctx].delete(id);else PICK[ctx].add(id);
+  el.querySelector('.sel-chk').classList.toggle('on',PICK[ctx].has(id));
+  updatePickUI(ctx);
+}
+function addSuggested(){
+  const ids=PICK.sg;
+  if(!ids.size)return;
+  const have=new Set(S.habits.map(h=>h.id));
+  let n=0;
+  DEFAULT_HABITS.forEach(d=>{
+    if(ids.has(d.id)&&!have.has(d.id)){const h=normHabit(clone(d));if(h){S.habits.push(h);n++;}}
+  });
+  PICK.sg.clear();
+  recordToday();
+  closeSheet('sh-suggest');
+  renderManage();renderToday();renderFocus();renderProfile();
+  toast(n+(n===1?' habit added':' habits added'));
+}
+function startPicker(){
+  PICK.ob=new Set(DEFAULT_HABITS.filter(h=>h.tier==='core').map(h=>h.id));
+  renderPicker('ob');
+}
+
 // ===== HABITS EDITOR =====
 let EDIT_ID=null;
 
@@ -1517,7 +1651,7 @@ function renderManage(){
     h+='<div class="mlist">'+list.map(x=>{
       const dayTxt=x.days?' · '+x.days.slice().sort((a,b)=>a-b).map(d=>DAYS_S[d]).join(', '):'';
       const chk=SEL_MODE?'<span class="sel-chk'+(SEL.has(x.id)?' on':'')+'"></span>':'';
-      return '<button class="mrow" data-act="'+(SEL_MODE?'sel-toggle':'habit-edit')+'" data-id="'+esc(x.id)+'">'+chk+'<span class="mrow-main"><span class="mrow-t" style="display:block">'+esc(x.title)+'</span><span class="mrow-s" style="display:block">'+esc(TIME_LBL[x.time])+(x.sub?' · '+esc(x.sub):'')+esc(dayTxt)+'</span></span><span class="tag t-'+x.tier+'">'+TIER_LBL[x.tier]+'</span></button>';
+      return '<button class="mrow" data-act="'+(SEL_MODE?'sel-toggle':'habit-edit')+'" data-id="'+esc(x.id)+'">'+chk+'<span class="mrow-main"><span class="mrow-t" style="display:block">'+esc(x.title)+'</span><span class="mrow-s" style="display:block">'+esc(habitWhen(x)||TIME_LBL[x.time])+(x.sub?' · '+esc(x.sub):'')+esc(dayTxt)+'</span></span><span class="tag t-'+x.tier+'">'+TIER_LBL[x.tier]+'</span></button>';
     }).join('')+'</div>';
   });
   $('habits-body').innerHTML=h;
@@ -1559,6 +1693,15 @@ function selDelete(){
 
 function fillSelect(id,obj){$(id).innerHTML=Object.keys(obj).map(k=>'<option value="'+k+'">'+esc(obj[k])+'</option>').join('');}
 
+function setTierUI(t){
+  $('hb-tier').value=t;
+  document.querySelectorAll('#hb-tier-seg button').forEach(b=>b.classList.toggle('on',b.dataset.tier===t));
+}
+function syncAtUI(){
+  const at=$('hb-at').value;
+  if(at&&AT_RE.test(at))$('hb-time').value=timeGroup(at);
+  $('hb-time').disabled=!!(at&&AT_RE.test(at));
+}
 function openHabitEditor(id){
   EDIT_ID=id||null;
   const h=id?S.habits.find(x=>x.id===id):null;
@@ -1567,8 +1710,11 @@ function openHabitEditor(id){
   $('hb-title').value=h?h.title:'';
   $('hb-sub').value=h?h.sub:'';
   $('hb-cat').value=h?h.cat:'faith';
-  $('hb-tier').value=h?h.tier:'standard';
+  setTierUI(h?h.tier:'standard');
+  $('hb-at').value=h&&h.at?h.at:'';
+  $('hb-dur').value=h&&h.dur?h.dur:'';
   $('hb-time').value=h?h.time:'any';
+  syncAtUI();
   const days=h&&h.days?h.days:[0,1,2,3,4,5,6];
   $('hb-days').innerHTML=[1,2,3,4,5,6,0].map(d=>'<button class="day-btn'+(days.includes(d)?' on':'')+'" data-act="day-toggle" data-day="'+d+'">'+DAYS_S[d]+'</button>').join('');
   $('hb-move').classList.toggle('hidden',!h);
@@ -1581,16 +1727,23 @@ function saveHabit(){
   if(!title){toast('Give the habit a name');return;}
   const days=[...document.querySelectorAll('#hb-days .day-btn.on')].map(b=>+b.dataset.day);
   if(!days.length){toast('Pick at least one day');return;}
+  const at=$('hb-at').value;
+  const durRaw=$('hb-dur').value.trim();
+  const dur=durRaw===''?0:Math.round(Number(durRaw));
+  if(durRaw!==''&&!(Number.isFinite(dur)&&dur>=1&&dur<=600)){toast('Duration must be 1 to 600 minutes');return;}
   const data={
+    at:AT_RE.test(at)?at:'',dur:dur>0?dur:0,
     title:title.slice(0,60),
     sub:$('hb-sub').value.trim().slice(0,60),
-    cat:$('hb-cat').value,tier:$('hb-tier').value,time:$('hb-time').value,
+    cat:$('hb-cat').value,tier:$('hb-tier').value,time:AT_RE.test(at)?timeGroup(at):$('hb-time').value,
     days:days.length===7?null:days
   };
   if(EDIT_ID){
     const h=S.habits.find(x=>x.id===EDIT_ID);
     if(!h)return;
     Object.assign(h,data);
+    if(!h.at)delete h.at;
+    if(!h.dur)delete h.dur;
   }else{
     S.habits.push(normHabit(Object.assign({id:newId()},data)));
   }
@@ -1931,6 +2084,21 @@ async function signOut(){
   toast('Signed out');
 }
 
+// ===== APPEARANCE =====
+const THEME_META=[...document.querySelectorAll('meta[name=theme-color]')].map(m=>({m,c:m.getAttribute('content'),media:m.getAttribute('media')}));
+function getTheme(){try{const t=localStorage.getItem('dny-theme');return t==='light'||t==='dark'?t:'auto';}catch(e){return 'auto';}}
+function applyTheme(mode){
+  const root=document.documentElement;
+  if(mode==='light'||mode==='dark')root.setAttribute('data-theme',mode);else root.removeAttribute('data-theme');
+  try{if(mode==='auto')localStorage.removeItem('dny-theme');else localStorage.setItem('dny-theme',mode);}catch(e){}
+  THEME_META.forEach(x=>{
+    if(mode==='auto'){x.m.setAttribute('content',x.c);if(x.media)x.m.setAttribute('media',x.media);}
+    else{x.m.setAttribute('content',mode==='dark'?'#0E1714':'#F7F3EA');x.m.removeAttribute('media');}
+  });
+  document.querySelectorAll('#theme-seg button').forEach(b=>b.classList.toggle('on',b.dataset.mode===mode));
+  setText('theme-sub',{auto:'Auto',light:'Light',dark:'Dark'}[mode]);
+}
+
 // ===== TOAST =====
 function toast(msg){
   const t=$('toast');
@@ -2094,7 +2262,7 @@ async function removePush(){
 
 // ===== ONBOARDING =====
 function obStep(n){
-  for(let i=1;i<=4;i++){const s=$('ob'+i);if(s)s.classList.toggle('active',i===n);}
+  for(let i=1;i<=5;i++){const s=$('ob'+i);if(s)s.classList.toggle('active',i===n);}
   const w=document.querySelector('.ob-wrap');
   if(w)w.scrollTop=0;
 }
@@ -2104,7 +2272,17 @@ const ACTIONS={
   'skip-splash':()=>skipSplash(),
   'goto':el=>goTo(el.dataset.tab),
   'ob-next':el=>obStep(+el.dataset.step),
-  'ob-name':()=>{const v=$('ob-name').value.trim();if(v)S.name=v.slice(0,40);save();obStep(3);},
+  'ob-name':()=>{const v=$('ob-name').value.trim();if(v)S.name=v.slice(0,40);save();startPicker();obStep(5);},
+  'pick-toggle':pickToggle,
+  'pick-all':el=>{const c=el.dataset.ctx;pickList(c).forEach(h=>PICK[c].add(h.id));renderPicker(c);},
+  'pick-none':el=>{const c=el.dataset.ctx;PICK[c].clear();renderPicker(c);},
+  'sg-add':addSuggested,
+  'ob-pick':()=>{
+    S.habits=DEFAULT_HABITS.filter(h=>PICK.ob.has(h.id)).map(h=>normHabit(clone(h))).filter(Boolean);
+    S.checked={};
+    save();
+    obStep(S.habits.some(h=>h.id==='workout')?3:4);
+  },
   'ob-day':el=>el.classList.toggle('on'),
   'ob-days':()=>{
     const d=[...document.querySelectorAll('#ob-days .ob-day.on')].map(b=>+b.dataset.day);
@@ -2139,6 +2317,9 @@ const ACTIONS={
   'habit-new':()=>openHabitEditor(null),
   'habit-edit':el=>openHabitEditor(el.dataset.id),
   'habit-save':saveHabit,
+  'tier-pick':el=>setTierUI(el.dataset.tier),
+  'at-clear':()=>{$('hb-at').value='';syncAtUI();},
+  'theme-set':el=>applyTheme(el.dataset.mode),
   'habit-delete':deleteHabit,
   'habit-move':el=>moveHabit(+el.dataset.dir),
   'day-toggle':el=>el.classList.toggle('on'),
@@ -2194,6 +2375,7 @@ document.addEventListener('click',e=>{
 });
 $('avatar-file-input').addEventListener('change',e=>onAvatar(e.target));
 $('import-file').addEventListener('change',e=>importBackup(e.target));
+$('hb-at').addEventListener('input',syncAtUI);
 document.querySelectorAll('[data-notif-time]').forEach(inp=>{
   inp.addEventListener('change',()=>{
     const key=inp.dataset.notifTime;
@@ -2226,6 +2408,7 @@ function initApp(){
   updateTimer();
   renderToday();renderFocus();renderPlan();renderProgress();renderProfile();
   loadNotifPrefs();
+  applyTheme(getTheme());
   SYNC_READY=true;
   renderAccount();
   syncNow();
