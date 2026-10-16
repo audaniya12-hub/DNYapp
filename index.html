@@ -448,6 +448,61 @@ input,select,textarea{font:inherit;color:inherit}
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
   :root{--glass:var(--s1);--glass-2:var(--s2);--glass-nav:var(--s1);--glass-sheet:var(--s1)}
 }
+
+/* ===== TODAY: next up, row options, tools ===== */
+.next-card{margin:14px 18px 0;padding:15px 16px}
+.next-lbl{font-size:11px;font-weight:600;letter-spacing:.08em;color:var(--accent);text-transform:uppercase}
+.next-name{font-family:'Lora',Georgia,serif;font-size:19px;font-weight:600;margin-top:4px;overflow-wrap:anywhere}
+.next-sub{font-size:12px;color:var(--t2);margin-top:3px;overflow-wrap:anywhere}
+.next-btns{display:flex;gap:8px;margin-top:12px}
+.next-done{flex:1;min-height:44px;border-radius:var(--r-sm);background:var(--accent);color:var(--accent-ink);font-size:14px;font-weight:600}
+.next-more{min-height:44px;padding:0 16px;border-radius:var(--r-sm);background:var(--s3);color:var(--t2);font-size:13px;font-weight:600}
+.next-ok{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--t2)}
+.next-ok .ic{width:20px;height:20px;color:var(--ok);flex-shrink:0}
+.next-ok b{display:block;color:var(--t1);font-size:15px;font-weight:600}
+.task-line{display:flex;align-items:stretch;border-top:1px solid var(--line)}
+.task-line:first-child{border-top:none}
+.task-line .task-row{flex:1;width:auto;min-width:0;border-top:none}
+.task-more{width:44px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:var(--t3)}
+.task-more .ic{width:18px;height:18px}
+.task-more:active{background:var(--s2)}
+.task-row.small .task-chk{border-color:var(--accent);background:linear-gradient(90deg,var(--accent) 50%,transparent 50%)}
+.task-row.skip{opacity:.6}
+.task-row.skip .task-name{font-style:italic}
+.task-row.skip .task-chk{border-style:dashed}
+.tag.t-small{background:var(--accent-dim);color:var(--accent)}
+.tag.t-skip{background:var(--s3);color:var(--t3)}
+.tool-btn{display:flex;align-items:center;gap:10px;width:calc(100% - 36px);margin:12px 18px 0;padding:0 14px;min-height:48px;border-radius:var(--r);background:var(--glass);border:1px solid var(--glass-brd);color:var(--t1);font-size:14px;font-weight:500;text-align:left}
+.tool-btn .ic{width:18px;height:18px;color:var(--accent);flex-shrink:0}
+.tool-btn span{flex:1}
+.tool-btn small{font-size:12px;color:var(--t3);font-weight:400}
+.tool-btn.quiet{background:transparent;border-style:dashed;color:var(--t2)}
+.ref-card.due{border-color:var(--accent-line);background:var(--accent-dim)}
+
+/* ===== PROGRESS: recover, streaks, month view ===== */
+.hm-head{margin-bottom:10px}
+.hm-cell{display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:var(--t2);min-height:34px;aspect-ratio:auto;border-radius:8px}
+.hm-cell.hm-future{color:var(--t3);opacity:.45;background:transparent}
+.hm-cell.hm-none{background:transparent;border:1px solid var(--line);color:var(--t3)}
+.hm-cell.hm-off{background:transparent;border:1.5px dashed var(--accent-line);color:var(--accent)}
+.hm-3,.hm-4{color:var(--accent-ink)}
+.hm-1,.hm-2{color:var(--t1)}
+.recover{margin:14px 18px 0;padding:14px}
+.recover-t{font-size:14px;font-weight:600}
+.recover-s{font-size:12px;color:var(--t2);margin-top:3px;line-height:1.5}
+.rec-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line);margin-top:8px}
+.rec-row span{flex:1;font-size:13px}
+.rec-btn{min-height:40px;padding:0 14px;border-radius:var(--r-sm);background:var(--accent-dim);color:var(--accent);font-size:13px;font-weight:600;border:1px solid var(--accent-line)}
+.hs-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line)}
+.hs-row:first-of-type{border-top:none}
+.hs-name{flex:1;min-width:0;font-size:13px;overflow-wrap:anywhere}
+.hs-v{font-size:12px;color:var(--t2);text-align:right;white-space:nowrap}
+.hs-v b{color:var(--t1);font-weight:600}
+.rep-hl{display:flex;gap:8px;margin:12px 0 2px}
+.rep-hl>div{flex:1;min-width:0;background:var(--s2);border:1px solid var(--line);border-radius:var(--r-sm);padding:10px 11px}
+.rep-hl .l{font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+.rep-hl .n{font-size:13px;font-weight:600;margin-top:3px;overflow-wrap:anywhere}
+.rep-hl .d{font-size:11px;color:var(--t2);margin-top:1px}
 </style>
 </head>
 <body>
@@ -568,17 +623,20 @@ input,select,textarea{font:inherit;color:inherit}
         </div>
       </div>
 
+      <div id="missed-y"></div>
+      <div id="next-up"></div>
       <div class="chips" id="chips"></div>
       <div id="why-today"></div>
       <div id="task-root"></div>
+      <div id="today-tools"></div>
 
-      <div class="card ref-card">
+      <div class="card ref-card" id="ref-card">
         <div class="ref-top">
           <div class="ref-title">Evening reflection</div>
           <div class="ref-status" id="ref-status">Pending</div>
         </div>
-        <div class="ref-desc">Look back on your day. Saving a reflection checks your journal habit for you.</div>
-        <button class="ref-btn" data-act="goto" data-tab="plan">Open reflection</button>
+        <div class="ref-desc" id="ref-desc">Look back on your day. Saving a reflection checks your journal habit for you.</div>
+        <button class="ref-btn" id="ref-btn" data-act="goto" data-tab="plan">Open reflection</button>
       </div>
       <div class="gap"></div>
     </div>
@@ -587,6 +645,7 @@ input,select,textarea{font:inherit;color:inherit}
     <div class="screen" id="s-progress">
       <div class="topbar"><div class="topbar-title">Progress</div></div>
       <div class="stats-grid" id="stat-tiles"></div>
+      <div id="recover"></div>
 
       <div class="gap"></div>
       <div class="sec-lbl">Report</div>
@@ -622,10 +681,20 @@ input,select,textarea{font:inherit;color:inherit}
       </div>
 
       <div class="gap"></div>
-      <div class="sec-lbl">Last 4 weeks</div>
+      <div class="sec-lbl">Habit streaks</div>
+      <div class="card rep-card" id="hstreaks"></div>
+
+      <div class="gap"></div>
+      <div class="sec-lbl">Month view</div>
       <div class="heatmap">
-        <div class="hm-days"><div class="hm-day">S</div><div class="hm-day">M</div><div class="hm-day">T</div><div class="hm-day">W</div><div class="hm-day">T</div><div class="hm-day">F</div><div class="hm-day">S</div></div>
+        <div class="rep-head hm-head">
+          <button class="rep-nav" id="hm-prev" data-act="hm-nav" data-d="-1" aria-label="Earlier month">‹</button>
+          <div class="rep-title" id="hm-title"></div>
+          <button class="rep-nav" id="hm-next" data-act="hm-nav" data-d="1" aria-label="Later month">›</button>
+        </div>
+        <div class="hm-days"><div class="hm-day">M</div><div class="hm-day">T</div><div class="hm-day">W</div><div class="hm-day">T</div><div class="hm-day">F</div><div class="hm-day">S</div><div class="hm-day">S</div></div>
         <div class="hm-grid" id="hm-grid"></div>
+        <div class="rep-note" id="hm-note"></div>
       </div>
 
       <div class="gap"></div>
@@ -728,6 +797,7 @@ input,select,textarea{font:inherit;color:inherit}
         <button class="settings-row" data-act="open-sheet" data-sheet="sh-profile"><div class="settings-ic"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><div class="settings-lbl">Name and my why</div><div class="settings-arr">›</div></button>
         <button class="settings-row" data-act="open-sheet" data-sheet="sh-theme"><div class="settings-ic"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></svg></div><div class="settings-lbl">Appearance<span id="theme-sub" style="display:block;font-size:11px;color:var(--t3);margin-top:1px">Auto</span></div><div class="settings-arr">›</div></button>
         <button class="settings-row" data-act="open-sheet" data-sheet="sh-notif"><div class="settings-ic"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div><div class="settings-lbl">Reminders</div><div class="settings-arr">›</div></button>
+        <button class="settings-row" data-act="open-sheet" data-sheet="sh-rest"><div class="settings-ic"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></div><div class="settings-lbl">Rest days<span id="rest-sub" style="display:block;font-size:11px;color:var(--t3);margin-top:1px">None</span></div><div class="settings-arr">›</div></button>
       </div>
       <div class="gap"></div>
       <div class="settings-g-lbl">Your data</div>
@@ -839,6 +909,9 @@ input,select,textarea{font:inherit;color:inherit}
         <button data-act="tier-pick" data-tier="bonus">Extra</button>
       </div>
       <select id="hb-tier" class="hidden" aria-hidden="true" tabindex="-1"></select>
+      <label class="sheet-lbl" for="hb-easy">Small version (optional)</label>
+      <input class="sheet-input" id="hb-easy" maxlength="60" placeholder="e.g. Read for 2 minutes"/>
+      <div class="sheet-note">A smaller task for hard days. It earns half credit and keeps your streak. Your full habit stays as the target.</div>
       <label class="sheet-lbl" for="hb-at">Start time (optional)</label>
       <div class="timerow"><input class="sheet-input" type="time" id="hb-at"/><button class="clr" type="button" data-act="at-clear">Clear</button></div>
       <label class="sheet-lbl" for="hb-dur">Duration in minutes (optional)</label>
@@ -897,6 +970,34 @@ input,select,textarea{font:inherit;color:inherit}
         <div class="notif-time"><label for="notif-evening-time">Time</label><input type="time" id="notif-evening-time" value="20:00" data-notif-time="evening"/></div>
       </div>
       <button class="sheet-btn" data-act="notif-save">Save and close</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="sh-hact" data-act="overlay-close">
+  <div class="sheet" role="dialog" aria-modal="true" aria-label="Habit options">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="ha-title">Habit</div>
+    <div class="sheet-body">
+      <div class="info-box" id="ha-info"></div>
+      <button class="sheet-btn" data-act="ha-done">Mark as done</button>
+      <button class="sheet-btn soft" id="ha-small" data-act="ha-small">Do the small version (half credit)</button>
+      <button class="sheet-btn soft" data-act="ha-skip">Skip today for a valid reason</button>
+      <button class="sheet-btn ghost" id="ha-clear" data-act="ha-clear">Clear today's mark</button>
+      <button class="sheet-btn ghost" data-act="ha-edit">Edit habit</button>
+      <div class="sheet-note">A skipped habit does not count against your score. Your streak stays safe.</div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="sh-rest" data-act="overlay-close">
+  <div class="sheet" role="dialog" aria-modal="true" aria-label="Rest days">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Rest days</div>
+    <div class="sheet-body">
+      <div class="day-grid" id="rest-days"></div>
+      <div class="sheet-note">A rest day never breaks your streak and never shows as missed. If you still do habits on a rest day, they count as normal. You can also take a single day off from the Today screen.</div>
+      <button class="sheet-btn ghost" data-act="close-sheet" data-sheet="sh-rest">Close</button>
     </div>
   </div>
 </div>
@@ -979,6 +1080,7 @@ const DEFAULT_HABITS=[
 
 // ===== ICONS =====
 const ICONS={"flame": "<path d=\"M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5z\"/>", "pencil": "<path d=\"M12 20h9\"/><path d=\"M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z\"/>", "user": "<path d=\"M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2\"/><circle cx=\"12\" cy=\"7\" r=\"4\"/>", "contrast": "<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M12 3a9 9 0 0 1 0 18z\" fill=\"currentColor\"/>", "bell": "<path d=\"M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9\"/><path d=\"M13.73 21a2 2 0 0 1-3.46 0\"/>", "trash": "<path d=\"M3 6h18\"/><path d=\"M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6\"/><path d=\"M10 11v6\"/><path d=\"M14 11v6\"/><path d=\"M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2\"/>", "cloud": "<path d=\"M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z\"/>", "swap": "<path d=\"M7 4v16\"/><path d=\"M3 8l4-4 4 4\"/><path d=\"M17 20V4\"/><path d=\"M13 16l4 4 4-4\"/>", "chev": "<path d=\"M6 9l6 6 6-6\"/>", "leaf": "<path d=\"M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z\"/><path d=\"M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12\"/>", "calendar": "<rect x=\"3\" y=\"4\" width=\"18\" height=\"18\" rx=\"2\"/><path d=\"M16 2v4\"/><path d=\"M8 2v4\"/><path d=\"M3 10h18\"/>", "moon": "<path d=\"M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z\"/>", "checkc": "<path d=\"M22 11.08V12a10 10 0 1 1-5.93-9.14\"/><path d=\"M22 4L12 14.01l-3-3\"/>", "book": "<path d=\"M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z\"/><path d=\"M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z\"/>", "hourglass": "<path d=\"M5 22h14\"/><path d=\"M5 2h14\"/><path d=\"M17 22v-4.17a2 2 0 0 0-.59-1.41L12 12l-4.41 4.42A2 2 0 0 0 7 17.83V22\"/><path d=\"M7 2v4.17a2 2 0 0 0 .59 1.41L12 12l4.41-4.42A2 2 0 0 0 17 6.17V2\"/>", "star": "<path d=\"M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z\"/>", "bolt": "<path d=\"M22 12h-4l-3 9L9 3l-3 9H2\"/>"};
+ICONS.more='<circle cx="5" cy="12" r="1.4" fill="currentColor"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/><circle cx="19" cy="12" r="1.4" fill="currentColor"/>';
 function ico(n){return '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">'+ICONS[n]+'</svg>';}
 
 // ===== SMALL HELPERS =====
@@ -1024,7 +1126,7 @@ function load(){
 let S=load();
 LAST_SIG=canon(S);
 
-const DEF={history:{},catlog:{},hlog:{},focusLog:{},checked:{},todayDate:'',sessions:[],focusTotal:0,journal:[],plan:{},name:'',why:'',avatar:'',onboarded:false};
+const DEF={history:{},catlog:{},hlog:{},focusLog:{},checked:{},partial:{},skipped:{},off:{},offDays:[],todayDate:'',sessions:[],focusTotal:0,journal:[],plan:{},name:'',why:'',avatar:'',onboarded:false};
 
 const AT_RE=/^([01]\d|2[0-3]):[0-5]\d$/;
 function timeGroup(at){const h=+at.slice(0,2);return h<12?'morning':h>=17?'evening':'any';}
@@ -1052,6 +1154,7 @@ function normHabit(h){
   const dn=Math.round(Number(h.dur));
   if(Number.isFinite(dn)&&dn>=1&&dn<=600)out.dur=dn;
   if(h.auto==='journal'||h.auto==='plan')out.auto=h.auto;
+  if(typeof h.easy==='string'&&h.easy.trim())out.easy=h.easy.trim().slice(0,60);
   return out;
 }
 
@@ -1067,6 +1170,14 @@ function migrate(){
     if(w&&oldWorkoutDays&&oldWorkoutDays.length)w.days=oldWorkoutDays.slice();
   }
   S.habits=S.habits.map(normHabit).filter(Boolean);
+  ['checked','partial','skipped'].forEach(m=>{
+    Object.keys(S[m]).forEach(id=>{if(!S[m][id])delete S[m][id];});
+  });
+  Object.keys(S.partial).concat(Object.keys(S.skipped)).forEach(id=>{if(S.checked[id])delete S.checked[id];});
+  Object.keys(S.skipped).forEach(id=>{delete S.partial[id];});
+  Object.keys(S.off).forEach(k=>{if(!/^\d{4}-\d{2}-\d{2}$/.test(k)||!S.off[k])delete S.off[k];else S.off[k]=S.off[k]===2?2:1;});
+  S.offDays=[...new Set(S.offDays.map(Number).filter(n=>Number.isInteger(n)&&n>=0&&n<=6))];
+  if(S.offDays.length>=7)S.offDays=[];
   if((S.reflectionGood||S.reflectionDiff)&&!S.journal.length){
     S.journal.push({date:S.todayDate||TODAY_KEY,good:String(S.reflectionGood||''),diff:String(S.reflectionDiff||'')});
   }
@@ -1088,34 +1199,71 @@ function activeHabits(key){
   });
 }
 
-function dayStats(key,checked){
-  let req=0,earn=0,reqN=0,reqDone=0,exN=0,exDone=0;
+// One day's numbers. Reads today's marks from S (done, small version, skipped).
+// A small version earns half credit. A skipped habit leaves the day's score and keeps the streak.
+function habitMark(id){
+  if(S.skipped[id])return 'skip';
+  if(S.checked[id])return 'done';
+  if(S.partial[id])return 'small';
+  return '';
+}
+function dayStats(key){
+  let req=0,earn=0,reqN=0,reqDone=0,exN=0,exDone=0,skipN=0,smallN=0;
   const cats={};
   activeHabits(key).forEach(h=>{
-    const done=!!checked[h.id];
-    if(h.tier==='bonus'){exN++;if(done)exDone++;return;}
+    const m=habitMark(h.id);
+    if(m==='skip'){if(h.tier!=='bonus')skipN++;return;}
+    const ok=m==='done'||m==='small';
+    if(h.tier==='bonus'){exN++;if(ok)exDone++;return;}
     const w=WEIGHT[h.tier];
     req+=w;reqN++;
-    if(done){earn+=w;reqDone++;}
+    if(m==='done'){earn+=w;reqDone++;}
+    else if(m==='small'){earn+=w/2;reqDone++;smallN++;}
     const c=cats[h.cat]||(cats[h.cat]=[0,0]);
-    c[1]++;if(done)c[0]++;
+    c[1]++;if(ok)c[0]++;
   });
   const score=req?Math.round(earn/req*100):0;
-  return {score,cats,reqN,reqDone,exN,exDone};
+  return {score,cats,reqN,reqDone,exN,exDone,skipN,smallN,rest:reqN===0};
 }
 
-// Per-habit record for one day: 1 = done, 0 = due but not done. Extra habits are left out.
-function habitLog(key,checked){
+// Per-habit record for one day: 1 done, 2 small version, 3 skipped, 0 due but not done.
+function habitLog(key){
   const out={};
-  activeHabits(key).forEach(h=>{if(h.tier!=='bonus')out[h.id]=checked[h.id]?1:0;});
+  activeHabits(key).forEach(h=>{
+    const m=habitMark(h.id);
+    out[h.id]=m==='done'?1:m==='small'?2:m==='skip'?3:0;
+  });
   return out;
 }
 
+// A day off: you marked it, it repeats weekly, or nothing was planned. It never breaks a streak.
+function isRest(k){
+  if(S.history[k]!=null)return false;
+  return !!S.off[k]||S.offDays.includes(parseKey(k).getDay());
+}
+function isOffDay(k){return !!S.off[k]||S.offDays.includes(parseKey(k).getDay());}
+
+// Saves the numbers for one day. Rest days leave no score so they do not count as missed.
+function commitDay(key){
+  const st=dayStats(key);
+  const restDay=st.rest||(isOffDay(key)&&st.reqDone===0);
+  if(st.rest){if(!S.off[key])S.off[key]=2;}
+  else if(S.off[key]===2)delete S.off[key];
+  if(restDay)delete S.history[key];else S.history[key]=st.score;
+  S.catlog[key]=st.cats;
+  S.hlog[key]=habitLog(key);
+  return st;
+}
+
+function setMark(id,mode){
+  delete S.checked[id];delete S.partial[id];delete S.skipped[id];
+  if(mode==='done')S.checked[id]=true;
+  else if(mode==='small')S.partial[id]=true;
+  else if(mode==='skip')S.skipped[id]=true;
+}
+
 function recordToday(){
-  const st=dayStats(TODAY_KEY,S.checked);
-  S.history[TODAY_KEY]=st.score;
-  S.catlog[TODAY_KEY]=st.cats;
-  S.hlog[TODAY_KEY]=habitLog(TODAY_KEY,S.checked);
+  const st=commitDay(TODAY_KEY);
   S.todayDate=TODAY_KEY;
   save();
   return st;
@@ -1123,13 +1271,10 @@ function recordToday(){
 
 function rollover(){
   const prev=S.todayDate;
-  const st=dayStats(prev,S.checked);
-  S.history[prev]=st.score;
-  S.catlog[prev]=st.cats;
-  S.hlog[prev]=habitLog(prev,S.checked);
+  commitDay(prev);
   const gap=daysBetween(prev,TODAY_KEY);
-  for(let i=1;i<gap;i++){const k=addDays(prev,i);if(S.history[k]==null)S.history[k]=0;}
-  S.checked={};S.sessions=[];
+  for(let i=1;i<gap;i++){const k=addDays(prev,i);if(S.history[k]==null&&!isOffDay(k))S.history[k]=0;}
+  S.checked={};S.partial={};S.skipped={};S.sessions=[];
   Object.keys(S.plan).forEach(k=>{if(k<prev)delete S.plan[k];});
 }
 if(S.todayDate&&S.todayDate<TODAY_KEY)rollover();
@@ -1137,18 +1282,28 @@ S.todayDate=TODAY_KEY;
 save();
 
 function calcStreaks(){
-  let cur=0;
-  let d=TODAY_KEY;
-  if(!(S.history[d]>0))d=addDays(d,-1);
-  while(S.history[d]>0){cur++;d=addDays(d,-1);}
+  const keys=Object.keys(S.history).sort();
+  const first=keys[0]||TODAY_KEY;
+  let cur=0,d=TODAY_KEY;
+  if(!(S.history[d]>0)&&!isRest(d))d=addDays(d,-1);
+  while(d>=first){
+    if(S.history[d]>0)cur++;
+    else if(!isRest(d))break;
+    d=addDays(d,-1);
+  }
   let best=0,run=0,prev=null;
-  Object.keys(S.history).sort().forEach(k=>{
+  keys.forEach(k=>{
     if(S.history[k]>0){
-      run=(prev&&daysBetween(prev,k)===1)?run+1:1;
+      run=(prev&&bridged(prev,k))?run+1:1;
       prev=k;if(run>best)best=run;
     }else{run=0;prev=null;}
   });
   return {cur,best:Math.max(best,cur)};
+}
+// True when every day between a and b is a day off.
+function bridged(a,b){
+  for(let x=addDays(a,1);x<b;x=addDays(x,1))if(!isRest(x))return false;
+  return true;
 }
 
 function catRun(cat){
@@ -1183,6 +1338,7 @@ function openSheet(id){
   if(id==='sh-habits'){SEL_MODE=false;SEL.clear();renderManage();}
   if(id==='sh-suggest'){PICK.sg.clear();renderPicker('sg');}
   if(id==='sh-account')renderAccount();
+  if(id==='sh-rest')renderRestDays();
   $(id).classList.add('show');
 }
 function closeSheet(id){$(id).classList.remove('show');}
@@ -1197,16 +1353,23 @@ function renderToday(){
   setText('today-gr',(hr<12?'Good morning':hr<17?'Good afternoon':'Good evening')+(first?', '+first:''));
   setText('today-dt',now.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'}));
 
-  const st=dayStats(TODAY_KEY,S.checked);
+  const st=dayStats(TODAY_KEY);
   setText('streak-n',calcStreaks().cur);
   setText('ring-pct',st.score+'%');
   $('ring-fill').style.strokeDashoffset=String(175-(175*st.score/100));
-  setText('hero-main',st.reqN?st.reqDone+' of '+st.reqN+' habits done':'No habits today');
+  const resting=isOffDay(TODAY_KEY)&&st.reqDone===0;
+  setText('hero-main',resting?'Day off':st.reqN?st.reqDone+' of '+st.reqN+' habits done':'No habits today');
   const sub=[];
-  if(st.reqN&&st.reqDone===st.reqN)sub.push('Everything done for today.');
+  if(resting)sub.push('Nothing counts against you today. Anything you do still counts.');
+  else if(st.reqN&&st.reqDone===st.reqN)sub.push('Everything done for today.');
   else sub.push('One habit at a time.');
-  if(st.exN)sub.push(st.exDone+' of '+st.exN+' extra');
+  if(!resting&&st.exN)sub.push(st.exDone+' of '+st.exN+' extra.');
+  if(st.skipN)sub.push(st.skipN+' skipped.');
+  if(st.smallN)sub.push(st.smallN+' small '+(st.smallN===1?'version':'versions')+'.');
   setText('hero-sub',sub.join(' '));
+  renderNextUp(st,resting,hr);
+  renderMissedYesterday();
+  renderTodayTools();
 
   // area filter chips
   const chips=[['all','All']].concat(Object.keys(CATS).map(c=>[c,CAT_SHORT[c]]));
@@ -1222,6 +1385,10 @@ function renderToday(){
   const rs=$('ref-status');
   rs.textContent=done?'Done':'Pending';
   rs.classList.toggle('done',done);
+  const evening=hr>=18&&!done;
+  $('ref-card').classList.toggle('due',evening);
+  setText('ref-desc',done?'You wrote a reflection today. You can edit it any time.':evening?'The day is nearly done. Take two minutes to look back. Saving it checks your journal habit for you.':'Look back on your day. Saving a reflection checks your journal habit for you.');
+  setText('ref-btn',done?'Edit reflection':evening?'Write today\'s reflection':'Open reflection');
 }
 
 function buildTaskList(){
@@ -1239,20 +1406,27 @@ function buildTaskList(){
   TIME_ORDER.forEach(tm=>{
     const list=all.filter(h=>h.time===tm).map((h,i)=>({h,i})).sort((a,b)=>(a.h.at&&b.h.at?(a.h.at<b.h.at?-1:a.h.at>b.h.at?1:a.i-b.i):a.h.at?-1:b.h.at?1:a.i-b.i)).map(x=>x.h);
     if(!list.length)return;
-    const done=list.filter(h=>S.checked[h.id]).length;
+    const counted=list.filter(h=>habitMark(h.id)!=='skip');
+    const done=counted.filter(h=>habitMark(h.id)).length;
     const open=ACC[tm];
     html+='<div class="acc-section"><button class="acc-header'+(open?' open':'')+'" data-act="acc-toggle" data-block="'+tm+'">'
       +'<span class="acc-label">'+TIME_LBL[tm]+'</span>'
-      +'<span class="acc-count'+(done===list.length?' complete':'')+'">'+done+'/'+list.length+'</span>'
+      +'<span class="acc-count'+(counted.length&&done===counted.length?' complete':'')+'">'+done+'/'+counted.length+'</span>'
       +'<span class="acc-arrow">'+ico('chev')+'</span></button>';
     if(open){
       html+='<div class="acc-body">'+list.map(h=>{
-        const d=!!S.checked[h.id];
-        return '<button class="task-row'+(d?' done':'')+'" data-act="toggle-habit" data-id="'+esc(h.id)+'" aria-pressed="'+d+'">'
+        const m=habitMark(h.id),d=m==='done';
+        const when=habitWhen(h);
+        let sub=when?when+(h.sub?' · '+h.sub:''):(h.sub||CAT_SHORT[h.cat]);
+        let tag='<span class="tag t-'+h.tier+'">'+TIER_LBL[h.tier]+'</span>';
+        if(m==='small'){sub='Small: '+(h.easy||'done')+' · Full: '+(h.sub||h.title);tag='<span class="tag t-small">Small version</span>';}
+        else if(m==='skip'){sub='Skipped today';tag='<span class="tag t-skip">Skipped</span>';}
+        return '<div class="task-line"><button class="task-row'+(d?' done':m?' '+m:'')+'" data-act="toggle-habit" data-id="'+esc(h.id)+'" aria-pressed="'+(m==='done'||m==='small')+'">'
           +'<span class="task-chk"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></span>'
           +'<span class="task-info"><span class="task-name">'+esc(h.title)+'</span>'
-          +'<span class="task-sub"><span class="dot cat-'+h.cat+'"></span>'+esc(habitWhen(h)?habitWhen(h)+(h.sub?' · '+h.sub:''):(h.sub||CAT_SHORT[h.cat]))+'</span></span>'
-          +'<span class="tag t-'+h.tier+'">'+TIER_LBL[h.tier]+'</span></button>';
+          +'<span class="task-sub"><span class="dot cat-'+h.cat+'"></span>'+esc(sub)+'</span></span>'
+          +tag+'</button>'
+          +'<button class="task-more" data-act="habit-actions" data-id="'+esc(h.id)+'" aria-label="Options for '+esc(h.title)+'">'+ico('more')+'</button></div>';
       }).join('')+'</div>';
     }
     html+='</div>';
@@ -1260,11 +1434,90 @@ function buildTaskList(){
   root.innerHTML=html+'<button class="add-habit" data-act="habit-new">+ Add a habit</button>';
 }
 
+// The one habit to do next: Essential first, then Regular, then Extra. Habits for the current part of the day come first.
+function pickNext(hr){
+  const cur=hr<12?'morning':hr<17?'any':'evening';
+  const ci=TIME_ORDER.indexOf(cur);
+  const tierRank={core:0,standard:1,bonus:2};
+  const list=activeHabits(TODAY_KEY).map((h,i)=>({h,i})).filter(x=>!habitMark(x.h.id));
+  const rank=x=>{
+    const gi=TIME_ORDER.indexOf(x.h.time);
+    return [x.h.tier==='bonus'?1:0,gi===ci?0:gi<ci?1:2,tierRank[x.h.tier],x.h.at||'99:99',x.i];
+  };
+  list.sort((a,b)=>{const ra=rank(a),rb=rank(b);for(let k=0;k<ra.length;k++){if(ra[k]<rb[k])return -1;if(ra[k]>rb[k])return 1;}return 0;});
+  return list.length?list[0].h:null;
+}
+function renderNextUp(st,resting,hr){
+  const el=$('next-up');
+  if(!S.habits.length){el.innerHTML='';return;}
+  if(resting){
+    el.innerHTML='<div class="card next-card"><div class="next-ok">'+ico('moon')+'<span><b>Rest day</b>Enjoy it. Your streak is safe.</span></div></div>';
+    return;
+  }
+  const h=pickNext(hr);
+  if(!h){
+    el.innerHTML=st.reqN||st.exN?'<div class="card next-card"><div class="next-ok">'+ico('checkc')+'<span><b>All done for today</b>Well done. Rest well.</span></div></div>':'';
+    return;
+  }
+  const when=habitWhen(h);
+  el.innerHTML='<div class="card next-card"><div class="next-lbl">Next up</div>'
+    +'<div class="next-name">'+esc(h.title)+'</div>'
+    +'<div class="next-sub">'+esc([when,h.sub].filter(Boolean).join(' · ')||CAT_SHORT[h.cat])+'</div>'
+    +'<div class="next-btns"><button class="next-done" data-act="toggle-habit" data-id="'+esc(h.id)+'">Done</button>'
+    +'<button class="next-more" data-act="habit-actions" data-id="'+esc(h.id)+'">Options</button></div></div>';
+}
+function renderMissedYesterday(){
+  const y=addDays(TODAY_KEY,-1),y2=addDays(TODAY_KEY,-2);
+  const show=S.history[y]===0&&!isOffDay(y)&&S.history[y2]>0;
+  $('missed-y').innerHTML=show?'<div class="card recover"><div class="recover-t">Yesterday was missed</div><div class="recover-s">Was it a real day off? Mark it and your streak keeps going. Your history stays.</div><div class="rec-row"><span>'+esc(dayLabel(y))+'</span><button class="rec-btn" data-act="mark-off" data-k="'+y+'">Mark as day off</button></div></div>':'';
+}
+function renderTodayTools(){
+  const off=!!S.off[TODAY_KEY]&&S.off[TODAY_KEY]!==2;
+  const el=$('today-tools');
+  el.innerHTML='<button class="tool-btn" data-act="goto" data-tab="focus">'+ico('hourglass')+'<span>Focus timer<br><small>Start a focus session</small></span></button>'
+    +(S.habits.length?'<button class="tool-btn quiet" data-act="day-off">'+ico('moon')+'<span>'+(off?'Today is a day off. Undo':'Take today off')+'</span></button>':'');
+}
+let HA_ID=null;
+function openHabitActions(id){
+  const h=S.habits.find(x=>x.id===id);
+  if(!h)return;
+  HA_ID=id;
+  setText('ha-title',h.title);
+  const m=habitMark(id);
+  const full=[h.sub,habitWhen(h)].filter(Boolean).join(' · ');
+  $('ha-info').innerHTML='<b>Full habit:</b> '+esc(h.title+(full?' ('+full+')':''))+(h.easy?'<br><b>Small version:</b> '+esc(h.easy):'<br>No small version set. Add one in Edit habit.');
+  $('ha-small').classList.toggle('hidden',!h.easy);
+  $('ha-clear').classList.toggle('hidden',!m);
+  openSheet('sh-hact');
+}
+function haApply(mode,msg){
+  if(!HA_ID)return;
+  setMark(HA_ID,mode);
+  recordToday();
+  closeSheet('sh-hact');
+  renderToday();renderFocus();
+  if(msg)toast(msg);
+}
+function dayOffToggle(){
+  if(S.off[TODAY_KEY]&&S.off[TODAY_KEY]!==2)delete S.off[TODAY_KEY];
+  else S.off[TODAY_KEY]=1;
+  recordToday();
+  renderToday();renderProfile();
+  toast(S.off[TODAY_KEY]?'Today is a day off':'Day off removed');
+}
+function renderRestDays(){
+  $('rest-days').innerHTML=[1,2,3,4,5,6,0].map(d=>'<button class="day-btn'+(S.offDays.includes(d)?' on':'')+'" data-act="rest-day" data-day="'+d+'" aria-pressed="'+S.offDays.includes(d)+'">'+DAYS_S[d]+'</button>').join('');
+}
+function restSubText(){
+  if(!S.offDays.length)return 'None';
+  return S.offDays.slice().sort((a,b)=>((a+6)%7)-((b+6)%7)).map(d=>DAYS_S[d]).join(', ');
+}
+
 function toggleHabit(id){
   if(!S.habits.some(h=>h.id===id))return;
-  const before=dayStats(TODAY_KEY,S.checked).score;
-  S.checked[id]=!S.checked[id];
-  if(!S.checked[id])delete S.checked[id];
+  const before=dayStats(TODAY_KEY).score;
+  const m=habitMark(id);
+  setMark(id,m==='done'||m==='skip'?'':'done');
   const st=recordToday();
   renderToday();
   if(st.score===100&&before<100&&st.reqN>0)toast('Everything done for today. Well done.');
@@ -1291,9 +1544,11 @@ function renderProgress(){
     [focus7?fmtMins(focus7):'0 min','Focus, last 7 days','var(--t1)']
   ];
   $('stat-tiles').innerHTML=tiles.map(t=>'<div class="stat-c"><div class="stat-v" style="color:'+t[2]+'">'+esc(t[0])+'</div><div class="stat-l">'+esc(t[1])+'</div></div>').join('');
+  renderRecover();
   renderReport();
   renderChart();
   renderAreas();
+  renderHabitStreaks();
   renderHeat();
   renderBadges();
 }
@@ -1319,6 +1574,33 @@ function repRange(mode,off){
   return {start,end,keys};
 }
 
+// Habit counts for a set of days, from the saved per-habit records. Extra habits are left out.
+// Days you did not open DNY count as missed. Today counts only for habits you have already marked.
+function habitCounts(keys){
+  let planned=0,done=0,small=0,skipped=0;
+  const per={};
+  keys.forEach(k=>{
+    let hl=S.hlog[k];
+    if(!hl&&S.history[k]===0&&!isOffDay(k)){
+      hl={};activeHabits(k).forEach(h=>{hl[h.id]=0;});
+    }
+    if(!hl)return;
+    Object.keys(hl).forEach(id=>{
+      const h=S.habits.find(x=>x.id===id);
+      if(!h||h.tier==='bonus')return;
+      const v=hl[id];
+      if(k===TODAY_KEY&&v===0)return;
+      if(v===3){skipped++;return;}
+      planned++;
+      const x=per[id]||(per[id]={title:h.title,done:0,due:0,small:0,missed:0});
+      x.due++;
+      if(v===1||v===2){done++;x.done++;if(v===2){small++;x.small++;}}
+      else x.missed++;
+    });
+  });
+  return {planned,done,small,skipped,per,rate:planned?Math.round(done/planned*100):null};
+}
+
 function repStats(r){
   const tracked=r.keys.filter(k=>S.history[k]!=null);
   const vals=tracked.map(k=>S.history[k]);
@@ -1327,24 +1609,20 @@ function repStats(r){
   tracked.forEach(k=>{if(bestKey==null||S.history[k]>S.history[bestKey])bestKey=k;});
   const cats={};
   Object.keys(CATS).forEach(c=>{cats[c]=[0,0];});
-  const habits={};
   r.keys.forEach(k=>{
     const cl=S.catlog[k];
     if(cl)Object.keys(cl).forEach(c=>{if(cats[c]){cats[c][0]+=cl[c][0];cats[c][1]+=cl[c][1];}});
-    const hl=S.hlog[k];
-    if(hl)Object.keys(hl).forEach(id=>{
-      const x=habits[id]||(habits[id]=[0,0]);
-      x[1]++;if(hl[id])x[0]++;
-    });
   });
+  const hc=habitCounts(r.keys);
   return {
     tracked:tracked.length,avg,
     full:vals.filter(v=>v===100).length,
     missed:vals.filter(v=>v===0).length,
+    rest:r.keys.filter(k=>isRest(k)).length,
     bestKey,bestVal:bestKey?S.history[bestKey]:null,
     focus:r.keys.reduce((a,k)=>a+(S.focusLog[k]||0),0),
     notes:S.journal.filter(e=>e.date>=r.start&&e.date<=r.end).length,
-    cats,habits
+    cats,hc,habits:hc.per
   };
 }
 
@@ -1356,19 +1634,28 @@ function repTitle(mode,off,r){
 }
 
 function repSummary(mode,off,st,prev){
-  if(!st.tracked)return '';
+  if(!st.tracked&&!st.hc.planned)return '';
   const unit=mode==='week'?'week':'month';
   const name=off===0?'this '+unit:off===-1?'last '+unit:'that '+unit;
   const base=off===0?'last '+unit:'the '+unit+' before';
-  let s='Your average for '+name+' was '+st.avg+'%.';
-  if(prev.avg!=null){
-    const d=st.avg-prev.avg,n=Math.abs(d);
-    if(d>0)s+=' That is up '+n+' '+(n===1?'point':'points')+' from '+base+'.';
-    else if(d<0)s+=' That is down '+n+' '+(n===1?'point':'points')+' from '+base+'.';
-    else s+=' That matches '+base+'.';
+  const hc=st.hc;
+  let t='';
+  if(hc.planned){
+    t='You completed '+hc.done+' of '+hc.planned+' planned '+(hc.planned===1?'habit':'habits')+' '+name+'. That is '+hc.rate+'%';
+    if(prev.hc.planned){
+      const d=hc.rate-prev.hc.rate;
+      t+=d>0?', up from '+prev.hc.rate+'% '+base+'.':d<0?', down from '+prev.hc.rate+'% '+base+'.':', the same as '+base+'.';
+    }else t+='.';
+    const extra=[];
+    if(hc.small)extra.push(hc.small+(hc.small===1?' small version':' small versions'));
+    if(hc.skipped)extra.push(hc.skipped+' skipped');
+    if(extra.length)t+=' That includes '+extra.join(' and ')+'. Skipped habits are not counted against you.';
+  }else{
+    t='Your average for '+name+' was '+st.avg+'%.';
   }
-  if(st.full)s+=' You finished '+st.full+(st.full===1?' day':' days')+' at 100%.';
-  return s;
+  if(st.full)t+=' You finished '+st.full+(st.full===1?' day':' days')+' at 100%.';
+  if(st.rest)t+=' '+st.rest+(st.rest===1?' rest day':' rest days')+' did not count against you.';
+  return t;
 }
 
 function renderReport(){
@@ -1415,17 +1702,19 @@ function renderReport(){
   }).join('');
 
   // habits
-  const list=S.habits.map(h=>{
-    const x=st.habits[h.id];
-    return x&&x[1]>=2?{title:h.title,done:x[0],due:x[1],rate:x[0]/x[1]}:null;
-  }).filter(Boolean).sort((a,b)=>b.rate-a.rate||b.due-a.due);
-  const row=h=>'<div class="rep-hrow"><div class="rep-hname">'+esc(h.title)+'</div><div class="rep-hcount">'+h.done+' of '+h.due+'</div><div class="rep-hpct">'+Math.round(h.rate*100)+'%</div></div>';
-  const strong=list.filter(h=>h.rate>=0.8).slice(0,3);
-  const weak=list.filter(h=>h.rate<0.8).reverse().slice(0,3);
+  const list=Object.keys(st.habits).map(id=>{const x=st.habits[id];return {title:x.title,done:x.done,due:x.due,missed:x.missed,rate:x.done/x.due};}).filter(x=>x.due>=2);
+  const bestH=list.filter(x=>x.rate>0).sort((a,b)=>b.rate-a.rate||b.due-a.due)[0];
+  const worstH=list.filter(x=>x.missed>0).sort((a,b)=>b.missed-a.missed||a.rate-b.rate)[0];
   let habitHtml='';
-  if(strong.length)habitHtml+='<div class="rep-sub-lbl">Most consistent</div>'+strong.map(row).join('');
-  if(weak.length)habitHtml+='<div class="rep-sub-lbl">Needs attention</div>'+weak.map(row).join('');
-  if(!list.length)habitHtml='<div class="rep-note">Habit detail appears here once DNY has logged at least two days of habits in this period.</div>';
+  if(bestH||worstH){
+    habitHtml+='<div class="rep-hl">'
+      +(bestH?'<div><div class="l">Most consistent</div><div class="n">'+esc(bestH.title)+'</div><div class="d">'+bestH.done+' of '+bestH.due+' ('+Math.round(bestH.rate*100)+'%)</div></div>':'')
+      +(worstH&&(!bestH||worstH.title!==bestH.title||list.length===1)?'<div><div class="l">Missed most</div><div class="n">'+esc(worstH.title)+'</div><div class="d">missed '+worstH.missed+(worstH.missed===1?' time':' times')+'</div></div>':'')
+      +'</div>';
+  }
+  const all=list.slice().sort((a,b)=>b.rate-a.rate||b.due-a.due);
+  if(all.length)habitHtml+='<div class="rep-sub-lbl">Every habit</div>'+all.map(h=>'<div class="rep-hrow"><div class="rep-hname">'+esc(h.title)+'</div><div class="rep-hcount">'+h.done+' of '+h.due+'</div><div class="rep-hpct">'+Math.round(h.rate*100)+'%</div></div>').join('');
+  else habitHtml='<div class="rep-note">Habit detail appears here once DNY has logged at least two days of a habit in this period.</div>';
 
   $('rep-body').innerHTML=
     '<div class="rep-sum">'+esc(repSummary(REP_MODE,REP_OFF,st,prev))+'</div>'
@@ -1433,7 +1722,7 @@ function renderReport(){
     +'<div class="bars">'+bars+'</div>'
     +areas
     +habitHtml
-    +'<div class="rep-note">Scores use Essential and Regular habits. Days you did not open DNY count as 0%. Habit detail covers days logged since this update.</div>';
+    +'<div class="rep-note">Counts use Essential and Regular habits. Days you did not open DNY count as missed. Skipped habits and rest days are left out. Today counts once you mark a habit. Habit detail covers days logged since this update.</div>';
 }
 
 function renderChart(){
@@ -1474,17 +1763,99 @@ function renderAreas(){
     :'Share of Essential and Regular habits completed, for the last '+RANGE+' days.');
 }
 
+// ===== HABIT STREAKS =====
+// Counts from the saved daily habit records. A skipped habit or a rest day never breaks a streak.
+function habitStreak(id){
+  const keys=Object.keys(S.hlog).sort();
+  if(!keys.length)return null;
+  const h=S.habits.find(x=>x.id===id);
+  let run=0,best=0,seen=false;
+  for(let k=keys[0];k<=TODAY_KEY;k=addDays(k,1)){
+    const hl=S.hlog[k];
+    let v=null;
+    if(hl&&Object.prototype.hasOwnProperty.call(hl,id))v=hl[id];
+    else if(!hl&&S.history[k]===0&&h&&(!h.days||h.days.includes(parseKey(k).getDay())))v=0;
+    if(v===0&&(isRest(k)||k===TODAY_KEY))v=null;
+    if(v!=null)seen=true;
+    if(v===1||v===2){run++;if(run>best)best=run;}
+    else if(v===0)run=0;
+  }
+  return seen?{cur:run,best,since:keys[0]}:null;
+}
+function renderHabitStreaks(){
+  const el=$('hstreaks');
+  const rows=S.habits.map(h=>({h,st:habitStreak(h.id)})).filter(x=>x.st);
+  if(!rows.length){
+    el.innerHTML='<div class="fempty">Habit streaks appear after DNY has saved your first full day of habits.</div>';
+    return;
+  }
+  rows.sort((a,b)=>b.st.cur-a.st.cur||b.st.best-a.st.best);
+  const dayWord=n=>n+(n===1?' day':' days');
+  el.innerHTML=rows.map(x=>'<div class="hs-row"><div class="hs-name">'+esc(x.h.title)+'</div><div class="hs-v">Now <b>'+dayWord(x.st.cur)+'</b><br>Best <b>'+dayWord(x.st.best)+'</b></div></div>').join('')
+    +'<div class="rep-note">Counted from '+esc(shortDate(rows.reduce((m,x)=>x.st.since<m?x.st.since:m,rows[0].st.since)))+', when DNY started saving habit records. Skipped habits and rest days do not break a streak.</div>';
+}
+
+// ===== MONTH VIEW =====
+let HEAT_OFF=0;
 function renderHeat(){
-  const keys=lastKeys(28);
-  const padN=parseKey(keys[0]).getDay();
+  const t=parseKey(TODAY_KEY);
+  const first=new Date(t.getFullYear(),t.getMonth()+HEAT_OFF,1);
+  const last=new Date(first.getFullYear(),first.getMonth()+1,0);
+  const firstKey=Object.keys(S.history).sort()[0]||TODAY_KEY;
+  const fm=parseKey(firstKey);
+  setText('hm-title',first.toLocaleDateString('en-GB',{month:'long',year:'numeric'}));
+  $('hm-prev').disabled=first<=new Date(fm.getFullYear(),fm.getMonth(),1);
+  $('hm-next').disabled=HEAT_OFF>=0;
+  const padN=(first.getDay()+6)%7;
   let h='';
   for(let i=0;i<padN;i++)h+='<div class="hm-cell hm-e"></div>';
-  keys.forEach(k=>{
-    const v=S.history[k]||0;
-    const lv=v===0?0:v<25?1:v<50?2:v<80?3:4;
-    h+='<div class="hm-cell hm-'+lv+(k===TODAY_KEY?' hm-today':'')+'" title="'+k+': '+v+'%"></div>';
-  });
+  let tracked=0,rest=0;
+  for(let d=1;d<=last.getDate();d++){
+    const k=dateStr(new Date(first.getFullYear(),first.getMonth(),d));
+    const today=k===TODAY_KEY?' hm-today':'';
+    if(k>TODAY_KEY){h+='<div class="hm-cell hm-future">'+d+'</div>';continue;}
+    const v=S.history[k];
+    if(v!=null){
+      tracked++;
+      const lv=v===0?0:v<25?1:v<50?2:v<80?3:4;
+      h+='<div class="hm-cell hm-'+lv+today+'" title="'+k+': '+v+'%">'+d+'</div>';
+    }else if(isRest(k)){
+      rest++;
+      h+='<div class="hm-cell hm-off'+today+'" title="'+k+': rest day">'+d+'</div>';
+    }else{
+      h+='<div class="hm-cell hm-none'+today+'" title="'+k+': not tracked">'+d+'</div>';
+    }
+  }
   $('hm-grid').innerHTML=h;
+  setText('hm-note',tracked?'Darker means more of your habits done. Dashed days are rest days. '+tracked+' tracked '+(tracked===1?'day':'days')+(rest?', '+rest+' rest '+(rest===1?'day':'days'):'')+'.':'No tracked days in this month yet.');
+}
+
+// ===== RECOVER A MISSED DAY =====
+// A missed day can be marked as a day off. Your history stays. The streak runs through it.
+function missedCandidates(){
+  const out=[];
+  for(let i=1;i<=14;i++){
+    const k=addDays(TODAY_KEY,-i);
+    if(S.history[k]===0&&!isOffDay(k))out.push(k);
+  }
+  return out;
+}
+function dayLabel(k){return parseKey(k).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});}
+function renderRecover(){
+  const el=$('recover');
+  const list=missedCandidates().slice(0,5);
+  if(!list.length){el.innerHTML='';return;}
+  el.innerHTML='<div class="card recover"><div class="recover-t">Missed days</div>'
+    +'<div class="recover-s">Life happens. If a day was a real day off, mark it. Your history stays and your streak keeps going.</div>'
+    +list.map(k=>'<div class="rec-row"><span>'+esc(dayLabel(k))+'</span><button class="rec-btn" data-act="mark-off" data-k="'+k+'">Mark as day off</button></div>').join('')+'</div>';
+}
+function markDayOff(k){
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(k||'')||!missedCandidates().includes(k))return;
+  S.off[k]=1;
+  delete S.history[k];
+  recordToday();
+  renderProgress();renderToday();
+  toast('Marked as a day off. Streak restored.');
 }
 
 function renderBadges(){
@@ -1559,7 +1930,7 @@ function onDone(){
   let linked='';
   if(sel&&sel!=='none'){
     const h=activeHabits(TODAY_KEY).find(x=>x.id===sel);
-    if(h){S.checked[h.id]=true;linked=h.title;}
+    if(h){setMark(h.id,'done');linked=h.title;}
   }
   S.sessions.push({label:tLbl,mins:tMins,linked});
   S.focusTotal=(S.focusTotal||0)+1;
@@ -1657,7 +2028,7 @@ function saveReflection(){
   if(!g&&!d){toast('Write something first');return;}
   const e=todayReflection();
   if(e){e.good=g;e.diff=d;}else S.journal.push({date:TODAY_KEY,good:g,diff:d});
-  S.habits.forEach(h=>{if(h.auto)S.checked[h.id]=true;});
+  S.habits.forEach(h=>{if(h.auto)setMark(h.id,'done');});
   recordToday();
   renderPlan();renderToday();
   toast(e?'Reflection updated':'Reflection saved');
@@ -1768,7 +2139,7 @@ function selDelete(){
   if(!ids.length)return;
   if(!confirm('Delete '+ids.length+(ids.length===1?' habit':' habits')+'? Past history stays.'))return;
   S.habits=S.habits.filter(h=>!SEL.has(h.id));
-  ids.forEach(id=>{delete S.checked[id];});
+  ids.forEach(id=>{setMark(id,'');});
   SEL_MODE=false;SEL.clear();
   recordToday();
   renderManage();renderToday();renderFocus();
@@ -1797,6 +2168,7 @@ function openHabitEditor(id){
   setTierUI(h?h.tier:'standard');
   $('hb-at').value=h&&h.at?h.at:'';
   $('hb-dur').value=h&&h.dur?h.dur:'';
+  $('hb-easy').value=h&&h.easy?h.easy:'';
   $('hb-time').value=h?h.time:'any';
   syncAtUI();
   const days=h&&h.days?h.days:[0,1,2,3,4,5,6];
@@ -1818,6 +2190,7 @@ function saveHabit(){
   const data={
     at:AT_RE.test(at)?at:'',dur:dur>0?dur:0,
     title:title.slice(0,60),
+    easy:$('hb-easy').value.trim().slice(0,60),
     sub:$('hb-sub').value.trim().slice(0,60),
     cat:$('hb-cat').value,tier:$('hb-tier').value,time:AT_RE.test(at)?timeGroup(at):$('hb-time').value,
     days:days.length===7?null:days
@@ -1828,6 +2201,7 @@ function saveHabit(){
     Object.assign(h,data);
     if(!h.at)delete h.at;
     if(!h.dur)delete h.dur;
+    if(!h.easy)delete h.easy;
   }else{
     S.habits.push(normHabit(Object.assign({id:newId()},data)));
   }
@@ -1842,7 +2216,7 @@ function deleteHabit(){
   if(!h)return;
   if(!confirm('Delete "'+h.title+'"? Past history stays.'))return;
   S.habits=S.habits.filter(x=>x.id!==EDIT_ID);
-  delete S.checked[EDIT_ID];
+  setMark(EDIT_ID,'');
   recordToday();
   closeSheet('sh-habit');
   renderManage();renderToday();renderFocus();
@@ -1871,6 +2245,7 @@ function renderProfile(){
   setText('prof-name',S.name||'Friend');
   setText('prof-sub',stk.cur+'-day streak · '+S.habits.length+(S.habits.length===1?' habit':' habits'));
   setText('why-disp',S.why||'Tap to add your reason.');
+  setText('rest-sub',restSubText());
   setText('avatar-lg-ini',initials(S.name));
   const img=$('avatar-lg-img');
   if(S.avatar){img.src=S.avatar;img.classList.remove('hidden');$('avatar-lg-ini').classList.add('hidden');}
@@ -2028,7 +2403,7 @@ function mergeStates(local,remote,first){
   const remoteWins=first||String(remote._rev||'')>String(local._rev||'');
   const newer=remoteWins?remote:local,older=remoteWins?local:remote;
   const out=clone(newer);
-  ['history','catlog','hlog','focusLog','plan'].forEach(m=>{
+  ['history','catlog','hlog','focusLog','plan','off'].forEach(m=>{
     out[m]=Object.assign({},older[m]&&typeof older[m]==='object'?older[m]:{},newer[m]&&typeof newer[m]==='object'?newer[m]:{});
   });
   const byDate={};
@@ -2041,6 +2416,8 @@ function mergeStates(local,remote,first){
   if(older.todayDate&&(!newer.todayDate||older.todayDate>newer.todayDate)){
     out.todayDate=older.todayDate;
     out.checked=clone(older.checked||{});
+    out.partial=clone(older.partial||{});
+    out.skipped=clone(older.skipped||{});
     out.sessions=clone(older.sessions||[]);
   }
   out._rev=String(local._rev||'')>String(remote._rev||'')?local._rev:remote._rev;
@@ -2399,6 +2776,22 @@ const ACTIONS={
   },
   'sel-delete':selDelete,
   'habit-new':()=>openHabitEditor(null),
+  'mark-off':el=>markDayOff(el.dataset.k),
+  'hm-nav':el=>{const n=HEAT_OFF+(+el.dataset.d);if(n>0)return;HEAT_OFF=n;renderHeat();},
+  'habit-actions':el=>openHabitActions(el.dataset.id),
+  'ha-done':()=>haApply('done','Marked as done'),
+  'ha-small':()=>haApply('small','Small version counted'),
+  'ha-skip':()=>haApply('skip','Skipped. Your streak is safe.'),
+  'ha-clear':()=>haApply('',''),
+  'ha-edit':()=>{const id=HA_ID;closeSheet('sh-hact');openHabitEditor(id);},
+  'day-off':dayOffToggle,
+  'rest-day':el=>{
+    const d=+el.dataset.day,i=S.offDays.indexOf(d);
+    if(i>=0)S.offDays.splice(i,1);
+    else if(S.offDays.length>=6){toast('Keep at least one active day');return;}
+    else S.offDays.push(d);
+    recordToday();renderRestDays();renderProfile();renderToday();
+  },
   'habit-edit':el=>openHabitEditor(el.dataset.id),
   'habit-save':saveHabit,
   'tier-pick':el=>setTierUI(el.dataset.tier),
