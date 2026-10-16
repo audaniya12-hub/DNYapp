@@ -93,11 +93,19 @@ function vapidAuth(endpoint, nowSec) {
   return 'vapid t=' + head + '.' + claims + '.' + b64u.enc(sig) + ', k=' + process.env.VAPID_PUBLIC;
 }
 
+// Habit and prayer reminders carry their own text. Clip it so one bad row cannot send a huge payload.
+function customMessage(item) {
+  const clip = (v, n) => String(v == null ? '' : v).replace(/[\u0000-\u001f]/g, ' ').trim().slice(0, n);
+  const title = clip(item.title, 80);
+  if (!title) return null;
+  return {title, body: clip(item.body, 160), tag: clip(item.tag, 64) || 'dny-habit'};
+}
+
 async function sendOne(item) {
   const id = item && item.id != null ? String(item.id).slice(0, 64) : null;
   try {
     if (!item || typeof item.endpoint !== 'string' || !hostAllowed(item.endpoint)) return {id, status: 0, error: 'endpoint not allowed'};
-    const msg = MESSAGES[item.kind];
+    const msg = item.kind === 'custom' ? customMessage(item) : MESSAGES[item.kind];
     if (!msg) return {id, status: 0, error: 'unknown kind'};
     const body = encrypt(Buffer.from(JSON.stringify({title: msg.title, body: msg.body, tag: msg.tag, url: './'})), item.p256dh, item.auth);
     const res = await fetch(item.endpoint, {
@@ -137,4 +145,4 @@ async function handler(req, res) {
 }
 
 module.exports = handler;
-module.exports._test = {encrypt, vapidAuth, hostAllowed, MESSAGES};
+module.exports._test = {encrypt, vapidAuth, hostAllowed, MESSAGES, customMessage};

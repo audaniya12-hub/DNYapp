@@ -503,6 +503,44 @@ input,select,textarea{font:inherit;color:inherit}
 .rep-hl .l{font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
 .rep-hl .n{font-size:13px;font-weight:600;margin-top:3px;overflow-wrap:anywhere}
 .rep-hl .d{font-size:11px;color:var(--t2);margin-top:1px}
+
+.mrow-r{font-size:11px;color:var(--accent);font-weight:600;flex-shrink:0}
+
+/* ===== DESIGN TOKENS AND TOUCH TARGETS ===== */
+:root{--sp-1:4px;--sp-2:8px;--sp-3:12px;--sp-4:16px;--sp-5:24px;--gut:18px;
+  --fs-xs:11px;--fs-sm:12px;--fs-md:14px;--fs-lg:18px;--fs-xl:24px;--tap:44px}
+.icon-btn,.rep-nav{position:relative}
+.icon-btn::after,.rep-nav::after{content:'';position:absolute;inset:-5px}
+.tog{position:relative}
+.tog::before{content:'';position:absolute;inset:-12px -6px}
+.chip{min-height:38px;display:inline-flex;align-items:center}
+.seg button{min-height:40px}
+.day-btn{min-height:var(--tap)}
+.nav-btn{min-height:var(--tap)}
+.settings-row{min-height:var(--tap)}
+.mrow{min-height:var(--tap)}
+.sheet-input{min-height:var(--tap)}
+.clr,.rec-btn{min-height:var(--tap)}
+.topbar-r{gap:var(--sp-2)}
+.task-row{min-height:56px}
+.acc-header{min-height:var(--tap)}
+@keyframes chk-pop{0%{transform:scale(.7)}60%{transform:scale(1.18)}100%{transform:scale(1)}}
+.task-row.pop .task-chk{animation:chk-pop .28s ease-out}
+.spin{display:inline-block;width:12px;height:12px;border:2px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;vertical-align:-2px;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.err-note{color:var(--danger)}
+@media (max-width:359px){
+  .hero{margin:var(--sp-3) var(--sp-3) 0}
+  .topbar{padding-left:var(--sp-3);padding-right:var(--sp-3)}
+  .greet{font-size:18px}
+  .prayer-row{gap:2px}
+  .rep-tiles{grid-template-columns:repeat(2,1fr)}
+  .rep-hl{flex-direction:column}
+  .task-row .tag{padding:2px 6px;font-size:9px}
+  .next-card,.recover,.tool-btn,.add-habit,.acc-section{margin-left:var(--sp-3);margin-right:var(--sp-3)}
+  .tool-btn,.add-habit{width:calc(100% - 24px)}
+}
+@media (prefers-reduced-motion:reduce){.task-row.pop .task-chk,.spin{animation:none}}
 </style>
 </head>
 <body>
@@ -919,6 +957,13 @@ input,select,textarea{font:inherit;color:inherit}
       <label class="sheet-lbl" for="hb-time">Time of day</label>
       <select class="sheet-input" id="hb-time"></select>
       <div class="sheet-note" id="hb-time-note">With a start time, DNY places the habit in Morning, Anytime or Evening for you. Habits are listed in time order.</div>
+      <div class="sheet-lbl">Phone reminder</div>
+      <div class="seg in" id="hb-rem-seg">
+        <button data-act="rem-pick" data-k="">Off</button>
+        <button data-act="rem-pick" data-k="t">At a set time</button>
+      </div>
+      <div id="hb-rem-t" class="hidden"><input class="sheet-input" type="time" id="hb-rem-time" aria-label="Reminder time"/></div>
+      <div class="sheet-note">Get a notification on your phone. It follows the days you pick below. It needs you signed in with notifications allowed.</div>
       <div class="sheet-lbl">Days</div>
       <div class="day-grid" id="hb-days"></div>
       <div class="sheet-note">Turn off the days you want to skip. Essential and Regular habits count toward your score. Extra habits do not.</div>
@@ -969,6 +1014,9 @@ input,select,textarea{font:inherit;color:inherit}
         </div>
         <div class="notif-time"><label for="notif-evening-time">Time</label><input type="time" id="notif-evening-time" value="20:00" data-notif-time="evening"/></div>
       </div>
+      <div class="sheet-lbl">Habit reminders</div>
+      <div class="mlist" id="notif-habits"></div>
+      <div class="sheet-note">Tap a habit to set or change its reminder.</div>
       <button class="sheet-btn" data-act="notif-save">Save and close</button>
     </div>
   </div>
@@ -1155,6 +1203,7 @@ function normHabit(h){
   if(Number.isFinite(dn)&&dn>=1&&dn<=600)out.dur=dn;
   if(h.auto==='journal'||h.auto==='plan')out.auto=h.auto;
   if(typeof h.easy==='string'&&h.easy.trim())out.easy=h.easy.trim().slice(0,60);
+  if(h.rem&&h.rem.k==='t'&&typeof h.rem.t==='string'&&AT_RE.test(h.rem.t))out.rem={k:'t',t:h.rem.t};
   return out;
 }
 
@@ -1339,6 +1388,7 @@ function openSheet(id){
   if(id==='sh-suggest'){PICK.sg.clear();renderPicker('sg');}
   if(id==='sh-account')renderAccount();
   if(id==='sh-rest')renderRestDays();
+  if(id==='sh-notif')renderNotifHabits();
   $(id).classList.add('show');
 }
 function closeSheet(id){$(id).classList.remove('show');}
@@ -1421,7 +1471,7 @@ function buildTaskList(){
         let tag='<span class="tag t-'+h.tier+'">'+TIER_LBL[h.tier]+'</span>';
         if(m==='small'){sub='Small: '+(h.easy||'done')+' · Full: '+(h.sub||h.title);tag='<span class="tag t-small">Small version</span>';}
         else if(m==='skip'){sub='Skipped today';tag='<span class="tag t-skip">Skipped</span>';}
-        return '<div class="task-line"><button class="task-row'+(d?' done':m?' '+m:'')+'" data-act="toggle-habit" data-id="'+esc(h.id)+'" aria-pressed="'+(m==='done'||m==='small')+'">'
+        return '<div class="task-line"><button class="task-row'+(d?' done':m?' '+m:'')+(JUST_ID===h.id&&m?' pop':'')+'" data-act="toggle-habit" data-id="'+esc(h.id)+'" aria-pressed="'+(m==='done'||m==='small')+'">'
           +'<span class="task-chk"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></span>'
           +'<span class="task-info"><span class="task-name">'+esc(h.title)+'</span>'
           +'<span class="task-sub"><span class="dot cat-'+h.cat+'"></span>'+esc(sub)+'</span></span>'
@@ -1496,6 +1546,7 @@ function haApply(mode,msg){
   recordToday();
   closeSheet('sh-hact');
   renderToday();renderFocus();
+  if(S.habits.some(x=>x.rem))scheduleRemSync();
   if(msg)toast(msg);
 }
 function dayOffToggle(){
@@ -1513,13 +1564,16 @@ function restSubText(){
   return S.offDays.slice().sort((a,b)=>((a+6)%7)-((b+6)%7)).map(d=>DAYS_S[d]).join(', ');
 }
 
+let JUST_ID=null;
 function toggleHabit(id){
   if(!S.habits.some(h=>h.id===id))return;
+  JUST_ID=id;
   const before=dayStats(TODAY_KEY).score;
   const m=habitMark(id);
   setMark(id,m==='done'||m==='skip'?'':'done');
   const st=recordToday();
   renderToday();
+  if(S.habits.some(x=>x.rem))scheduleRemSync();
   if(st.score===100&&before<100&&st.reqN>0)toast('Everything done for today. Well done.');
 }
 
@@ -1543,7 +1597,8 @@ function renderProgress(){
     [avg30==null?'-':avg30+'%','Average, last 30 days','var(--t1)'],
     [focus7?fmtMins(focus7):'0 min','Focus, last 7 days','var(--t1)']
   ];
-  $('stat-tiles').innerHTML=tiles.map(t=>'<div class="stat-c"><div class="stat-v" style="color:'+t[2]+'">'+esc(t[0])+'</div><div class="stat-l">'+esc(t[1])+'</div></div>').join('');
+  const noData=!Object.keys(S.history).length;
+  $('stat-tiles').innerHTML=noData?'<div class="card fempty" style="grid-column:1/-1">Your progress shows here after your first day. Tick a habit on Today to begin.</div>':tiles.map(t=>'<div class="stat-c"><div class="stat-v" style="color:'+t[2]+'">'+esc(t[0])+'</div><div class="stat-l">'+esc(t[1])+'</div></div>').join('');
   renderRecover();
   renderReport();
   renderChart();
@@ -1649,7 +1704,8 @@ function repSummary(mode,off,st,prev){
     const extra=[];
     if(hc.small)extra.push(hc.small+(hc.small===1?' small version':' small versions'));
     if(hc.skipped)extra.push(hc.skipped+' skipped');
-    if(extra.length)t+=' That includes '+extra.join(' and ')+'. Skipped habits are not counted against you.';
+    if(extra.length)t+=' That includes '+extra.join(' and ')+'.';
+    if(hc.skipped)t+=' Skipped habits are not counted against you.';
   }else{
     t='Your average for '+name+' was '+st.avg+'%.';
   }
@@ -2144,6 +2200,7 @@ function selDelete(){
   recordToday();
   renderManage();renderToday();renderFocus();
   toast(ids.length+(ids.length===1?' habit deleted':' habits deleted'));
+  scheduleRemSync();
 }
 
 function fillSelect(id,obj){$(id).innerHTML=Object.keys(obj).map(k=>'<option value="'+k+'">'+esc(obj[k])+'</option>').join('');}
@@ -2169,6 +2226,7 @@ function openHabitEditor(id){
   $('hb-at').value=h&&h.at?h.at:'';
   $('hb-dur').value=h&&h.dur?h.dur:'';
   $('hb-easy').value=h&&h.easy?h.easy:'';
+  setRemUI(h&&h.rem?'t':'',h&&h.rem?h.rem.t:'');
   $('hb-time').value=h?h.time:'any';
   syncAtUI();
   const days=h&&h.days?h.days:[0,1,2,3,4,5,6];
@@ -2195,6 +2253,9 @@ function saveHabit(){
     cat:$('hb-cat').value,tier:$('hb-tier').value,time:AT_RE.test(at)?timeGroup(at):$('hb-time').value,
     days:days.length===7?null:days
   };
+  const rem=readRem();
+  if(rem===false)return;
+  if(rem)data.rem=rem;
   if(EDIT_ID){
     const h=S.habits.find(x=>x.id===EDIT_ID);
     if(!h)return;
@@ -2202,6 +2263,7 @@ function saveHabit(){
     if(!h.at)delete h.at;
     if(!h.dur)delete h.dur;
     if(!h.easy)delete h.easy;
+    if(!data.rem)delete h.rem;
   }else{
     S.habits.push(normHabit(Object.assign({id:newId()},data)));
   }
@@ -2209,6 +2271,7 @@ function saveHabit(){
   closeSheet('sh-habit');
   renderManage();renderToday();renderFocus();
   toast('Habit saved');
+  afterReminderChange(!!data.rem);
 }
 
 function deleteHabit(){
@@ -2221,6 +2284,7 @@ function deleteHabit(){
   closeSheet('sh-habit');
   renderManage();renderToday();renderFocus();
   toast('Habit deleted');
+  scheduleRemSync();
 }
 
 function moveHabit(dir){
@@ -2494,9 +2558,9 @@ function renderAccount(){
     return;
   }
   const at=getSyncMeta().at;
-  const line=SYNCING?'Syncing now.':SYNC_ERR||(at?'Last synced at '+new Date(at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+'.':'Not synced yet.');
+  const line=SYNCING?'<span class="spin"></span>Syncing now.':SYNC_ERR||(at?'Last synced at '+new Date(at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+'.':'Not synced yet.');
   body.innerHTML='<div class="info-box">Signed in as '+esc(a.user.email)+'. DNY syncs when you open it and a few seconds after you make a change.</div>'
-    +'<div class="sheet-note" id="acct-msg" style="margin:0 0 8px">'+esc(line)+'</div>'
+    +'<div class="sheet-note'+(SYNC_ERR&&!SYNCING?' err-note':'')+'" id="acct-msg" style="margin:0 0 8px">'+(SYNCING?line:esc(line))+'</div>'
     +'<button class="sheet-btn" data-act="acct-sync">Sync now</button>'
     +'<button class="sheet-btn danger" data-act="acct-signout">Sign out</button>'
     +'<button class="sheet-btn ghost" data-act="close-sheet" data-sheet="sh-account">Close</button>';
@@ -2644,7 +2708,7 @@ function setPushState(st){
     install:'On iPhone, add DNY to your Home Screen and open it from there. Then turn the reminder on.',
     unsupported:'This browser cannot send phone reminders. A banner shows while DNY is open.',
     blocked:'Notifications are blocked for DNY. Allow them in your phone settings.',
-    active:'Reminders are on. You get a notification at '+times.join(' and ')+'.',
+    active:times.length?'Reminders are on. You get a notification at '+times.join(' and ')+'.':'Phone reminders are on.',
     error:'Could not set up reminders. Check your connection and try again.'
   }[st]||'';
   setText('notif-status',txt);
@@ -2662,7 +2726,7 @@ async function syncPush(opts){
   PUSH_BUSY=true;
   try{
     const prefs=getNotif();
-    const any=prefs.morning.enabled||prefs.evening.enabled;
+    const any=wantPush();
     if(!any){await removePush();setPushState('off');return;}
     if(!pushSupported()){setPushState('unsupported');return;}
     if(isIOS()&&!isStandalone()){setPushState('install');return;}
@@ -2694,6 +2758,7 @@ async function syncPush(opts){
     if(!r.ok)throw new Error('save '+r.status);
     try{localStorage.setItem('dny-push',sub.endpoint);}catch(e){}
     setPushState('active');
+    scheduleRemSync(300);
   }catch(e){
     setPushState('error');
   }finally{
@@ -2719,6 +2784,76 @@ async function removePush(){
     if(sub){try{await sub.unsubscribe();}catch(e){}}
   })();
   await Promise.race([work,new Promise(r=>setTimeout(r,2500))]);
+}
+
+// ===== HABIT REMINDERS =====
+// The server holds the next 14 days of reminders for this phone. The app rebuilds the list whenever something changes.
+const REM_DAYS=14;
+let REM_K='';
+function remLabel(h){return h.rem?fmtTime(h.rem.t):'';}
+function setRemUI(k,t){
+  REM_K=k||'';
+  document.querySelectorAll('#hb-rem-seg button').forEach(b=>b.classList.toggle('on',b.dataset.k===REM_K));
+  $('hb-rem-t').classList.toggle('hidden',REM_K!=='t');
+  if(REM_K==='t'){
+    if(t)$('hb-rem-time').value=t;
+    else if(!$('hb-rem-time').value)$('hb-rem-time').value=AT_RE.test($('hb-at').value)?$('hb-at').value:'08:00';
+  }else $('hb-rem-time').value='';
+}
+// Returns a reminder object, null for off, or false when the input is not valid.
+function readRem(){
+  if(REM_K!=='t')return null;
+  const t=$('hb-rem-time').value;
+  if(!AT_RE.test(t)){toast('Pick a reminder time');return false;}
+  return {k:'t',t};
+}
+function renderNotifHabits(){
+  const list=S.habits.slice().sort((a,b)=>(a.rem?0:1)-(b.rem?0:1));
+  $('notif-habits').innerHTML=list.length?list.map(h=>'<button class="mrow" data-act="rem-edit" data-id="'+esc(h.id)+'"><span class="mrow-main"><span class="mrow-t" style="display:block">'+esc(h.title)+'</span></span><span class="mrow-r">'+esc(h.rem?remLabel(h):'Off')+'</span></button>').join(''):'<div class="empty-note">No habits yet.</div>';
+}
+function remBody(h){return [h.sub,h.dur?fmtDur(h.dur):''].filter(Boolean).join(' · ')||'Time for your habit.';}
+function buildReminderItems(now){
+  const out=[],t0=dateStr(now);
+  for(let i=0;i<REM_DAYS;i++){
+    const key=addDays(t0,i);
+    activeHabits(key).forEach(h=>{
+      if(!h.rem)return;
+      if(i===0&&habitMark(h.id))return;
+      const d=parseKey(key);
+      d.setHours(+h.rem.t.slice(0,2),+h.rem.t.slice(3),0,0);
+      if(d<=now)return;
+      out.push({title:h.title,body:remBody(h),tag:'dny-h-'+h.id+'-'+key,fire_at:d.toISOString()});
+    });
+  }
+  return out.slice(0,1000);
+}
+function wantPush(){
+  const prefs=getNotif();
+  return prefs.morning.enabled||prefs.evening.enabled||S.habits.some(h=>h.rem);
+}
+let REM_TIMER=null,REM_BUSY=false,REM_AGAIN=false,REM_LAST=0;
+function scheduleRemSync(ms){clearTimeout(REM_TIMER);REM_TIMER=setTimeout(syncReminders,ms==null?1500:ms);}
+async function syncReminders(){
+  if(REM_BUSY){REM_AGAIN=true;return;}
+  let ep=null;try{ep=localStorage.getItem('dny-push');}catch(e){}
+  if(!ep||PUSH_STATE!=='active'||!getAuth())return;
+  REM_BUSY=true;
+  try{
+    const a=await validAuth();
+    if(!a)return;
+    const r=await pushRequest('/rest/v1/rpc/dny_set_reminders',{method:'POST',body:{p_endpoint:ep,p_items:buildReminderItems(new Date())}},a);
+    if(r.ok)REM_LAST=Date.now();
+  }catch(e){}finally{
+    REM_BUSY=false;
+    if(REM_AGAIN){REM_AGAIN=false;scheduleRemSync();}
+  }
+}
+const PUSH_SHORT={signin:'Sign in under Cloud sync to get phone reminders',install:'Add DNY to your Home Screen to get phone reminders',blocked:'Notifications are blocked in your phone settings',unsupported:'This browser cannot send phone reminders',error:'Could not set up phone reminders'};
+// Call from a tap. Asks for notification permission when a reminder was just turned on.
+function afterReminderChange(on){
+  const run=syncPush({ask:on});
+  scheduleRemSync();
+  if(on)Promise.resolve(run).then(()=>{if(PUSH_SHORT[PUSH_STATE])setTimeout(()=>toast(PUSH_SHORT[PUSH_STATE]),2300);});
 }
 
 // ===== ONBOARDING =====
@@ -2776,6 +2911,8 @@ const ACTIONS={
   },
   'sel-delete':selDelete,
   'habit-new':()=>openHabitEditor(null),
+  'rem-pick':el=>setRemUI(el.dataset.k,''),
+  'rem-edit':el=>{closeSheet('sh-notif');openHabitEditor(el.dataset.id);},
   'mark-off':el=>markDayOff(el.dataset.k),
   'hm-nav':el=>{const n=HEAT_OFF+(+el.dataset.d);if(n>0)return;HEAT_OFF=n;renderHeat();},
   'habit-actions':el=>openHabitActions(el.dataset.id),
@@ -2925,6 +3062,7 @@ document.addEventListener('visibilitychange',()=>{
   if(started){
     renderToday();
     if(Date.now()-LAST_SYNC_TRY>20000)syncNow();
+    if(Date.now()-REM_LAST>30*60*1000)scheduleRemSync(800);
   }
 });
 
