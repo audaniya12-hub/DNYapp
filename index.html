@@ -663,7 +663,6 @@ input,select,textarea{font:inherit;color:inherit}
 
       <div id="missed-y"></div>
       <div id="next-up"></div>
-      <div class="chips" id="chips"></div>
       <div id="why-today"></div>
       <div id="task-root"></div>
       <div id="today-tools"></div>
@@ -1028,7 +1027,6 @@ input,select,textarea{font:inherit;color:inherit}
     <div class="sheet-title" id="ha-title">Habit</div>
     <div class="sheet-body">
       <div class="info-box" id="ha-info"></div>
-      <button class="sheet-btn" data-act="ha-done">Mark as done</button>
       <button class="sheet-btn soft" id="ha-small" data-act="ha-small">Do the small version (half credit)</button>
       <button class="sheet-btn soft" data-act="ha-skip">Skip today for a valid reason</button>
       <button class="sheet-btn ghost" id="ha-clear" data-act="ha-clear">Clear today's mark</button>
@@ -1394,7 +1392,6 @@ function openSheet(id){
 function closeSheet(id){$(id).classList.remove('show');}
 
 // ===== TODAY =====
-let FILTER='all';
 const ACC={morning:true,any:true,evening:true};
 
 function renderToday(){
@@ -1421,9 +1418,6 @@ function renderToday(){
   renderMissedYesterday();
   renderTodayTools();
 
-  // area filter chips
-  const chips=[['all','All']].concat(Object.keys(CATS).map(c=>[c,CAT_SHORT[c]]));
-  $('chips').innerHTML=chips.map(c=>'<button class="chip'+(FILTER===c[0]?' on':'')+'" data-act="filter" data-cat="'+c[0]+'">'+esc(c[1])+'</button>').join('');
 
   // why card on hard days
   $('why-today').innerHTML=(S.why&&st.score<50&&hr>=15)
@@ -1441,46 +1435,56 @@ function renderToday(){
   setText('ref-btn',done?'Edit reflection':evening?'Write today\'s reflection':'Open reflection');
 }
 
+let SHOW_DONE=false;
+function taskRowHtml(h){
+  const m=habitMark(h.id),d=m==='done';
+  const when=habitWhen(h);
+  let sub=when?when+(h.sub?' · '+h.sub:''):(h.sub||CAT_SHORT[h.cat]);
+  let tag='<span class="tag t-'+h.tier+'">'+TIER_LBL[h.tier]+'</span>';
+  if(m==='small'){sub='Small: '+(h.easy||'done')+' · Full: '+(h.sub||h.title);tag='<span class="tag t-small">Small version</span>';}
+  else if(m==='skip'){sub='Skipped today';tag='<span class="tag t-skip">Skipped</span>';}
+  return '<div class="task-line"><button class="task-row'+(d?' done':m?' '+m:'')+(JUST_ID===h.id&&m?' pop':'')+'" data-act="toggle-habit" data-id="'+esc(h.id)+'" aria-pressed="'+(m==='done'||m==='small')+'">'
+    +'<span class="task-chk"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></span>'
+    +'<span class="task-info"><span class="task-name">'+esc(h.title)+'</span>'
+    +'<span class="task-sub"><span class="dot cat-'+h.cat+'"></span>'+esc(sub)+'</span></span>'
+    +tag+'</button>'
+    +'<button class="task-more" data-act="habit-actions" data-id="'+esc(h.id)+'" aria-label="Options for '+esc(h.title)+'">'+ico('more')+'</button></div>';
+}
+function sortByTime(list){
+  return list.map((h,i)=>({h,i})).sort((a,b)=>(a.h.at&&b.h.at?(a.h.at<b.h.at?-1:a.h.at>b.h.at?1:a.i-b.i):a.h.at?-1:b.h.at?1:a.i-b.i)).map(x=>x.h);
+}
+// Finished habits leave the list. A small "Show completed" button brings them back if you need to undo one.
 function buildTaskList(){
   const root=$('task-root');
-  const all=activeHabits(TODAY_KEY).filter(h=>FILTER==='all'||h.cat===FILTER);
+  const all=activeHabits(TODAY_KEY);
   if(!S.habits.length){
     root.innerHTML='<div class="card ref-card"><div class="ref-desc" style="margin:0 0 10px">You have no habits yet. Add your first one.</div><button class="ref-btn" data-act="habit-new">Add a habit</button></div>';
     return;
   }
   if(!all.length){
-    root.innerHTML='<div class="mx empty-note" style="margin-top:14px">No habits to show for this view today.</div>';
+    root.innerHTML='<div class="mx empty-note" style="margin-top:14px">No habits planned for today.</div><button class="add-habit" data-act="habit-new">+ Add a habit</button>';
     return;
   }
   let html='';
   TIME_ORDER.forEach(tm=>{
-    const list=all.filter(h=>h.time===tm).map((h,i)=>({h,i})).sort((a,b)=>(a.h.at&&b.h.at?(a.h.at<b.h.at?-1:a.h.at>b.h.at?1:a.i-b.i):a.h.at?-1:b.h.at?1:a.i-b.i)).map(x=>x.h);
+    const list=sortByTime(all.filter(h=>h.time===tm));
     if(!list.length)return;
     const counted=list.filter(h=>habitMark(h.id)!=='skip');
     const done=counted.filter(h=>habitMark(h.id)).length;
-    const open=ACC[tm];
+    const pending=list.filter(h=>habitMark(h.id)!=='done');
+    const open=ACC[tm]&&pending.length>0;
     html+='<div class="acc-section"><button class="acc-header'+(open?' open':'')+'" data-act="acc-toggle" data-block="'+tm+'">'
       +'<span class="acc-label">'+TIME_LBL[tm]+'</span>'
       +'<span class="acc-count'+(counted.length&&done===counted.length?' complete':'')+'">'+done+'/'+counted.length+'</span>'
       +'<span class="acc-arrow">'+ico('chev')+'</span></button>';
-    if(open){
-      html+='<div class="acc-body">'+list.map(h=>{
-        const m=habitMark(h.id),d=m==='done';
-        const when=habitWhen(h);
-        let sub=when?when+(h.sub?' · '+h.sub:''):(h.sub||CAT_SHORT[h.cat]);
-        let tag='<span class="tag t-'+h.tier+'">'+TIER_LBL[h.tier]+'</span>';
-        if(m==='small'){sub='Small: '+(h.easy||'done')+' · Full: '+(h.sub||h.title);tag='<span class="tag t-small">Small version</span>';}
-        else if(m==='skip'){sub='Skipped today';tag='<span class="tag t-skip">Skipped</span>';}
-        return '<div class="task-line"><button class="task-row'+(d?' done':m?' '+m:'')+(JUST_ID===h.id&&m?' pop':'')+'" data-act="toggle-habit" data-id="'+esc(h.id)+'" aria-pressed="'+(m==='done'||m==='small')+'">'
-          +'<span class="task-chk"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></span>'
-          +'<span class="task-info"><span class="task-name">'+esc(h.title)+'</span>'
-          +'<span class="task-sub"><span class="dot cat-'+h.cat+'"></span>'+esc(sub)+'</span></span>'
-          +tag+'</button>'
-          +'<button class="task-more" data-act="habit-actions" data-id="'+esc(h.id)+'" aria-label="Options for '+esc(h.title)+'">'+ico('more')+'</button></div>';
-      }).join('')+'</div>';
-    }
+    if(open)html+='<div class="acc-body">'+pending.map(taskRowHtml).join('')+'</div>';
     html+='</div>';
   });
+  const finished=sortByTime(all.filter(h=>habitMark(h.id)==='done'));
+  if(finished.length){
+    html+='<button class="tool-btn quiet" data-act="toggle-done-list"><span>'+(SHOW_DONE?'Hide completed':'Show completed')+' ('+finished.length+')</span></button>';
+    if(SHOW_DONE)html+='<div class="acc-section"><div class="acc-body" style="border-radius:var(--r)">'+finished.map(taskRowHtml).join('')+'</div></div>';
+  }
   root.innerHTML=html+'<button class="add-habit" data-act="habit-new">+ Add a habit</button>';
 }
 
@@ -1513,7 +1517,7 @@ function renderNextUp(st,resting,hr){
   el.innerHTML='<div class="card next-card"><div class="next-lbl">Next up</div>'
     +'<div class="next-name">'+esc(h.title)+'</div>'
     +'<div class="next-sub">'+esc([when,h.sub].filter(Boolean).join(' · ')||CAT_SHORT[h.cat])+'</div>'
-    +'<div class="next-btns"><button class="next-done" data-act="toggle-habit" data-id="'+esc(h.id)+'">Done</button>'
+    +'<div class="next-btns"><button class="next-done" data-act="next-done" data-id="'+esc(h.id)+'">Done</button>'
     +'<button class="next-more" data-act="habit-actions" data-id="'+esc(h.id)+'">Options</button></div></div>';
 }
 function renderMissedYesterday(){
@@ -2894,8 +2898,7 @@ const ACTIONS={
     $('onboarding').style.display='none';
     showApp();
   },
-  'filter':el=>{FILTER=el.dataset.cat;renderToday();},
-  'acc-toggle':el=>{ACC[el.dataset.block]=!ACC[el.dataset.block];buildTaskList();},
+    'acc-toggle':el=>{ACC[el.dataset.block]=!ACC[el.dataset.block];buildTaskList();},
   'toggle-habit':el=>toggleHabit(el.dataset.id),
   'open-sheet':el=>openSheet(el.dataset.sheet),
   'close-sheet':el=>closeSheet(el.dataset.sheet),
@@ -2916,7 +2919,11 @@ const ACTIONS={
   'mark-off':el=>markDayOff(el.dataset.k),
   'hm-nav':el=>{const n=HEAT_OFF+(+el.dataset.d);if(n>0)return;HEAT_OFF=n;renderHeat();},
   'habit-actions':el=>openHabitActions(el.dataset.id),
-  'ha-done':()=>haApply('done','Marked as done'),
+  'toggle-done-list':()=>{SHOW_DONE=!SHOW_DONE;buildTaskList();},
+  'next-done':el=>{
+    const h=S.habits.find(x=>x.id===el.dataset.id);
+    if(h&&confirm('Mark "'+h.title+'" as done?'))toggleHabit(h.id);
+  },
   'ha-small':()=>haApply('small','Small version counted'),
   'ha-skip':()=>haApply('skip','Skipped. Your streak is safe.'),
   'ha-clear':()=>haApply('',''),
