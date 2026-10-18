@@ -580,10 +580,64 @@ input,select,textarea{font:inherit;color:inherit}
   <div class="sp-card">
     <div class="sp-logo">DNY</div>
     <div class="sp-sub">Discipline Every Day</div>
-    <div class="sp-msg">A new day begins. Take it one habit at a time.</div>
+    <div class="sp-msg"></div>
     <div class="sp-tap">Tap to continue</div>
   </div>
 </div>
+<script>
+(function(){
+const SPLASH_MSGS={
+  morning:[
+    'A new day begins. Take it one habit at a time.',
+    'Good morning. Start small and the day will follow.',
+    'The day is fresh. Win the first habit.',
+    'Begin with your essentials. The rest becomes easier.',
+    'Rise with intention. One habit sets the tone.',
+    'Morning is yours. Use it well.'
+  ],
+  afternoon:[
+    'Good afternoon. Keep your momentum going.',
+    'Half the day is gone. Finish what matters.',
+    'Check in with your habits. One tap at a time.',
+    'Stay steady. Small wins add up by evening.',
+    'There is still time to make today count.',
+    'Reset, breathe and do the next right thing.'
+  ],
+  evening:[
+    'Good evening. Close the day with purpose.',
+    'Finish your remaining habits. You are close.',
+    'Look back on today. Write one honest line.',
+    'Slow down and complete what is left.',
+    'The day is almost done. End it well.',
+    'Be proud of what you did. Finish the rest.'
+  ],
+  night:[
+    'Good night. Rest is part of discipline.',
+    'Wrap up, switch off and sleep well.',
+    'Tomorrow starts tonight. Prepare for it.',
+    'Put the phone down. Your body needs rest.',
+    'Let the day go. A fresh start is near.',
+    'Rest well. You will need your strength tomorrow.'
+  ]
+};
+
+  var h=new Date().getHours();
+  var k=h>=5&&h<12?'morning':h>=12&&h<17?'afternoon':h>=17&&h<21?'evening':'night';
+  var list=SPLASH_MSGS[k],msg=null;
+  try{msg=sessionStorage.getItem('dny-sp-msg-'+k);}catch(e){}
+  if(!msg){
+    var last=-1;
+    try{last=parseInt(localStorage.getItem('dny-sp-'+k)||'-1',10);}catch(e){}
+    var i=Math.floor(Math.random()*list.length);
+    if(list.length>1&&i===last)i=(i+1+Math.floor(Math.random()*(list.length-1)))%list.length;
+    try{localStorage.setItem('dny-sp-'+k,String(i));}catch(e){}
+    msg=list[i];
+    try{sessionStorage.setItem('dny-sp-msg-'+k,msg);}catch(e){}
+  }
+  var el=document.querySelector('#splash .sp-msg');
+  if(el)el.textContent=msg;
+})();
+</script>
 
 <!-- ONBOARDING -->
 <div id="onboarding">
@@ -3101,55 +3155,6 @@ document.addEventListener('visibilitychange',()=>{
     if(Date.now()-REM_LAST>30*60*1000)scheduleRemSync(800);
   }
 });
-
-// ===== SPLASH MESSAGE: changes with the time of day and on every open =====
-const SPLASH_MSGS={
-  morning:[
-    'A new day begins. Take it one habit at a time.',
-    'Good morning. Start small and the day will follow.',
-    'The day is fresh. Win the first habit.',
-    'Begin with your essentials. The rest becomes easier.',
-    'Rise with intention. One habit sets the tone.',
-    'Morning is yours. Use it well.'
-  ],
-  afternoon:[
-    'Good afternoon. Keep your momentum going.',
-    'Half the day is gone. Finish what matters.',
-    'Check in with your habits. One tap at a time.',
-    'Stay steady. Small wins add up by evening.',
-    'There is still time to make today count.',
-    'Reset, breathe and do the next right thing.'
-  ],
-  evening:[
-    'Good evening. Close the day with purpose.',
-    'Finish your remaining habits. You are close.',
-    'Look back on today. Write one honest line.',
-    'Slow down and complete what is left.',
-    'The day is almost done. End it well.',
-    'Be proud of what you did. Finish the rest.'
-  ],
-  night:[
-    'Good night. Rest is part of discipline.',
-    'Wrap up, switch off and sleep well.',
-    'Tomorrow starts tonight. Prepare for it.',
-    'Put the phone down. Your body needs rest.',
-    'Let the day go. A fresh start is near.',
-    'Rest well. You will need your strength tomorrow.'
-  ]
-};
-function setSplashMsg(){
-  const h=new Date().getHours();
-  const k=h>=5&&h<12?'morning':h<17&&h>=12?'afternoon':h>=17&&h<21?'evening':'night';
-  const list=SPLASH_MSGS[k];
-  let last=-1;
-  try{last=parseInt(localStorage.getItem('dny-sp-'+k)||'-1',10);}catch(e){}
-  let i=Math.floor(Math.random()*list.length);
-  if(list.length>1&&i===last)i=(i+1+Math.floor(Math.random()*(list.length-1)))%list.length;
-  try{localStorage.setItem('dny-sp-'+k,String(i));}catch(e){}
-  const el=document.querySelector('#splash .sp-msg');
-  if(el)el.textContent=list[i];
-}
-setSplashMsg();
 
 registerSW();
 </script>
