@@ -566,6 +566,11 @@ input,select,textarea{font:inherit;color:inherit}
 .tg-date{font-size:12px;color:var(--t3);margin-top:3px}
 .topbar.tb-greet .tb-r{flex-shrink:0}
 @media (max-width:359px){.tg-hello{font-size:18px}}
+
+.tb-mini-c{position:absolute;left:50%;top:calc(50% + var(--safe-top)/2);transform:translate(-50%,-50%) translateY(4px);font-size:17px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .18s,transform .18s;white-space:nowrap}
+.screen.scrolled .tb-mini-c{opacity:1;transform:translate(-50%,-50%)}
+.tg-text{transition:opacity .18s,transform .18s}
+.screen.scrolled .tg-text{opacity:0;transform:translateY(-4px)}
 </style>
 </head>
 <body>
@@ -661,7 +666,7 @@ input,select,textarea{font:inherit;color:inherit}
 
     <!-- TODAY -->
     <div class="screen active" id="s-today">
-      <div class="topbar tb-greet"><div class="tg-text"><div class="tg-hello" id="today-gr">Hello</div><div class="tg-date" id="today-dt"></div></div><div class="tb-side tb-r"><div class="pill" title="Current streak"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg> <span id="streak-n">0</span></div><button class="av-btn" data-act="open-profile" aria-label="Profile"><span class="av-ini">DY</span><img class="av-img hidden" alt=""/></button></div></div>
+      <div class="topbar tb-greet"><div class="tb-mini-c">Today</div><div class="tg-text"><div class="tg-hello" id="today-gr">Hello</div><div class="tg-date" id="today-dt"></div></div><div class="tb-side tb-r"><div class="pill" title="Current streak"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg> <span id="streak-n">0</span></div><button class="av-btn" data-act="open-profile" aria-label="Profile"><span class="av-ini">DY</span><img class="av-img hidden" alt=""/></button></div></div>
 
       <div class="card hero">
         <div>
