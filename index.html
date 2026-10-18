@@ -541,6 +541,24 @@ input,select,textarea{font:inherit;color:inherit}
   .tool-btn,.add-habit{width:calc(100% - 24px)}
 }
 @media (prefers-reduced-motion:reduce){.task-row.pop .task-chk,.spin{animation:none}}
+
+/* ===== COLLAPSING HEADER ===== */
+.topbar{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;padding:calc(var(--safe-top) + 8px) 16px 8px;min-height:calc(var(--safe-top) + 56px)}
+.tb-side{display:flex;align-items:center;min-width:0}
+.tb-r{justify-content:flex-end;gap:10px}
+.tb-mini{font-size:16px;font-weight:600;opacity:0;transform:translateY(4px);transition:opacity .18s,transform .18s;text-align:center;white-space:nowrap}
+.screen.scrolled .tb-mini{opacity:1;transform:none}
+.lg-head{padding:6px 18px 12px}
+.lg-title{font-family:'Lora',Georgia,serif;font-size:30px;font-weight:700;line-height:1.15;overflow-wrap:anywhere}
+.lg-sub{font-size:13px;color:var(--t3);margin-top:3px}
+.av-btn{position:relative;width:40px;height:40px;border-radius:50%;overflow:hidden;background:var(--accent);color:var(--accent-ink);border:2px solid var(--accent-line);display:flex;align-items:center;justify-content:center;font-family:'Lora',Georgia,serif;font-weight:700;font-size:14px;flex-shrink:0}
+.av-btn .av-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.av-btn .av-img.hidden,.av-btn .av-ini.hidden{display:none}
+.tb-back{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--accent)}
+.tb-back .ic{width:22px;height:22px}
+.next-done,.next-more{display:flex;align-items:center;justify-content:center;text-align:center}
+.next-done{flex:1.6}
+.next-more{flex:1;padding:0 12px}
 </style>
 </head>
 <body>
@@ -636,16 +654,8 @@ input,select,textarea{font:inherit;color:inherit}
 
     <!-- TODAY -->
     <div class="screen active" id="s-today">
-      <div class="topbar">
-        <div>
-          <div class="greet" id="today-gr">Hello</div>
-          <div class="topbar-sub" id="today-dt"></div>
-        </div>
-        <div class="topbar-r">
-          <div class="pill" title="Current streak"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg> <span id="streak-n">0</span></div>
-          <button class="icon-btn" data-act="open-sheet" data-sheet="sh-habits" aria-label="Manage habits"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button>
-        </div>
-      </div>
+      <div class="topbar"><div class="tb-side"></div><div class="tb-mini">Today</div><div class="tb-side tb-r"><div class="pill" title="Current streak"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg> <span id="streak-n">0</span></div><button class="av-btn" data-act="open-profile" aria-label="Profile"><span class="av-ini">DY</span><img class="av-img hidden" alt=""/></button></div></div>
+      <div class="lg-head"><div class="lg-title" id="today-gr">Hello</div><div class="lg-sub" id="today-dt"></div></div>
 
       <div class="card hero">
         <div>
@@ -680,7 +690,8 @@ input,select,textarea{font:inherit;color:inherit}
 
     <!-- PROGRESS -->
     <div class="screen" id="s-progress">
-      <div class="topbar"><div class="topbar-title">Progress</div></div>
+      <div class="topbar"><div class="tb-side"></div><div class="tb-mini">Progress</div><div class="tb-side tb-r"><button class="av-btn" data-act="open-profile" aria-label="Profile"><span class="av-ini">DY</span><img class="av-img hidden" alt=""/></button></div></div>
+      <div class="lg-head"><div class="lg-title">Progress</div></div>
       <div class="stats-grid" id="stat-tiles"></div>
       <div id="recover"></div>
 
@@ -742,10 +753,8 @@ input,select,textarea{font:inherit;color:inherit}
 
     <!-- FOCUS -->
     <div class="screen" id="s-focus">
-      <div class="topbar">
-        <div class="topbar-title">Focus</div>
-        <div style="font-size:12px;color:var(--t3)" id="focus-ct">0 sessions today</div>
-      </div>
+      <div class="topbar"><div class="tb-side"></div><div class="tb-mini">Focus</div><div class="tb-side tb-r"><button class="av-btn" data-act="open-profile" aria-label="Profile"><span class="av-ini">DY</span><img class="av-img hidden" alt=""/></button></div></div>
+      <div class="lg-head"><div class="lg-title">Focus</div><div class="lg-sub" id="focus-ct">0 sessions today</div></div>
       <div class="focus-modes" id="fmodes">
         <button class="fmode on" data-act="fmode" data-mins="25" data-label="Pomodoro"><div class="fmode-name">Pomodoro</div><div class="fmode-dur">25 min</div></button>
         <button class="fmode" data-act="fmode" data-mins="45" data-label="Deep Work"><div class="fmode-name">Deep Work</div><div class="fmode-dur">45 min</div></button>
@@ -781,7 +790,8 @@ input,select,textarea{font:inherit;color:inherit}
 
     <!-- PLAN -->
     <div class="screen" id="s-plan">
-      <div class="topbar"><div class="topbar-title">Plan &amp; Reflect</div></div>
+      <div class="topbar"><div class="tb-side"></div><div class="tb-mini">Plan &amp; Reflect</div><div class="tb-side tb-r"><button class="av-btn" data-act="open-profile" aria-label="Profile"><span class="av-ini">DY</span><img class="av-img hidden" alt=""/></button></div></div>
+      <div class="lg-head"><div class="lg-title">Plan &amp; Reflect</div></div>
       <div class="gap"></div>
       <div class="sec-lbl">Evening reflection</div>
       <div class="plan-form">
@@ -812,7 +822,8 @@ input,select,textarea{font:inherit;color:inherit}
 
     <!-- PROFILE -->
     <div class="screen" id="s-profile">
-      <div class="topbar"><div class="topbar-title">Profile</div></div>
+      <div class="topbar"><div class="tb-side"><button class="tb-back" data-act="profile-back" aria-label="Back"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg></button></div><div class="tb-mini">Profile</div><div class="tb-side tb-r"></div></div>
+      <div class="lg-head"><div class="lg-title">Profile</div></div>
       <div class="profile-hero">
         <button class="avatar-lg" data-act="pick-avatar" aria-label="Change photo">
           <span id="avatar-lg-ini">DY</span>
@@ -864,10 +875,6 @@ input,select,textarea{font:inherit;color:inherit}
     <button class="nav-btn" id="nav-plan" data-act="goto" data-tab="plan">
       <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
       <span class="nav-lbl">Plan</span>
-    </button>
-    <button class="nav-btn" id="nav-profile" data-act="goto" data-tab="profile">
-      <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-      <span class="nav-lbl">Profile</span>
     </button>
   </nav>
 </div>
@@ -1369,17 +1376,24 @@ function todayReflection(){return S.journal.find(e=>e.date===TODAY_KEY)||null;}
 
 // ===== NAV + SHEETS =====
 const TABS=['today','progress','focus','plan','profile'];
+let LAST_TAB='today';
 function goTo(t){
+  const cur=TABS.find(x=>$('s-'+x).classList.contains('active'));
+  if(t==='profile'&&cur&&cur!=='profile')LAST_TAB=cur;
   TABS.forEach(s=>{
     $('s-'+s).classList.toggle('active',s===t);
-    $('nav-'+s).classList.toggle('active',s===t);
+    const nb=$('nav-'+s);if(nb)nb.classList.toggle('active',s===t);
   });
+  const sc=$('s-'+t);if(sc){sc.scrollTop=0;sc.classList.remove('scrolled');}
   if(t==='today')renderToday();
   if(t==='progress')renderProgress();
   if(t==='focus')renderFocus();
   if(t==='plan')renderPlan();
   if(t==='profile')renderProfile();
 }
+document.querySelectorAll('.screen').forEach(sc=>{
+  sc.addEventListener('scroll',()=>{sc.classList.toggle('scrolled',sc.scrollTop>36);},{passive:true});
+});
 function openSheet(id){
   if(id==='sh-profile'){$('pf-name').value=S.name||'';$('pf-why').value=S.why||'';}
   if(id==='sh-habits'){SEL_MODE=false;SEL.clear();renderManage();}
@@ -2315,6 +2329,8 @@ function renderProfile(){
   setText('why-disp',S.why||'Tap to add your reason.');
   setText('rest-sub',restSubText());
   setText('avatar-lg-ini',initials(S.name));
+  document.querySelectorAll('.av-ini').forEach(e=>{e.textContent=initials(S.name);e.classList.toggle('hidden',!!S.avatar);});
+  document.querySelectorAll('.av-img').forEach(e=>{if(S.avatar){e.src=S.avatar;e.classList.remove('hidden');}else e.classList.add('hidden');});
   const img=$('avatar-lg-img');
   if(S.avatar){img.src=S.avatar;img.classList.remove('hidden');$('avatar-lg-ini').classList.add('hidden');}
   else{img.classList.add('hidden');$('avatar-lg-ini').classList.remove('hidden');}
@@ -2871,6 +2887,8 @@ function obStep(n){
 const ACTIONS={
   'skip-splash':()=>skipSplash(),
   'goto':el=>goTo(el.dataset.tab),
+  'open-profile':()=>goTo('profile'),
+  'profile-back':()=>goTo(LAST_TAB||'today'),
   'ob-next':el=>obStep(+el.dataset.step),
   'ob-name':()=>{const v=$('ob-name').value.trim();if(v)S.name=v.slice(0,40);save();startPicker();obStep(5);},
   'pick-toggle':pickToggle,
