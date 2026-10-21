@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"/>
 <meta name="mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
-<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <meta name="apple-mobile-web-app-title" content="DNY"/>
 <meta name="color-scheme" content="light dark"/>
 <meta name="theme-color" content="#F7F3EA" media="(prefers-color-scheme: light)"/>
@@ -62,6 +62,27 @@ input,select,textarea{font:inherit;color:inherit}
 .sp-msg{margin:26px auto 0;max-width:260px;font-family:'Lora',Georgia,serif;font-size:16px;color:var(--t1);line-height:1.5}
 .sp-tap{margin-top:30px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--t3);opacity:0;animation:fade-in .5s 1.4s ease forwards}
 @keyframes fade-in{to{opacity:1}}
+
+/* ===== STATUS BAR FILL, CREDIT, TOUR ===== */
+#sbfill{position:fixed;top:0;left:0;right:0;height:var(--safe-top);z-index:10000;pointer-events:none;background:#1E2B25}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) #sbfill{background:var(--bg)}}
+:root[data-theme=dark] #sbfill{background:var(--bg)}
+.sp-credit{position:absolute;left:0;right:0;bottom:calc(var(--safe-bot) + 22px);text-align:center;font-size:12px;letter-spacing:.06em;color:var(--t3)}
+#sh-whatsnew{z-index:9400}
+.wn-list{list-style:none;display:flex;flex-direction:column;gap:10px;margin:0 0 14px}
+.wn-list li{font-size:14px;line-height:1.5;color:var(--t1);padding-left:16px;position:relative}
+.wn-list li::before{content:'';position:absolute;left:0;top:8px;width:6px;height:6px;border-radius:50%;background:var(--accent)}
+#tour{position:fixed;inset:0;z-index:9600;display:none}
+#tour.show{display:block}
+.tour-ring{position:fixed;border-radius:14px;box-shadow:0 0 0 9999px var(--scrim);border:2px solid var(--accent-line);pointer-events:none;transition:top .25s ease,left .25s ease,width .25s ease,height .25s ease}
+.tour-card{position:fixed;left:16px;right:16px;max-width:380px;margin:0 auto;background:var(--s1);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:0 12px 40px rgba(0,0,0,.25)}
+.tour-n{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--t3)}
+.tour-t{font-family:'Lora',Georgia,serif;font-size:18px;font-weight:600;margin-top:4px}
+.tour-d{font-size:14px;color:var(--t2);line-height:1.55;margin-top:6px}
+.tour-row{display:flex;gap:10px;margin-top:14px;justify-content:flex-end}
+.tour-row button{min-height:44px;padding:0 18px;border-radius:var(--r-sm);font-weight:600;font-size:14px}
+.tour-skip{color:var(--t2)}
+.tour-next{background:var(--accent);color:var(--accent-ink)}
 
 /* ===== ONBOARDING ===== */
 #onboarding{position:fixed;inset:0;background:var(--bg);z-index:9000;display:none;flex-direction:column;overflow:hidden}
@@ -574,6 +595,7 @@ input,select,textarea{font:inherit;color:inherit}
 </style>
 </head>
 <body>
+<div id="sbfill" aria-hidden="true"></div>
 
 <!-- SPLASH -->
 <div id="splash" data-act="skip-splash" role="button" aria-label="Continue">
@@ -583,6 +605,7 @@ input,select,textarea{font:inherit;color:inherit}
     <div class="sp-msg"></div>
     <div class="sp-tap">Tap to continue</div>
   </div>
+  <div class="sp-credit">Created by Sadiq Daniya</div>
 </div>
 <script>
 (function(){
@@ -758,6 +781,7 @@ const SPLASH_MSGS={
       <div class="topbar"><div class="tb-side"></div><div class="tb-mini">Progress</div><div class="tb-side tb-r"><button class="av-btn" data-act="open-profile" aria-label="Profile"><span class="av-ini">DY</span><img class="av-img hidden" alt=""/></button></div></div>
       <div class="lg-head"><div class="lg-title">Progress</div></div>
       <div class="stats-grid" id="stat-tiles"></div>
+      <div id="yday"></div>
       <div id="recover"></div>
 
       <div class="gap"></div>
@@ -911,6 +935,7 @@ const SPLASH_MSGS={
         <button class="settings-row" data-act="open-sheet" data-sheet="sh-theme"><div class="settings-ic"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></svg></div><div class="settings-lbl">Appearance<span id="theme-sub" style="display:block;font-size:11px;color:var(--t3);margin-top:1px">Auto</span></div><div class="settings-arr">›</div></button>
         <button class="settings-row" data-act="open-sheet" data-sheet="sh-notif"><div class="settings-ic"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div><div class="settings-lbl">Reminders</div><div class="settings-arr">›</div></button>
         <button class="settings-row" data-act="open-sheet" data-sheet="sh-rest"><div class="settings-ic"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></div><div class="settings-lbl">Rest days<span id="rest-sub" style="display:block;font-size:11px;color:var(--t3);margin-top:1px">None</span></div><div class="settings-arr">›</div></button>
+        <button class="settings-row" data-act="start-tour"><div class="settings-ic"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 .9-1 1.7"/><path d="M12 17h.01"/></svg></div><div class="settings-lbl">App tour</div><div class="settings-arr">›</div></button>
       </div>
       <div class="gap"></div>
       <div class="settings-g-lbl">Your data</div>
@@ -1104,6 +1129,37 @@ const SPLASH_MSGS={
       <button class="sheet-btn ghost" id="ha-clear" data-act="ha-clear">Clear today's mark</button>
       <button class="sheet-btn ghost" data-act="ha-edit">Edit habit</button>
       <div class="sheet-note">A skipped habit does not count against your score. Your streak stays safe.</div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="sh-whatsnew" data-act="overlay-close">
+  <div class="sheet" role="dialog" aria-modal="true" aria-label="What is new">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">What's new in DNY</div>
+    <div class="sheet-body">
+      <ul class="wn-list">
+        <li>Yesterday review. Open Progress to mark any evening habits you missed. Your streak and score update.</li>
+        <li>A short tour shows you where everything is, including your profile.</li>
+        <li>The app now fills the top of your screen, behind the time and battery.</li>
+        <li>Reminders now send with higher priority so they arrive sooner when your phone is online.</li>
+        <li>Your name appears at the bottom of the opening screen.</li>
+      </ul>
+      <button class="sheet-btn" data-act="wn-tour">Take a quick tour</button>
+      <button class="sheet-btn ghost" data-act="wn-close">Got it</button>
+    </div>
+  </div>
+</div>
+
+<div id="tour" aria-live="polite">
+  <div class="tour-ring" id="tour-ring"></div>
+  <div class="tour-card" id="tour-card" role="dialog" aria-label="App tour">
+    <div class="tour-n" id="tour-n"></div>
+    <div class="tour-t" id="tour-t"></div>
+    <div class="tour-d" id="tour-d"></div>
+    <div class="tour-row">
+      <button class="tour-skip" data-act="tour-skip">Skip</button>
+      <button class="tour-next" id="tour-next" data-act="tour-next">Next</button>
     </div>
   </div>
 </div>
@@ -1682,6 +1738,7 @@ function renderProgress(){
   ];
   const noData=!Object.keys(S.history).length;
   $('stat-tiles').innerHTML=noData?'<div class="card fempty" style="grid-column:1/-1">Your progress shows here after your first day. Tick a habit on Today to begin.</div>':tiles.map(t=>'<div class="stat-c"><div class="stat-v" style="color:'+t[2]+'">'+esc(t[0])+'</div><div class="stat-l">'+esc(t[1])+'</div></div>').join('');
+  renderYesterday();
   renderRecover();
   renderReport();
   renderChart();
@@ -2948,9 +3005,121 @@ function obStep(n){
   if(w)w.scrollTop=0;
 }
 
+// ===== YESTERDAY REVIEW =====
+// Lets you mark yesterday's missed evening habits. Streak and score are rebuilt from the day's record.
+let YD={y:'',ids:[]};
+function eveningHabit(h){return h.at?timeGroup(h.at)==='evening':h.time==='evening';}
+function recomputeFromLog(key){
+  const log=S.hlog[key];
+  if(!log)return;
+  let req=0,earn=0;
+  const cats={};
+  activeHabits(key).forEach(h=>{
+    const v=log[h.id];
+    if(v===undefined||v===3)return;
+    if(h.tier==='bonus')return;
+    const w=WEIGHT[h.tier];
+    req+=w;
+    if(v===1)earn+=w;else if(v===2)earn+=w/2;
+    const c=cats[h.cat]||(cats[h.cat]=[0,0]);
+    c[1]++;if(v===1||v===2)c[0]++;
+  });
+  S.history[key]=req?Math.round(earn/req*100):0;
+  S.catlog[key]=cats;
+}
+function renderYesterday(){
+  const el=$('yday');
+  if(!el)return;
+  const y=addDays(TODAY_KEY,-1);
+  const log=S.hlog[y];
+  if(!log||S.history[y]==null){YD={y:'',ids:[]};el.innerHTML='';return;}
+  if(YD.y!==y)YD={y:y,ids:activeHabits(y).filter(h=>log[h.id]===0&&eveningHabit(h)).map(h=>h.id)};
+  const hs=YD.ids.map(id=>S.habits.find(h=>h.id===id)).filter(Boolean);
+  if(!hs.length){el.innerHTML='';return;}
+  const left=hs.filter(h=>log[h.id]===0).length;
+  const note=left
+    ?'You missed '+left+' evening '+(left===1?'habit':'habits')+' on '+esc(dayLabel(y))+'. If you did any of them, mark them. Your streak and score will update.'
+    :'All marked. Your streak and score are updated.';
+  el.innerHTML='<div class="card recover"><div class="recover-t">Yesterday evening</div><div class="recover-s">'+note+'</div>'
+    +hs.map(h=>'<div class="rec-row"><span>'+esc(h.title)+'</span>'
+      +(log[h.id]===1
+        ?'<button class="rec-btn" data-act="yday-undo" data-id="'+esc(h.id)+'">Undo</button>'
+        :'<button class="rec-btn" data-act="yday-mark" data-id="'+esc(h.id)+'">Mark done</button>')
+      +'</div>').join('')+'</div>';
+}
+function ydayMark(id,val){
+  const y=addDays(TODAY_KEY,-1);
+  const log=S.hlog[y];
+  if(!log||YD.y!==y||!YD.ids.includes(id)||(log[id]!==0&&log[id]!==1))return;
+  log[id]=val;
+  recomputeFromLog(y);
+  save();
+  renderProgress();renderToday();
+  toast(val?'Marked done. Streak updated.':'Undone.');
+}
+
+// ===== APP TOUR AND WHAT'S NEW =====
+const APP_VER='2026-10-21';
+function markSeen(){try{localStorage.setItem('dny-seen',APP_VER);}catch(e){}}
+function maybeWhatsNew(){
+  let v=null;
+  try{v=localStorage.getItem('dny-seen');}catch(e){}
+  if(v===APP_VER)return;
+  $('sh-whatsnew').classList.add('show');
+  markSeen();
+}
+const TOUR=[
+  {tab:'today',sel:'#nav-today',t:'Today',d:'Your habits for the day. Tap a habit to tick it.'},
+  {tab:'progress',sel:'#nav-progress',t:'Progress',d:'Your streaks, reports and daily score. Missed evening habits from yesterday show here.'},
+  {tab:'focus',sel:'#nav-focus',t:'Focus',d:'Start a timer for study or deep work.'},
+  {tab:'plan',sel:'#nav-plan',t:'Plan',d:'Write your evening reflection and plan tomorrow.'},
+  {tab:'today',sel:'#s-today .av-btn',t:'Your profile',d:'Tap your picture at the top right. Reminders, theme, rest days, cloud sync and your habits are there.'}
+];
+let TOUR_I=0;
+function startTour(){
+  closeSheet('sh-whatsnew');
+  TOUR_I=0;
+  $('tour').classList.add('show');
+  tourShow();
+}
+function tourShow(){
+  const s=TOUR[TOUR_I];
+  goTo(s.tab);
+  setText('tour-n','Step '+(TOUR_I+1)+' of '+TOUR.length);
+  setText('tour-t',s.t);
+  setText('tour-d',s.d);
+  setText('tour-next',TOUR_I===TOUR.length-1?'Done':'Next');
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    const t=document.querySelector(s.sel),ring=$('tour-ring'),card=$('tour-card');
+    if(!t){ring.style.display='none';card.style.top='auto';card.style.bottom='120px';return;}
+    const r=t.getBoundingClientRect();
+    ring.style.display='block';
+    ring.style.top=(r.top-6)+'px';ring.style.left=(r.left-6)+'px';
+    ring.style.width=(r.width+12)+'px';ring.style.height=(r.height+12)+'px';
+    if(r.top>window.innerHeight/2){card.style.top='auto';card.style.bottom=(window.innerHeight-r.top+18)+'px';}
+    else{card.style.bottom='auto';card.style.top=(r.bottom+18)+'px';}
+  }));
+}
+function tourNext(){
+  if(TOUR_I>=TOUR.length-1){tourEnd();return;}
+  TOUR_I++;tourShow();
+}
+function tourEnd(){
+  $('tour').classList.remove('show');
+  goTo('today');
+  markSeen();
+}
+
 // ===== ACTIONS =====
 const ACTIONS={
   'skip-splash':()=>skipSplash(),
+  'yday-mark':el=>ydayMark(el.dataset.id,1),
+  'yday-undo':el=>ydayMark(el.dataset.id,0),
+  'start-tour':()=>startTour(),
+  'tour-next':()=>tourNext(),
+  'tour-skip':()=>tourEnd(),
+  'wn-tour':()=>startTour(),
+  'wn-close':()=>closeSheet('sh-whatsnew'),
   'goto':el=>goTo(el.dataset.tab),
   'open-profile':()=>goTo('profile'),
   'profile-back':()=>goTo(LAST_TAB||'today'),
@@ -2980,6 +3149,8 @@ const ACTIONS={
     S.onboarded=true;save();
     $('onboarding').style.display='none';
     showApp();
+    markSeen();
+    startTour();
   },
     'acc-toggle':el=>{ACC[el.dataset.block]=!ACC[el.dataset.block];buildTaskList();},
   'toggle-habit':el=>toggleHabit(el.dataset.id),
@@ -3127,7 +3298,7 @@ function skipSplash(){
   sp.classList.add('hide');
   setTimeout(()=>{
     sp.style.display='none';
-    if(S.onboarded)showApp();
+    if(S.onboarded){showApp();maybeWhatsNew();}
     else $('onboarding').style.display='flex';
   },400);
 }

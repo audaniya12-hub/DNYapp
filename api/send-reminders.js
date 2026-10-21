@@ -115,7 +115,7 @@ async function sendOne(item) {
         'Content-Encoding': 'aes128gcm',
         'Content-Type': 'application/octet-stream',
         TTL: '3600',
-        Urgency: 'normal'
+        Urgency: 'high'
       },
       body,
       signal: AbortSignal.timeout(8000)
