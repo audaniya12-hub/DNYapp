@@ -17,7 +17,18 @@
 <link rel="manifest" href="manifest.json"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Lora:wght@500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'"/>
+<script>
+(function(){
+  var d=document.documentElement,done=false;
+  function ok(){if(done)return;done=true;d.classList.add('fonts-ok');}
+  setTimeout(ok,1500);
+  window.dnyFonts=function(){
+    if(!document.fonts||!document.fonts.load){ok();return;}
+    Promise.all([document.fonts.load('700 58px Lora'),document.fonts.load('400 16px Lora'),document.fonts.load('400 12px Inter')]).then(ok,ok);
+  };
+})();
+</script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Lora:wght@500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all';window.dnyFonts&&dnyFonts()"/>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{
@@ -55,19 +66,22 @@ input,select,textarea{font:inherit;color:inherit}
 #splash{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 35%,var(--s2) 0%,var(--bg) 70%);cursor:pointer}
 #splash.hide{animation:sp-out .4s ease forwards;pointer-events:none}
 @keyframes sp-out{to{opacity:0}}
-.sp-card{text-align:center;padding:24px;animation:sp-in .7s ease both}
+.sp-card{text-align:center;padding:24px;opacity:0}
+html.fonts-ok .sp-card{animation:sp-in .7s ease both}
 @keyframes sp-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 .sp-logo{font-family:'Lora',Georgia,serif;font-size:58px;font-weight:700;letter-spacing:.14em;color:var(--accent);line-height:1;padding-left:.14em}
 .sp-sub{margin-top:8px;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--t3)}
 .sp-msg{margin:26px auto 0;max-width:260px;font-family:'Lora',Georgia,serif;font-size:16px;color:var(--t1);line-height:1.5}
-.sp-tap{margin-top:30px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--t3);opacity:0;animation:fade-in .5s 1.4s ease forwards}
+.sp-tap{margin-top:30px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--t3);opacity:0}
+html.fonts-ok .sp-tap{animation:fade-in .5s 1.4s ease forwards}
 @keyframes fade-in{to{opacity:1}}
 
 /* ===== STATUS BAR FILL, CREDIT, TOUR ===== */
 #sbfill{position:fixed;top:0;left:0;right:0;height:var(--safe-top);z-index:10000;pointer-events:none;background:#1E2B25}
 @media (prefers-color-scheme:dark){:root:not([data-theme=light]) #sbfill{background:var(--bg)}}
 :root[data-theme=dark] #sbfill{background:var(--bg)}
-.sp-credit{position:absolute;left:0;right:0;bottom:calc(var(--safe-bot) + 22px);text-align:center;font-size:12px;letter-spacing:.06em;color:var(--t3)}
+.sp-credit{position:absolute;left:0;right:0;bottom:calc(var(--safe-bot) + 22px);text-align:center;font-size:12px;letter-spacing:.06em;color:var(--t3);opacity:0}
+html.fonts-ok .sp-credit{animation:fade-in .5s ease forwards}
 #sh-whatsnew{z-index:9400}
 .wn-list{list-style:none;display:flex;flex-direction:column;gap:10px;margin:0 0 14px}
 .wn-list li{font-size:14px;line-height:1.5;color:var(--t1);padding-left:16px;position:relative}
@@ -1143,7 +1157,6 @@ const SPLASH_MSGS={
         <li>A short tour shows you where everything is, including your profile.</li>
         <li>The app now fills the top of your screen, behind the time and battery.</li>
         <li>Reminders now send with higher priority so they arrive sooner when your phone is online.</li>
-        <li>Your name appears at the bottom of the opening screen.</li>
       </ul>
       <button class="sheet-btn" data-act="wn-tour">Take a quick tour</button>
       <button class="sheet-btn ghost" data-act="wn-close">Got it</button>
