@@ -98,6 +98,14 @@ html.fonts-ok .sp-credit{animation:fade-in .5s ease forwards}
 .tour-skip{color:var(--t2)}
 .tour-next{background:var(--accent);color:var(--accent-ink)}
 
+.arr-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-top:1px solid var(--line)}
+.arr-row:first-child{border-top:none}
+.arr-main{flex:1;min-width:0}
+.arr-t{display:block;font-size:14px;font-weight:600}
+.arr-s{display:block;font-size:12px;color:var(--t3);margin-top:2px}
+.arr-btn{width:44px;height:44px;flex:none;border-radius:var(--r-sm);background:var(--s2);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--t1)}
+.arr-btn:active{background:var(--s3)}
+.arr-btn:disabled{opacity:.3}
 /* ===== ONBOARDING ===== */
 #onboarding{position:fixed;inset:0;background:var(--bg);z-index:9000;display:none;flex-direction:column;overflow:hidden}
 .ob-wrap{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:calc(var(--safe-top) + 24px) 22px calc(var(--safe-bot) + 24px);display:flex;flex-direction:column;max-width:480px;width:100%;margin:0 auto}
@@ -1010,6 +1018,7 @@ const SPLASH_MSGS={
         <button class="sheet-btn soft" style="margin-top:0" data-act="sel-start">Select</button>
       </div>
       <button class="sheet-btn soft" id="hs-sug" data-act="open-sheet" data-sheet="sh-suggest">Add from suggested habits</button>
+      <button class="sheet-btn soft" id="hs-arr" data-act="open-sheet" data-sheet="sh-arrange">Arrange order</button>
       <div class="btn-row hidden" id="hs-sel">
         <button class="sheet-btn soft" style="margin-top:0" data-act="sel-all">Select all</button>
         <button class="sheet-btn ghost" style="margin-top:0" data-act="sel-cancel">Cancel</button>
@@ -1147,16 +1156,30 @@ const SPLASH_MSGS={
   </div>
 </div>
 
+<div class="overlay" id="sh-arrange" data-act="overlay-close">
+  <div class="sheet" role="dialog" aria-modal="true" aria-label="Arrange habits">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Arrange order</div>
+    <div class="sheet-body">
+      <div class="sheet-note" style="margin-top:0">Use the arrows to set the order inside each part of the day. Next up follows your order. A habit with a start time comes up at that time. Extra habits always come last.</div>
+      <div id="arr-body"></div>
+      <button class="sheet-btn ghost" data-act="close-sheet" data-sheet="sh-arrange">Done</button>
+    </div>
+  </div>
+</div>
+
 <div class="overlay" id="sh-whatsnew" data-act="overlay-close">
   <div class="sheet" role="dialog" aria-modal="true" aria-label="What is new">
     <div class="sheet-handle"></div>
     <div class="sheet-title">What's new in DNY</div>
     <div class="sheet-body">
       <ul class="wn-list">
+        <li>Arrange your habits. Open Profile, then Manage habits, then Arrange order. Next up now follows your order inside each part of the day.</li>
         <li>Yesterday review. Open Progress to mark any evening habits you missed. Your streak and score update.</li>
-        <li>A short tour shows you where everything is, including your profile.</li>
-        <li>The app now fills the top of your screen, behind the time and battery.</li>
+        <li>App tour. A short tour shows you where everything is, including your profile. You can replay it from Profile.</li>
+        <li>Full screen look. The app now fills the top of your screen, behind the time and battery.</li>
         <li>Reminders now send with higher priority so they arrive sooner when your phone is online.</li>
+        <li>Smoother opening screen. The text no longer jumps when the app starts.</li>
       </ul>
       <button class="sheet-btn" data-act="wn-tour">Take a quick tour</button>
       <button class="sheet-btn ghost" data-act="wn-close">Got it</button>
@@ -1531,6 +1554,7 @@ document.querySelectorAll('.screen').forEach(sc=>{
 function openSheet(id){
   if(id==='sh-profile'){$('pf-name').value=S.name||'';$('pf-why').value=S.why||'';}
   if(id==='sh-habits'){SEL_MODE=false;SEL.clear();renderManage();}
+  if(id==='sh-arrange')renderArrange();
   if(id==='sh-suggest'){PICK.sg.clear();renderPicker('sg');}
   if(id==='sh-account')renderAccount();
   if(id==='sh-rest')renderRestDays();
@@ -1636,15 +1660,20 @@ function buildTaskList(){
   root.innerHTML=html+'<button class="add-habit" data-act="habit-new">+ Add a habit</button>';
 }
 
-// The one habit to do next: Essential first, then Regular, then Extra. Habits for the current part of the day come first.
+// The one habit to do next.
+// Extra habits come last. The current part of the day comes first.
+// Inside it: habits whose start time has passed, then your own order, then habits with a start time still ahead.
 function pickNext(hr){
   const cur=hr<12?'morning':hr<17?'any':'evening';
   const ci=TIME_ORDER.indexOf(cur);
-  const tierRank={core:0,standard:1,bonus:2};
-  const list=activeHabits(TODAY_KEY).map((h,i)=>({h,i})).filter(x=>!habitMark(x.h.id));
+  const t=new Date();
+  const now=pad(t.getHours())+':'+pad(t.getMinutes());
+  const list=activeHabits(TODAY_KEY).filter(h=>!habitMark(h.id)).map(h=>({h,i:S.habits.indexOf(h)}));
   const rank=x=>{
-    const gi=TIME_ORDER.indexOf(x.h.time);
-    return [x.h.tier==='bonus'?1:0,gi===ci?0:gi<ci?1:2,tierRank[x.h.tier],x.h.at||'99:99',x.i];
+    const h=x.h;
+    const gi=TIME_ORDER.indexOf(h.time);
+    const band=h.at?(h.at<=now?0:2):1;
+    return [h.tier==='bonus'?1:0,gi===ci?0:gi<ci?1:2,band,band===1?'':h.at,x.i];
   };
   list.sort((a,b)=>{const ra=rank(a),rb=rank(b);for(let k=0;k<ra.length;k++){if(ra[k]<rb[k])return -1;if(ra[k]>rb[k])return 1;}return 0;});
   return list.length?list[0].h:null;
@@ -3018,6 +3047,43 @@ function obStep(n){
   if(w)w.scrollTop=0;
 }
 
+// ===== ARRANGE HABITS =====
+// Your list order is the order Next up uses. Arrows swap a habit with its neighbour in the same part of the day.
+const ARR_UP='<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg>';
+const ARR_DOWN='<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
+function renderArrange(){
+  const body=$('arr-body');
+  if(!body)return;
+  const host=body.closest('.sheet-body');
+  const top=host?host.scrollTop:0;
+  let h='';
+  TIME_ORDER.forEach(tm=>{
+    const list=S.habits.filter(x=>x.time===tm);
+    if(!list.length)return;
+    h+='<div class="sheet-lbl">'+esc(TIME_LBL[tm])+'</div><div class="mlist">'
+      +list.map((x,i)=>{
+        const sub=[habitWhen(x),x.tier==='bonus'?'Extra':''].filter(Boolean).join(' · ')||CAT_SHORT[x.cat];
+        return '<div class="arr-row"><span class="arr-main"><span class="arr-t">'+esc(x.title)+'</span><span class="arr-s">'+esc(sub)+'</span></span>'
+          +'<button class="arr-btn" data-act="arr-up" data-id="'+esc(x.id)+'" aria-label="Move '+esc(x.title)+' up"'+(i===0?' disabled':'')+'>'+ARR_UP+'</button>'
+          +'<button class="arr-btn" data-act="arr-down" data-id="'+esc(x.id)+'" aria-label="Move '+esc(x.title)+' down"'+(i===list.length-1?' disabled':'')+'>'+ARR_DOWN+'</button></div>';
+      }).join('')+'</div>';
+  });
+  body.innerHTML=h||'<div class="empty-note">No habits yet.</div>';
+  if(host)host.scrollTop=top;
+}
+function arrangeMove(id,dir){
+  const h=S.habits.find(x=>x.id===id);
+  if(!h)return;
+  const group=S.habits.filter(x=>x.time===h.time);
+  const nb=group[group.indexOf(h)+dir];
+  if(!nb)return;
+  const i=S.habits.indexOf(h),j=S.habits.indexOf(nb);
+  S.habits[i]=nb;S.habits[j]=h;
+  save();
+  renderArrange();
+  renderToday();
+}
+
 // ===== YESTERDAY REVIEW =====
 // Lets you mark yesterday's missed evening habits. Streak and score are rebuilt from the day's record.
 let YD={y:'',ids:[]};
@@ -3072,7 +3138,7 @@ function ydayMark(id,val){
 }
 
 // ===== APP TOUR AND WHAT'S NEW =====
-const APP_VER='2026-10-21';
+const APP_VER='2026-10-21b';
 function markSeen(){try{localStorage.setItem('dny-seen',APP_VER);}catch(e){}}
 function maybeWhatsNew(){
   let v=null;
@@ -3126,6 +3192,8 @@ function tourEnd(){
 // ===== ACTIONS =====
 const ACTIONS={
   'skip-splash':()=>skipSplash(),
+  'arr-up':el=>arrangeMove(el.dataset.id,-1),
+  'arr-down':el=>arrangeMove(el.dataset.id,1),
   'yday-mark':el=>ydayMark(el.dataset.id,1),
   'yday-undo':el=>ydayMark(el.dataset.id,0),
   'start-tour':()=>startTour(),
