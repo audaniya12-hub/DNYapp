@@ -246,6 +246,20 @@ html.fonts-ok .sp-credit{animation:fade-in .5s ease forwards}
 .hm-e{background:transparent}
 .hm-0{background:var(--s3)}.hm-1{background:var(--accent);opacity:.25}.hm-2{background:var(--accent);opacity:.45}.hm-3{background:var(--accent);opacity:.7}.hm-4{background:var(--accent)}
 .hm-today{outline:1.5px solid var(--gold);outline-offset:1px}
+.wk-card{margin:14px 18px 0;padding:16px 8px 16px}
+.wk-title{font-family:'Lora',Georgia,serif;font-size:17px;font-weight:600;padding:0 8px 12px}
+.wk-row{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.wk-d{display:flex;flex-direction:column;align-items:center;gap:7px;padding:8px 0 9px;border-radius:14px;border:1px solid transparent}
+.wk-d.today{background:var(--s3);border-color:var(--line)}
+.wk-n{font-size:11px;color:var(--t2)}
+.wk-c{width:30px;height:30px;border-radius:50%;border:1.5px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;color:var(--t2)}
+.wk-c.part{background:var(--accent-dim);border-color:var(--accent-line);color:var(--accent)}
+.wk-c.full{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
+.wk-c.rest{border-style:dashed;color:var(--t3)}
+.wk-sum{font-size:12px;color:var(--t2);padding:10px 8px 0}
+.wk-note{margin:14px 8px 0;padding:4px 0 4px 14px;border-left:3px solid var(--line)}
+.wk-q{font-family:'Lora',Georgia,serif;font-style:italic;font-size:15px;line-height:1.55;color:var(--t1)}
+.wk-by{font-size:11px;color:var(--t3);margin-top:7px}
 .badge-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 18px}
 .badge-c{background:var(--s1);border:1px solid var(--line);border-radius:var(--r);padding:12px;display:flex;align-items:center;gap:10px}
 .badge-ic{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;background:var(--gold-dim)}
@@ -802,6 +816,7 @@ const SPLASH_MSGS={
     <div class="screen" id="s-progress">
       <div class="topbar"><div class="tb-side"></div><div class="tb-mini">Progress</div><div class="tb-side tb-r"><button class="av-btn" data-act="open-profile" aria-label="Profile"><span class="av-ini">DY</span><img class="av-img hidden" alt=""/></button></div></div>
       <div class="lg-head"><div class="lg-title">Progress</div></div>
+      <div id="week-card"></div>
       <div class="stats-grid" id="stat-tiles"></div>
       <div id="yday"></div>
       <div id="recover"></div>
@@ -1075,7 +1090,7 @@ const SPLASH_MSGS={
       <input class="sheet-input" type="number" id="hb-dur" inputmode="numeric" min="1" max="600" step="1" placeholder="e.g. 30"/>
       <label class="sheet-lbl" for="hb-time">Time of day</label>
       <select class="sheet-input" id="hb-time"></select>
-      <div class="sheet-note" id="hb-time-note">With a start time, DNY places the habit in Morning, Anytime or Evening for you. Habits are listed in time order.</div>
+      <div class="sheet-note" id="hb-time-note">With a start time, DNY places the habit in Morning, Afternoon or Evening for you. Habits are listed in time order.</div>
       <div class="sheet-lbl">Phone reminder</div>
       <div class="seg in" id="hb-rem-seg">
         <button data-act="rem-pick" data-k="">Off</button>
@@ -1174,12 +1189,9 @@ const SPLASH_MSGS={
     <div class="sheet-title">What's new in DNY</div>
     <div class="sheet-body">
       <ul class="wn-list">
-        <li>Arrange your habits. Open Profile, then Manage habits, then Arrange order. Next up now follows your order inside each part of the day.</li>
-        <li>Yesterday review. Open Progress to mark any evening habits you missed. Your streak and score update.</li>
-        <li>App tour. A short tour shows you where everything is, including your profile. You can replay it from Profile.</li>
-        <li>Full screen look. The app now fills the top of your screen, behind the time and battery.</li>
-        <li>Reminders now send with higher priority so they arrive sooner when your phone is online.</li>
-        <li>Smoother opening screen. The text no longer jumps when the app starts.</li>
+        <li>Afternoon section. Today now has Morning, Afternoon, Anytime and Evening. Pick the part of the day when you add or edit a habit.</li>
+        <li>Afternoon hours. A habit with a start time from 12:00 to 16:59 now sits in Afternoon. Habits that start from 17:00 stay in Evening.</li>
+        <li>Your quiet rhythm. Progress now opens with your last 7 days and a short note for the day.</li>
       </ul>
       <button class="sheet-btn" data-act="wn-tour">Take a quick tour</button>
       <button class="sheet-btn ghost" data-act="wn-close">Got it</button>
@@ -1260,8 +1272,8 @@ const CATS={faith:'Faith & Spirit',mind:'Mind & Study',body:'Body & Health',ment
 const CAT_SHORT={faith:'Faith',mind:'Mind',body:'Body',mental:'Wellbeing',life:'Life'};
 const TIER_LBL={core:'Essential',standard:'Regular',bonus:'Extra'};
 const WEIGHT={core:2,standard:1};
-const TIME_LBL={morning:'Morning',any:'Anytime',evening:'Evening'};
-const TIME_ORDER=['morning','any','evening'];
+const TIME_LBL={morning:'Morning',afternoon:'Afternoon',any:'Anytime',evening:'Evening'};
+const TIME_ORDER=['morning','afternoon','any','evening'];
 const DAYS_S=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const TK={end:'dny-timer-end',mins:'dny-timer-mins',lbl:'dny-timer-lbl',link:'dny-timer-link'};
 
@@ -1339,7 +1351,8 @@ LAST_SIG=canon(S);
 const DEF={history:{},catlog:{},hlog:{},focusLog:{},checked:{},partial:{},skipped:{},off:{},offDays:[],todayDate:'',sessions:[],focusTotal:0,journal:[],plan:{},name:'',why:'',avatar:'',onboarded:false};
 
 const AT_RE=/^([01]\d|2[0-3]):[0-5]\d$/;
-function timeGroup(at){const h=+at.slice(0,2);return h<12?'morning':h>=17?'evening':'any';}
+// Morning ends at 11:59. Afternoon runs 12:00 to 16:59. Evening starts at 17:00.
+function timeGroup(at){const h=+at.slice(0,2);return h<12?'morning':h<17?'afternoon':'evening';}
 function fmtDur(m){return m<60?m+' min':(m%60?Math.floor(m/60)+' hr '+(m%60)+' min':(m/60)+' hr');}
 function habitWhen(h){return [h.at?fmtTime(h.at):'',h.dur?fmtDur(h.dur):''].filter(Boolean).join(' · ');}
 function normHabit(h){
@@ -1360,7 +1373,7 @@ function normHabit(h){
     time:typeof h.time==='string'&&has(TIME_LBL,h.time)?h.time:'any',
     days
   };
-  if(typeof h.at==='string'&&AT_RE.test(h.at))out.at=h.at;
+  if(typeof h.at==='string'&&AT_RE.test(h.at)){out.at=h.at;out.time=timeGroup(h.at);}
   const dn=Math.round(Number(h.dur));
   if(Number.isFinite(dn)&&dn>=1&&dn<=600)out.dur=dn;
   if(h.auto==='journal'||h.auto==='plan')out.auto=h.auto;
@@ -1564,7 +1577,7 @@ function openSheet(id){
 function closeSheet(id){$(id).classList.remove('show');}
 
 // ===== TODAY =====
-const ACC={morning:true,any:true,evening:true};
+const ACC={morning:true,afternoon:true,any:true,evening:true};
 
 function renderToday(){
   const now=new Date(),hr=now.getHours();
@@ -1664,14 +1677,15 @@ function buildTaskList(){
 // Extra habits come last. The current part of the day comes first.
 // Inside it: habits whose start time has passed, then your own order, then habits with a start time still ahead.
 function pickNext(hr){
-  const cur=hr<12?'morning':hr<17?'any':'evening';
+  const cur=hr<12?'morning':hr<17?'afternoon':'evening';
   const ci=TIME_ORDER.indexOf(cur);
   const t=new Date();
   const now=pad(t.getHours())+':'+pad(t.getMinutes());
   const list=activeHabits(TODAY_KEY).filter(h=>!habitMark(h.id)).map(h=>({h,i:S.habits.indexOf(h)}));
   const rank=x=>{
     const h=x.h;
-    const gi=TIME_ORDER.indexOf(h.time);
+    // Anytime habits count as current in the afternoon, as they did before.
+    const gi=h.time==='any'&&cur==='afternoon'?ci:TIME_ORDER.indexOf(h.time);
     const band=h.at?(h.at<=now?0:2):1;
     return [h.tier==='bonus'?1:0,gi===ci?0:gi<ci?1:2,band,band===1?'':h.at,x.i];
   };
@@ -1761,7 +1775,63 @@ function toggleHabit(id){
 // ===== PROGRESS =====
 let RANGE=7;
 
+// ===== WEEK CARD =====
+// A small daily note. It changes once a day and repeats after a month.
+const DAILY_NOTES=[
+  'Small steps done daily beat big plans left for later.',
+  'You do not need a perfect day. You need an honest one.',
+  'Start with the habit that feels easiest. Momentum will do the rest.',
+  'A missed day is information. It is not a verdict.',
+  'Show up today. Tomorrow will be easier for it.',
+  'Discipline is a quiet promise you keep to yourself.',
+  'Do the next right thing. Then the one after that.',
+  'Progress is rarely loud. It is usually steady.',
+  'One habit done well is better than five done in a rush.',
+  'Return as many times as you need. Each return counts.',
+  'Your streak is built on ordinary days.',
+  'Be patient with yourself. Be firm with your plan.',
+  'The habit you protect today protects you later.',
+  'Rest is part of the work. Take it without guilt.',
+  'Look at how far you have come, not only how far is left.',
+  'Make it small enough that you cannot say no.',
+  'Today is enough to begin again.',
+  'A calm mind finishes more than a rushed one.',
+  'What you repeat becomes who you are.',
+  'Keep your promises small and your record long.',
+  'Consistency is built one tap at a time.',
+  'You are not behind. You are exactly where today starts.',
+  'Choose the habit you will be glad you did tonight.',
+  'Effort you cannot see is still effort.',
+  'Finish the day with one honest look back.',
+  'Slow and steady still arrives.',
+  'Let today be simple. Do what matters most.',
+  'Strong habits come from gentle repetition.',
+  'Your future self is watching what you do today.',
+  'Begin where you are. Use what you have.',
+  'Good days are made by small choices made early.'
+];
+function dailyNote(){return DAILY_NOTES[Math.floor(parseKey(TODAY_KEY).getTime()/864e5)%DAILY_NOTES.length];}
+function renderWeekCard(){
+  const el=$('week-card');
+  if(!el)return;
+  const keys=lastKeys(7);
+  let active=0;
+  const cells=keys.map(k=>{
+    const v=k===TODAY_KEY?dayStats(k).score:S.history[k];
+    const cls=v>=100?'full':v>0?'part':(isOffDay(k)?'rest':'');
+    if(v>0)active++;
+    const d=parseKey(k);
+    return '<div class="wk-d'+(k===TODAY_KEY?' today':'')+'"><span class="wk-n">'+DAYS_S[d.getDay()]+'</span><span class="wk-c '+cls+'">'+d.getDate()+'</span></div>';
+  }).join('');
+  const sum=active?'Habits done on '+active+' of the last 7 days.':'Every day is a fresh start. Begin with one habit.';
+  el.innerHTML='<div class="card wk-card"><div class="wk-title">Your quiet rhythm</div>'
+    +'<div class="wk-row">'+cells+'</div>'
+    +'<div class="wk-sum">'+esc(sum)+'</div>'
+    +'<div class="wk-note"><div class="wk-q">'+esc(dailyNote())+'</div><div class="wk-by">A note for today</div></div></div>';
+}
+
 function renderProgress(){
+  renderWeekCard();
   const stk=calcStreaks();
   const vals=Object.keys(S.history).map(k=>S.history[k]);
   const perfect=vals.filter(v=>v===100).length;
@@ -3138,7 +3208,7 @@ function ydayMark(id,val){
 }
 
 // ===== APP TOUR AND WHAT'S NEW =====
-const APP_VER='2026-10-21b';
+const APP_VER='2026-10-22';
 function markSeen(){try{localStorage.setItem('dny-seen',APP_VER);}catch(e){}}
 function maybeWhatsNew(){
   let v=null;
