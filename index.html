@@ -1240,7 +1240,7 @@ const SPLASH_MSGS={
       <ul class="wn-list">
         <li>Reminders on the Plan page. Add a reminder with a title, note, date and time. Mark it Urgent when it matters most.</li>
         <li>Four views. Today, Scheduled, All and Urgent help you find what you need fast.</li>
-        <li>Phone notifications. A reminder with a date and time notifies you on time. Sign in under Cloud sync and open DNY from your Home Screen.</li>
+        <li>Phone notifications. A reminder with a date and time notifies you on time. Sign in under Cloud sync and open DNY from your Home Screen. Your reminders sync with your account.</li>
       </ul>
       <button class="sheet-btn" data-act="wn-tour">Take a quick tour</button>
       <button class="sheet-btn ghost" data-act="wn-close">Got it</button>
@@ -1397,9 +1397,10 @@ function load(){
 let S=load();
 LAST_SIG=canon(S);
 
-const DEF={history:{},catlog:{},hlog:{},focusLog:{},checked:{},partial:{},skipped:{},off:{},offDays:[],todayDate:'',sessions:[],focusTotal:0,journal:[],plan:{},name:'',why:'',avatar:'',onboarded:false};
+const DEF={history:{},catlog:{},hlog:{},focusLog:{},checked:{},partial:{},skipped:{},off:{},offDays:[],todayDate:'',sessions:[],focusTotal:0,journal:[],rems:[],plan:{},name:'',why:'',avatar:'',onboarded:false};
 
 const AT_RE=/^([01]\d|2[0-3]):[0-5]\d$/;
+const DATE_RE=/^\d{4}-\d{2}-\d{2}$/;
 // Morning ends at 11:59. Afternoon runs 12:00 to 16:59. Evening starts at 17:00.
 function timeGroup(at){const h=+at.slice(0,2);return h<12?'morning':h<17?'afternoon':'evening';}
 function fmtDur(m){return m<60?m+' min':(m%60?Math.floor(m/60)+' hr '+(m%60)+' min':(m/60)+' hr');}
@@ -1455,6 +1456,9 @@ function migrate(){
     S.journal.push({date:S.todayDate||TODAY_KEY,good:String(S.reflectionGood||''),diff:String(S.reflectionDiff||'')});
   }
   S.journal=S.journal.filter(e=>e&&typeof e.date==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(e.date)).map(e=>({date:e.date,good:String(e.good||''),diff:String(e.diff||'')}));
+  const cut=new Date(Date.now()-30*864e5).toISOString();
+  S.rems=S.rems.map(normRem).filter(r=>r&&(!r.del||!r.u||r.u>cut)).slice(0,1000);
+  S.rems.sort((a,b)=>a.id<b.id?-1:a.id>b.id?1:0);
   ['gold','streak','workoutDays','journalDone','lastSaveDate','reflectionGood','reflectionDiff'].forEach(k=>{delete S[k];});
 }
 migrate();
@@ -2686,10 +2690,10 @@ function importBackup(input){
   r.readAsText(f);
 }
 async function resetAll(){
-  if(!confirm('Reset everything? All habits, history, reflections and reminders on this device will be erased. Your cloud copy stays, but it does not include reminders. Sign in again to restore it.'))return;
+  if(!confirm('Reset everything? All habits, history, reflections and reminders on this device will be erased. Your cloud copy stays. Sign in again to restore it.'))return;
   NO_SAVE=true;
   await removePush();
-  try{[KEY,'dny-notif','dny-push','dny-auth','dny-sync',RKEY].concat(Object.values(TK)).forEach(k=>localStorage.removeItem(k));}catch(e){}
+  try{[KEY,'dny-notif','dny-push','dny-auth','dny-sync'].concat(Object.values(TK)).forEach(k=>localStorage.removeItem(k));}catch(e){}
   location.reload();
 }
 
@@ -2779,6 +2783,15 @@ function mergeStates(local,remote,first){
     if(Array.isArray(list))list.forEach(e=>{if(e&&typeof e.date==='string')byDate[e.date]=e;});
   });
   out.journal=Object.keys(byDate).sort().map(k=>clone(byDate[k]));
+  const byId={};
+  [older.rems,newer.rems].forEach(list=>{
+    if(Array.isArray(list))list.forEach(r=>{
+      if(!r||typeof r.id!=='string')return;
+      const c=byId[r.id];
+      if(!c||String(r.u||'')>=String(c.u||''))byId[r.id]=r;
+    });
+  });
+  out.rems=Object.keys(byId).sort().map(k=>clone(byId[k]));
   out.focusTotal=Math.max(+local.focusTotal||0,+remote.focusTotal||0);
   // Today's ticks belong to whichever side holds the later day.
   if(older.todayDate&&(!newer.todayDate||older.todayDate>newer.todayDate)){
@@ -2799,7 +2812,7 @@ function applyMerged(m){
   S.todayDate=TODAY_KEY;
   LAST_SIG=canon(S);
   try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}
-  if(started){renderToday();renderProgress();renderFocus();renderPlan();renderProfile();}
+  if(started){renderToday();renderProgress();renderFocus();renderPlan();renderProfile();afterReminderChange(false);}
 }
 
 async function syncNow(){
@@ -3091,31 +3104,26 @@ async function removePush(){
 }
 
 // ===== PLAN REMINDERS =====
-// The list lives on this phone only. It is not in cloud sync or backup.
+// Reminders are part of your data (S.rems), so cloud sync and backup carry them.
+// A deleted reminder stays as a small marker for 30 days so your other phones remove it too.
 // For a reminder with a date and time, the title, note and time go to the phone reminder service so it can notify you on time.
-const RKEY='dny-rems';
-const DATE_RE=/^\d{4}-\d{2}-\d{2}$/;
 const CHK_SVG='<svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>';
 function normRem(r){
   if(!r||typeof r!=='object')return null;
   const id=typeof r.id==='string'&&r.id?r.id.slice(0,40):null;
   const title=typeof r.title==='string'?r.title.trim().slice(0,70):'';
+  const u=typeof r.u==='string'?r.u.slice(0,40):'';
+  if(id&&r.del===true)return {id,del:true,u};
   if(!id||!title)return null;
-  const out={id,title,notes:typeof r.notes==='string'?r.notes.trim().slice(0,160):'',date:'',time:'',urgent:r.urgent===true,done:r.done===true};
+  const out={id,title,notes:typeof r.notes==='string'?r.notes.trim().slice(0,160):'',date:'',time:'',urgent:r.urgent===true,done:r.done===true,u};
   if(typeof r.date==='string'&&DATE_RE.test(r.date)&&dateStr(parseKey(r.date))===r.date)out.date=r.date;
   if(out.date&&typeof r.time==='string'&&AT_RE.test(r.time))out.time=r.time;
   return out;
 }
-function loadRems(){
-  try{const v=JSON.parse(localStorage.getItem(RKEY));return Array.isArray(v)?v.map(normRem).filter(Boolean).slice(0,500):[];}
-  catch(e){return [];}
-}
-let REMS=loadRems();
 let REM_VIEW='today',RM_ID='';
-function saveRems(){
-  try{localStorage.setItem(RKEY,JSON.stringify(REMS));}
-  catch(e){toast('Could not save. Your storage may be full.');}
-}
+const nowIso=()=>new Date().toISOString();
+function liveRems(){return S.rems.filter(r=>!r.del);}
+function commitRems(){S.rems.sort((a,b)=>a.id<b.id?-1:a.id>b.id?1:0);save();}
 function newRemId(){return 'r'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
 // The moment a reminder fires, or null when it has no date and time.
 function remFire(r){
@@ -3126,7 +3134,7 @@ function remFire(r){
 }
 function remHasPush(){
   const now=new Date();
-  return REMS.some(r=>{if(r.done)return false;const f=remFire(r);return !!f&&f>now;});
+  return liveRems().some(r=>{if(r.done)return false;const f=remFire(r);return !!f&&f>now;});
 }
 function remDateLabel(k){
   if(k===TODAY_KEY)return 'Today';
@@ -3160,11 +3168,11 @@ function renderRem(){
   const now=new Date();
   const names={today:'Today',scheduled:'Scheduled',all:'All',urgent:'Urgent'};
   document.querySelectorAll('#rem-seg button').forEach(b=>{
-    const v=b.dataset.v,n=REMS.filter(r=>!r.done&&remVisible(r,v)).length;
+    const v=b.dataset.v,n=liveRems().filter(r=>!r.done&&remVisible(r,v)).length;
     b.classList.toggle('on',v===REM_VIEW);
     b.textContent=names[v]+(n?' '+n:'');
   });
-  const rows=REMS.filter(r=>remVisible(r,REM_VIEW)).sort(remSort);
+  const rows=liveRems().filter(r=>remVisible(r,REM_VIEW)).sort(remSort);
   const empty={today:'Nothing due today',scheduled:'No scheduled reminders',all:'No reminders yet',urgent:'No urgent reminders'}[REM_VIEW];
   let h=rows.map(r=>{
     const when=remWhen(r);
@@ -3175,7 +3183,7 @@ function renderRem(){
       +(r.urgent&&!r.done?'<span class="rem-tag">Urgent</span>':'')+'</div>';
   }).join('');
   if(!rows.length)h='<div class="fempty">'+empty+'</div>';
-  if(REM_VIEW==='all'&&REMS.some(r=>r.done))h+='<button class="mrow" data-act="rem-clear"><span class="mrow-main"><span class="mrow-t danger-txt">Clear completed</span></span></button>';
+  if(REM_VIEW==='all'&&liveRems().some(r=>r.done))h+='<button class="mrow" data-act="rem-clear"><span class="mrow-main"><span class="mrow-t danger-txt">Clear completed</span></span></button>';
   list.innerHTML=h;
 }
 function rmOn(k){return $('rm-'+k+'-tog').classList.contains('on');}
@@ -3206,7 +3214,7 @@ function rmToggle(k){
   rmNote();
 }
 function openRem(id){
-  const r=id?REMS.find(x=>x.id===id):null;
+  const r=id?liveRems().find(x=>x.id===id):null;
   RM_ID=r?r.id:'';
   setText('rm-heading',r?'Edit reminder':'New reminder');
   $('rm-title').value=r?r.title:'';
@@ -3232,41 +3240,44 @@ function saveRem(){
     time=$('rm-time').value;
     if(!AT_RE.test(time)){toast('Pick a time');return;}
   }
-  const old=RM_ID?REMS.find(x=>x.id===RM_ID):null;
+  const old=RM_ID?liveRems().find(x=>x.id===RM_ID):null;
   const next={id:old?old.id:newRemId(),title:title.slice(0,70),notes:$('rm-notes').value.trim().slice(0,160),date,time,urgent:rmOn('urgent'),done:old?old.done:false};
   const f=remFire(next);
   if(f&&f<=new Date()&&!next.done&&(!old||old.date!==date||old.time!==time)){toast('That time has passed. Pick a later time.');return;}
+  next.u=nowIso();
   if(old)Object.assign(old,next);
   else{
-    if(REMS.length>=500){toast('You have 500 reminders. Clear some first.');return;}
-    REMS.push(next);
+    if(liveRems().length>=500){toast('You have 500 reminders. Clear some first.');return;}
+    S.rems.push(next);
   }
-  saveRems();
+  commitRems();
   closeSheet('sh-rem');
   renderRem();
   afterReminderChange(!!f&&!next.done);
   toast(old?'Reminder updated':'Reminder added');
 }
 function remDone(id){
-  const r=REMS.find(x=>x.id===id);
+  const r=liveRems().find(x=>x.id===id);
   if(!r)return;
   r.done=!r.done;
-  saveRems();renderRem();
+  r.u=nowIso();
+  commitRems();renderRem();
   afterReminderChange(false);
 }
 function deleteRem(){
-  const i=REMS.findIndex(x=>x.id===RM_ID);
+  const i=S.rems.findIndex(x=>x.id===RM_ID&&!x.del);
   if(i<0){closeSheet('sh-rem');return;}
   if(!confirm('Delete this reminder?'))return;
-  REMS.splice(i,1);
-  saveRems();closeSheet('sh-rem');renderRem();
+  S.rems[i]={id:RM_ID,del:true,u:nowIso()};
+  commitRems();closeSheet('sh-rem');renderRem();
   afterReminderChange(false);
   toast('Reminder deleted');
 }
 function clearDoneRems(){
   if(!confirm('Remove all completed reminders?'))return;
-  REMS=REMS.filter(r=>!r.done);
-  saveRems();renderRem();
+  const u=nowIso();
+  S.rems=S.rems.map(r=>!r.del&&r.done?{id:r.id,del:true,u}:r);
+  commitRems();renderRem();
   toast('Completed reminders cleared');
 }
 
@@ -3299,7 +3310,7 @@ function remBody(h){return [h.sub,h.dur?fmtDur(h.dur):''].filter(Boolean).join('
 function buildReminderItems(now){
   const out=[],t0=dateStr(now);
   const limit=new Date(now.getTime()+REM_DAYS*86400000);
-  REMS.forEach(r=>{
+  liveRems().forEach(r=>{
     if(r.done)return;
     const d=remFire(r);
     if(!d||d<=now||d>limit)return;
