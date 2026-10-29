@@ -337,6 +337,18 @@ html.fonts-ok .sp-credit{animation:fade-in .5s ease forwards}
 .j-entry{padding:12px 14px;border-top:1px solid var(--line)}
 .j-entry:first-child{border-top:none}
 .j-date{font-size:11px;font-weight:600;color:var(--t3);margin-bottom:4px}
+.rem-row{display:flex;align-items:center;border-top:1px solid var(--line)}
+.rem-row:first-child{border-top:none}
+.rem-ck{width:52px;align-self:stretch;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.rem-row.done .task-chk{background:var(--accent);border-color:var(--accent)}
+.rem-row.done .task-chk svg{opacity:1}
+.rem-main{flex:1;min-width:0;text-align:left;padding:12px 12px 12px 0;display:block}
+.rem-main:active{opacity:.7}
+.rem-row.done .task-name{color:var(--t3);text-decoration:line-through}
+.rem-sub{display:block;font-size:11px;color:var(--t3);margin-top:2px;overflow-wrap:anywhere}
+.rem-over{color:var(--danger);font-weight:600}
+.rem-tag{font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--danger);background:var(--danger-dim);border-radius:6px;padding:3px 7px;margin-right:14px;flex-shrink:0}
+.rem-fld{padding:0 14px 10px}
 .j-txt{font-size:13px;line-height:1.55;color:var(--t1);white-space:pre-wrap;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
 .j-k{font-size:10px;font-weight:600;letter-spacing:.06em;color:var(--t3);text-transform:uppercase;margin-top:6px}
 
@@ -933,6 +945,19 @@ const SPLASH_MSGS={
       </div>
 
       <div class="gap"></div>
+      <div class="sec-lbl">Reminders</div>
+      <div class="seg" id="rem-seg">
+        <button data-act="rem-view" data-v="today">Today</button>
+        <button data-act="rem-view" data-v="scheduled">Scheduled</button>
+        <button data-act="rem-view" data-v="all">All</button>
+        <button data-act="rem-view" data-v="urgent">Urgent</button>
+      </div>
+      <div class="card plan-card" id="rem-list"></div>
+      <div class="plan-form" style="margin-top:12px">
+        <button class="btn" data-act="rem-new">Add reminder</button>
+      </div>
+
+      <div class="gap"></div>
       <div class="sec-lbl">Tomorrow's setup</div>
       <div class="card plan-card" id="plan-toggles"></div>
       <div class="card est-card">
@@ -1128,6 +1153,30 @@ const SPLASH_MSGS={
   </div>
 </div>
 
+<div class="overlay" id="sh-rem" data-act="overlay-close">
+  <div class="sheet" role="dialog" aria-modal="true" aria-label="Reminder">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="rm-heading">New reminder</div>
+    <div class="sheet-body">
+      <label class="sheet-lbl" for="rm-title">Title</label>
+      <input class="sheet-input" id="rm-title" maxlength="70" placeholder="e.g. Send the NUASA report" autocomplete="off"/>
+      <label class="sheet-lbl" for="rm-notes">Notes (optional)</label>
+      <input class="sheet-input" id="rm-notes" maxlength="160" placeholder="A short note" autocomplete="off"/>
+      <div class="mlist" style="margin-top:8px">
+        <div class="plan-row"><div class="plan-row-lbl">Date</div><button class="tog" id="rm-date-tog" role="switch" aria-checked="false" aria-label="Date" data-act="rm-tog" data-k="date"></button></div>
+        <div class="rem-fld hidden" id="rm-date-f"><input class="sheet-input" type="date" id="rm-date" aria-label="Date"/></div>
+        <div class="plan-row"><div class="plan-row-lbl">Time</div><button class="tog" id="rm-time-tog" role="switch" aria-checked="false" aria-label="Time" data-act="rm-tog" data-k="time"></button></div>
+        <div class="rem-fld hidden" id="rm-time-f"><input class="sheet-input" type="time" id="rm-time" aria-label="Time"/></div>
+        <div class="plan-row"><div class="plan-row-lbl">Urgent<div class="plan-row-sub">Shows in the Urgent list and marks the notification</div></div><button class="tog" id="rm-urgent-tog" role="switch" aria-checked="false" aria-label="Urgent" data-act="rm-tog" data-k="urgent"></button></div>
+      </div>
+      <div class="sheet-note" id="rm-note">Add a date and a time to get a notification on your phone.</div>
+      <button class="sheet-btn" data-act="rem-save">Save reminder</button>
+      <button class="sheet-btn danger hidden" id="rm-delete" data-act="rem-delete">Delete reminder</button>
+      <button class="sheet-btn ghost" data-act="close-sheet" data-sheet="sh-rem">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <div class="overlay" id="sh-notif" data-act="overlay-close">
   <div class="sheet" role="dialog" aria-modal="true" aria-label="Reminders">
     <div class="sheet-handle"></div>
@@ -1189,9 +1238,9 @@ const SPLASH_MSGS={
     <div class="sheet-title">What's new in DNY</div>
     <div class="sheet-body">
       <ul class="wn-list">
-        <li>Afternoon section. Today now has Morning, Afternoon, Anytime and Evening. Pick the part of the day when you add or edit a habit.</li>
-        <li>Afternoon hours. A habit with a start time from 12:00 to 16:59 now sits in Afternoon. Habits that start from 17:00 stay in Evening.</li>
-        <li>Your quiet rhythm. Progress now opens with your last 7 days and a short note for the day.</li>
+        <li>Reminders on the Plan page. Add a reminder with a title, note, date and time. Mark it Urgent when it matters most.</li>
+        <li>Four views. Today, Scheduled, All and Urgent help you find what you need fast.</li>
+        <li>Phone notifications. A reminder with a date and time notifies you on time. Sign in under Cloud sync and open DNY from your Home Screen.</li>
       </ul>
       <button class="sheet-btn" data-act="wn-tour">Take a quick tour</button>
       <button class="sheet-btn ghost" data-act="wn-close">Got it</button>
@@ -2307,6 +2356,7 @@ function renderPlan(){
   if(e){if(!g.value)g.value=e.good;if(!d.value)d.value=e.diff;}
   setText('ref-save-btn',e?'Update reflection':'Save reflection');
   renderPlanSetup();
+  renderRem();
   const items=S.journal.slice().sort((a,b)=>a.date<b.date?1:-1).slice(0,5);
   $('journal-list').innerHTML=items.length?items.map(en=>{
     const lbl=parseKey(en.date).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
@@ -2636,10 +2686,10 @@ function importBackup(input){
   r.readAsText(f);
 }
 async function resetAll(){
-  if(!confirm('Reset everything? All habits, history and reflections on this device will be erased. Your cloud copy stays. Sign in again to restore it.'))return;
+  if(!confirm('Reset everything? All habits, history, reflections and reminders on this device will be erased. Your cloud copy stays, but it does not include reminders. Sign in again to restore it.'))return;
   NO_SAVE=true;
   await removePush();
-  try{[KEY,'dny-notif','dny-push','dny-auth','dny-sync'].concat(Object.values(TK)).forEach(k=>localStorage.removeItem(k));}catch(e){}
+  try{[KEY,'dny-notif','dny-push','dny-auth','dny-sync',RKEY].concat(Object.values(TK)).forEach(k=>localStorage.removeItem(k));}catch(e){}
   location.reload();
 }
 
@@ -2858,7 +2908,7 @@ async function signOut(){
   clearTimeout(pushTimer);
   await removePush();
   setAuth(null);SYNC_ERR='';
-  setPushState(getNotif().morning.enabled||getNotif().evening.enabled?'signin':'off');
+  setPushState(wantPush()?'signin':'off');
   renderAccount();renderProfile();
   toast('Signed out');
 }
@@ -3040,6 +3090,186 @@ async function removePush(){
   await Promise.race([work,new Promise(r=>setTimeout(r,2500))]);
 }
 
+// ===== PLAN REMINDERS =====
+// The list lives on this phone only. It is not in cloud sync or backup.
+// For a reminder with a date and time, the title, note and time go to the phone reminder service so it can notify you on time.
+const RKEY='dny-rems';
+const DATE_RE=/^\d{4}-\d{2}-\d{2}$/;
+const CHK_SVG='<svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>';
+function normRem(r){
+  if(!r||typeof r!=='object')return null;
+  const id=typeof r.id==='string'&&r.id?r.id.slice(0,40):null;
+  const title=typeof r.title==='string'?r.title.trim().slice(0,70):'';
+  if(!id||!title)return null;
+  const out={id,title,notes:typeof r.notes==='string'?r.notes.trim().slice(0,160):'',date:'',time:'',urgent:r.urgent===true,done:r.done===true};
+  if(typeof r.date==='string'&&DATE_RE.test(r.date)&&dateStr(parseKey(r.date))===r.date)out.date=r.date;
+  if(out.date&&typeof r.time==='string'&&AT_RE.test(r.time))out.time=r.time;
+  return out;
+}
+function loadRems(){
+  try{const v=JSON.parse(localStorage.getItem(RKEY));return Array.isArray(v)?v.map(normRem).filter(Boolean).slice(0,500):[];}
+  catch(e){return [];}
+}
+let REMS=loadRems();
+let REM_VIEW='today',RM_ID='';
+function saveRems(){
+  try{localStorage.setItem(RKEY,JSON.stringify(REMS));}
+  catch(e){toast('Could not save. Your storage may be full.');}
+}
+function newRemId(){return 'r'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+// The moment a reminder fires, or null when it has no date and time.
+function remFire(r){
+  if(!r.date||!r.time)return null;
+  const d=parseKey(r.date);
+  d.setHours(+r.time.slice(0,2),+r.time.slice(3),0,0);
+  return d;
+}
+function remHasPush(){
+  const now=new Date();
+  return REMS.some(r=>{if(r.done)return false;const f=remFire(r);return !!f&&f>now;});
+}
+function remDateLabel(k){
+  if(k===TODAY_KEY)return 'Today';
+  if(k===addDays(TODAY_KEY,1))return 'Tomorrow';
+  if(k===addDays(TODAY_KEY,-1))return 'Yesterday';
+  return parseKey(k).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
+}
+function remWhen(r){return r.date?remDateLabel(r.date)+(r.time?' · '+fmtTime(r.time):''):'';}
+function remOverdue(r,now){
+  if(r.done||!r.date)return false;
+  if(r.time)return remFire(r)<=now;
+  return r.date<TODAY_KEY;
+}
+function remVisible(r,v){
+  if(v==='all')return true;
+  if(r.done)return false;
+  if(v==='today')return !!r.date&&r.date<=TODAY_KEY;
+  if(v==='scheduled')return !!r.date;
+  if(v==='urgent')return r.urgent;
+  return false;
+}
+function remSort(a,b){
+  if(a.done!==b.done)return a.done?1:-1;
+  const ka=(a.date||'9999-99-99')+' '+(a.time||''),kb=(b.date||'9999-99-99')+' '+(b.time||'');
+  if(ka!==kb)return ka<kb?-1:1;
+  return a.title.localeCompare(b.title);
+}
+function renderRem(){
+  const list=$('rem-list');
+  if(!list)return;
+  const now=new Date();
+  const names={today:'Today',scheduled:'Scheduled',all:'All',urgent:'Urgent'};
+  document.querySelectorAll('#rem-seg button').forEach(b=>{
+    const v=b.dataset.v,n=REMS.filter(r=>!r.done&&remVisible(r,v)).length;
+    b.classList.toggle('on',v===REM_VIEW);
+    b.textContent=names[v]+(n?' '+n:'');
+  });
+  const rows=REMS.filter(r=>remVisible(r,REM_VIEW)).sort(remSort);
+  const empty={today:'Nothing due today',scheduled:'No scheduled reminders',all:'No reminders yet',urgent:'No urgent reminders'}[REM_VIEW];
+  let h=rows.map(r=>{
+    const when=remWhen(r);
+    const sub=[when?'<span'+(remOverdue(r,now)?' class="rem-over"':'')+'>'+esc(when)+'</span>':'',r.notes?esc(r.notes):''].filter(Boolean).join(' · ');
+    return '<div class="rem-row'+(r.done?' done':'')+'">'
+      +'<button class="rem-ck" data-act="rem-done" data-id="'+esc(r.id)+'" role="checkbox" aria-checked="'+r.done+'" aria-label="Done: '+esc(r.title)+'"><span class="task-chk">'+CHK_SVG+'</span></button>'
+      +'<button class="rem-main" data-act="rem-open" data-id="'+esc(r.id)+'"><span class="task-name">'+esc(r.title)+'</span>'+(sub?'<span class="rem-sub">'+sub+'</span>':'')+'</button>'
+      +(r.urgent&&!r.done?'<span class="rem-tag">Urgent</span>':'')+'</div>';
+  }).join('');
+  if(!rows.length)h='<div class="fempty">'+empty+'</div>';
+  if(REM_VIEW==='all'&&REMS.some(r=>r.done))h+='<button class="mrow" data-act="rem-clear"><span class="mrow-main"><span class="mrow-t danger-txt">Clear completed</span></span></button>';
+  list.innerHTML=h;
+}
+function rmOn(k){return $('rm-'+k+'-tog').classList.contains('on');}
+function rmSet(k,on){
+  const t=$('rm-'+k+'-tog');
+  t.classList.toggle('on',on);
+  t.setAttribute('aria-checked',String(on));
+  const f=$('rm-'+k+'-f');
+  if(f)f.classList.toggle('hidden',!on);
+}
+function rmNote(){
+  const d=rmOn('date')&&DATE_RE.test($('rm-date').value),t=rmOn('time')&&AT_RE.test($('rm-time').value);
+  setText('rm-note',d&&t?'You get a notification on your phone at '+fmtTime($('rm-time').value)+' on '+remDateLabel($('rm-date').value)+'.':'Add a date and a time to get a notification on your phone.');
+}
+function rmToggle(k){
+  const on=!rmOn(k);
+  if(k==='date'){
+    rmSet('date',on);
+    if(on&&!$('rm-date').value)$('rm-date').value=TODAY_KEY;
+    if(!on)rmSet('time',false);
+  }else if(k==='time'){
+    rmSet('time',on);
+    if(on){
+      if(!rmOn('date')){rmSet('date',true);if(!$('rm-date').value)$('rm-date').value=TODAY_KEY;}
+      if(!$('rm-time').value){const h=new Date().getHours()+1;$('rm-time').value=h>23?'23:45':pad(h)+':00';}
+    }
+  }else rmSet('urgent',on);
+  rmNote();
+}
+function openRem(id){
+  const r=id?REMS.find(x=>x.id===id):null;
+  RM_ID=r?r.id:'';
+  setText('rm-heading',r?'Edit reminder':'New reminder');
+  $('rm-title').value=r?r.title:'';
+  $('rm-notes').value=r?r.notes:'';
+  $('rm-date').value=r?r.date:(REM_VIEW==='today'?TODAY_KEY:'');
+  $('rm-time').value=r?r.time:'';
+  rmSet('date',r?!!r.date:REM_VIEW==='today');
+  rmSet('time',r?!!r.time:false);
+  rmSet('urgent',r?r.urgent:REM_VIEW==='urgent');
+  $('rm-delete').classList.toggle('hidden',!r);
+  rmNote();
+  openSheet('sh-rem');
+}
+function saveRem(){
+  const title=$('rm-title').value.trim();
+  if(!title){toast('Add a title');return;}
+  let date='',time='';
+  if(rmOn('date')){
+    date=$('rm-date').value;
+    if(!DATE_RE.test(date)){toast('Pick a date');return;}
+  }
+  if(date&&rmOn('time')){
+    time=$('rm-time').value;
+    if(!AT_RE.test(time)){toast('Pick a time');return;}
+  }
+  const old=RM_ID?REMS.find(x=>x.id===RM_ID):null;
+  const next={id:old?old.id:newRemId(),title:title.slice(0,70),notes:$('rm-notes').value.trim().slice(0,160),date,time,urgent:rmOn('urgent'),done:old?old.done:false};
+  const f=remFire(next);
+  if(f&&f<=new Date()&&!next.done&&(!old||old.date!==date||old.time!==time)){toast('That time has passed. Pick a later time.');return;}
+  if(old)Object.assign(old,next);
+  else{
+    if(REMS.length>=500){toast('You have 500 reminders. Clear some first.');return;}
+    REMS.push(next);
+  }
+  saveRems();
+  closeSheet('sh-rem');
+  renderRem();
+  afterReminderChange(!!f&&!next.done);
+  toast(old?'Reminder updated':'Reminder added');
+}
+function remDone(id){
+  const r=REMS.find(x=>x.id===id);
+  if(!r)return;
+  r.done=!r.done;
+  saveRems();renderRem();
+  afterReminderChange(false);
+}
+function deleteRem(){
+  const i=REMS.findIndex(x=>x.id===RM_ID);
+  if(i<0){closeSheet('sh-rem');return;}
+  if(!confirm('Delete this reminder?'))return;
+  REMS.splice(i,1);
+  saveRems();closeSheet('sh-rem');renderRem();
+  afterReminderChange(false);
+  toast('Reminder deleted');
+}
+function clearDoneRems(){
+  if(!confirm('Remove all completed reminders?'))return;
+  REMS=REMS.filter(r=>!r.done);
+  saveRems();renderRem();
+  toast('Completed reminders cleared');
+}
+
 // ===== HABIT REMINDERS =====
 // The server holds the next 14 days of reminders for this phone. The app rebuilds the list whenever something changes.
 const REM_DAYS=14;
@@ -3068,6 +3298,13 @@ function renderNotifHabits(){
 function remBody(h){return [h.sub,h.dur?fmtDur(h.dur):''].filter(Boolean).join(' · ')||'Time for your habit.';}
 function buildReminderItems(now){
   const out=[],t0=dateStr(now);
+  const limit=new Date(now.getTime()+REM_DAYS*86400000);
+  REMS.forEach(r=>{
+    if(r.done)return;
+    const d=remFire(r);
+    if(!d||d<=now||d>limit)return;
+    out.push({title:(r.urgent?'Urgent: ':'')+r.title,body:r.notes||'Reminder from DNY.',tag:'dny-r-'+r.id,fire_at:d.toISOString()});
+  });
   for(let i=0;i<REM_DAYS;i++){
     const key=addDays(t0,i);
     activeHabits(key).forEach(h=>{
@@ -3083,7 +3320,7 @@ function buildReminderItems(now){
 }
 function wantPush(){
   const prefs=getNotif();
-  return prefs.morning.enabled||prefs.evening.enabled||S.habits.some(h=>h.rem);
+  return prefs.morning.enabled||prefs.evening.enabled||S.habits.some(h=>h.rem)||remHasPush();
 }
 let REM_TIMER=null,REM_BUSY=false,REM_AGAIN=false,REM_LAST=0;
 function scheduleRemSync(ms){clearTimeout(REM_TIMER);REM_TIMER=setTimeout(syncReminders,ms==null?1500:ms);}
@@ -3208,7 +3445,7 @@ function ydayMark(id,val){
 }
 
 // ===== APP TOUR AND WHAT'S NEW =====
-const APP_VER='2026-10-22';
+const APP_VER='2026-10-29';
 function markSeen(){try{localStorage.setItem('dny-seen',APP_VER);}catch(e){}}
 function maybeWhatsNew(){
   let v=null;
@@ -3221,7 +3458,7 @@ const TOUR=[
   {tab:'today',sel:'#nav-today',t:'Today',d:'Your habits for the day. Tap a habit to tick it.'},
   {tab:'progress',sel:'#nav-progress',t:'Progress',d:'Your streaks, reports and daily score. Missed evening habits from yesterday show here.'},
   {tab:'focus',sel:'#nav-focus',t:'Focus',d:'Start a timer for study or deep work.'},
-  {tab:'plan',sel:'#nav-plan',t:'Plan',d:'Write your evening reflection and plan tomorrow.'},
+  {tab:'plan',sel:'#nav-plan',t:'Plan',d:'Write your evening reflection, plan tomorrow and add reminders.'},
   {tab:'today',sel:'#s-today .av-btn',t:'Your profile',d:'Tap your picture at the top right. Reminders, theme, rest days, cloud sync and your habits are there.'}
 ];
 let TOUR_I=0;
@@ -3321,6 +3558,14 @@ const ACTIONS={
   'habit-new':()=>openHabitEditor(null),
   'rem-pick':el=>setRemUI(el.dataset.k,''),
   'rem-edit':el=>{closeSheet('sh-notif');openHabitEditor(el.dataset.id);},
+  'rem-view':el=>{REM_VIEW=el.dataset.v;renderRem();},
+  'rem-new':()=>openRem(''),
+  'rem-open':el=>openRem(el.dataset.id),
+  'rem-done':el=>remDone(el.dataset.id),
+  'rem-save':saveRem,
+  'rem-delete':deleteRem,
+  'rem-clear':clearDoneRems,
+  'rm-tog':el=>rmToggle(el.dataset.k),
   'mark-off':el=>markDayOff(el.dataset.k),
   'hm-nav':el=>{const n=HEAT_OFF+(+el.dataset.d);if(n>0)return;HEAT_OFF=n;renderHeat();},
   'habit-actions':el=>openHabitActions(el.dataset.id),
@@ -3402,6 +3647,7 @@ document.addEventListener('click',e=>{
 $('avatar-file-input').addEventListener('change',e=>onAvatar(e.target));
 $('import-file').addEventListener('change',e=>importBackup(e.target));
 $('hb-at').addEventListener('input',syncAtUI);
+['rm-date','rm-time'].forEach(id=>{$(id).addEventListener('input',rmNote);$(id).addEventListener('change',rmNote);});
 document.querySelectorAll('[data-notif-time]').forEach(inp=>{
   inp.addEventListener('change',()=>{
     const key=inp.dataset.notifTime;
@@ -3472,7 +3718,7 @@ document.addEventListener('visibilitychange',()=>{
   if(dateStr(new Date())!==TODAY_KEY){location.reload();return;}
   if(tRun&&tEnd)tick();
   if(started){
-    renderToday();
+    renderToday();renderRem();
     if(Date.now()-LAST_SYNC_TRY>20000)syncNow();
     if(Date.now()-REM_LAST>30*60*1000)scheduleRemSync(800);
   }
