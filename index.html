@@ -3768,10 +3768,10 @@ function renderInvite(){
   h+='<div class="sheet-lbl">Your friend code</div>';
   if(SH.code){
     h+='<div class="sh-code" id="inv-show">'+esc(SH.code.slice(0,4)+' '+SH.code.slice(4))+'</div><div class="sheet-note">This is your code. It never expires and many friends can use it. Reset it if it gets to the wrong person.</div>'
-      +'<button class="sheet-btn" data-act="invite-share">Share code</button><button class="sheet-btn ghost" data-act="invite-create">Reset code</button>';
+      +'<button class="sheet-btn" data-act="invite-copy">Copy code</button><button class="sheet-btn ghost" data-act="invite-create">Reset code</button>';
   }else h+='<div class="sheet-note">Loading your code...</div>';
   h+='<div class="sheet-lbl" style="margin-top:20px">Have a code?</div><input class="sheet-input" id="inv-code" maxlength="12" autocomplete="off" autocapitalize="characters" placeholder="ABCD EFGH"/>'
-    +'<div class="sh-msg" id="inv-msg" role="status"></div><button class="sheet-btn soft" data-act="invite-accept">Add friend</button>'
+    +'<div class="sh-msg" id="inv-msg" role="status"></div><button class="sheet-btn ghost" data-act="invite-paste">Paste code</button><button class="sheet-btn soft" data-act="invite-accept">Add friend</button>'
     +'<div class="sheet-note">Friends see your name. They also see your streak and daily percentage if you allow it. They never see your habit names, only the habits you share.</div>';
   el.innerHTML=h;
   if(keep&&$('inv-code'))$('inv-code').value=keep;
@@ -3782,15 +3782,28 @@ async function inviteCreate(){
   if(r.ok&&typeof r.json==='string'&&/^[A-Z2-9]{8}$/.test(r.json)){SH.code=r.json;renderInvite();toast('New code ready');}
   else toast(rpcErrText(r));
 }
-async function inviteShare(){
+async function inviteCopy(){
   if(!SH.code)return;
-  const url='https://dnyapp.vercel.app/?invite='+SH.code;
-  const text='Join me on DNY. Open the Sharing tab, tap Add friend and enter my code '+SH.code+'.';
+  try{await navigator.clipboard.writeText(SH.code);toast('Code copied');return;}catch(e){}
   try{
-    if(navigator.share){await navigator.share({title:'DNY invite',text,url});return;}
-  }catch(e){if(e&&e.name==='AbortError')return;}
-  try{await navigator.clipboard.writeText(text+' '+url);toast('Invite copied');}
-  catch(e){toast('Copy the code: '+SH.code);}
+    const t=document.createElement('textarea');t.value=SH.code;t.style.position='fixed';t.style.opacity='0';
+    document.body.appendChild(t);t.select();t.setSelectionRange(0,20);
+    const ok=document.execCommand('copy');t.remove();
+    toast(ok?'Code copied':'Copy the code: '+SH.code);
+  }catch(e){toast('Copy the code: '+SH.code);}
+}
+async function invitePaste(){
+  const inp=$('inv-code'),msg=$('inv-msg');
+  try{
+    const t=await navigator.clipboard.readText();
+    const c=String(t||'').replace(/[^A-Za-z0-9]/g,'').toUpperCase().slice(0,12);
+    if(!c){if(msg)msg.textContent='Nothing to paste. Copy your friend code first.';return;}
+    if(inp)inp.value=c.length>4?c.slice(0,4)+' '+c.slice(4):c;
+    if(msg)msg.textContent='Tap Add friend to use this code.';
+  }catch(e){
+    if(msg)msg.textContent='Paste not allowed. Press and hold the box, then tap Paste.';
+    if(inp)inp.focus();
+  }
 }
 async function inviteAccept(){
   const inp=$('inv-code'),msg=$('inv-msg');
@@ -4208,7 +4221,8 @@ const ACTIONS={
   'alert-toggle':el=>alertToggle(el.dataset.key),
   'open-invite':()=>openInvite(),
   'invite-create':()=>inviteCreate(),
-  'invite-share':()=>inviteShare(),
+  'invite-copy':()=>inviteCopy(),
+  'invite-paste':()=>invitePaste(),
   'invite-accept':()=>inviteAccept(),
   'shared-new':el=>openSharedNew(el.dataset.id||''),
   'shared-create':()=>sharedCreate(),
