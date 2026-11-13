@@ -1,4 +1,4 @@
-const CACHE = 'dny-v17';
+const CACHE = 'dny-v18';
 const ASSETS = ['./', './index.html', './manifest.json', './icon.png'];
 
 self.addEventListener('install', e => {

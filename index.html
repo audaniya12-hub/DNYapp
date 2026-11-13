@@ -1292,6 +1292,18 @@ const SPLASH_MSGS={
   </div>
 </div>
 
+<div class="overlay" id="sh-shopts" data-act="overlay-close">
+  <div class="sheet" role="dialog" aria-modal="true" aria-label="Shared habit options">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="sho-title">Shared habit</div>
+    <div class="sheet-body">
+      <button class="sheet-btn soft" data-act="sho-add">Add people</button>
+      <button class="sheet-btn ghost" data-act="sho-leave">Leave this habit</button>
+      <div class="sheet-note">Leaving deletes your check ins for this habit. The others keep theirs.</div>
+    </div>
+  </div>
+</div>
+
 <div class="overlay" id="sh-hact" data-act="overlay-close">
   <div class="sheet" role="dialog" aria-modal="true" aria-label="Habit options">
     <div class="sheet-handle"></div>
@@ -3606,7 +3618,7 @@ async function syncProgress(){
 }
 
 // ===== SHARING =====
-var SH={data:null,loading:false,err:'',code:'',newFor:''};
+var SH={data:null,loading:false,err:'',code:'',newFor:'',optId:''};
 const MILESTONES=[3,7,14,21,30,50,75,100,150,200,365,500,1000];
 function myId(){const a=getAuth();return a?a.user.id:'';}
 function initialOf(n){const t=String(n||'').trim();return t?t.charAt(0).toUpperCase():'?';}
@@ -3712,7 +3724,7 @@ function sharedHabitCard(h){
   });
   return '<div class="card sh-habit"><div class="sh-habit-h"><div class="sh-habit-t">'+title+'</div></div>'+rows
     +(waiting.length?'<div class="sh-wait">Waiting for '+esc(waiting.join(', '))+'</div>':'')
-    +'<div class="sh-habit-f"><button class="rec-btn" data-act="shared-new" data-id="'+id+'">Add people</button><button class="rec-btn" data-act="shared-leave" data-id="'+id+'">Leave</button></div></div>';
+    +'<div class="sh-habit-f"><button class="rec-btn" data-act="shared-opts" data-id="'+id+'">Options</button></div></div>';
 }
 function renderSharing(){
   const el=$('sharing-body');
@@ -3886,6 +3898,13 @@ async function sharedRespond(id,yes){
   const r=await shRpc('dny_respond_shared',{p_habit:id,p_accept:!!yes});
   if(!r.ok){toast(rpcErrText(r));return;}
   loadSharing(true);
+}
+function openSharedOpts(id){
+  const h=SH.data&&SH.data.habits.find(x=>x.id===id);
+  if(!h)return;
+  SH.optId=id;
+  setText('sho-title',h.title);
+  openSheet('sh-shopts');
 }
 async function sharedLeave(id){
   if(!confirm('Leave this shared habit? Your check ins for it are deleted.'))return;
@@ -4228,6 +4247,9 @@ const ACTIONS={
   'shared-accept':el=>sharedRespond(el.dataset.id,true),
   'shared-decline':el=>sharedRespond(el.dataset.id,false),
   'shared-leave':el=>sharedLeave(el.dataset.id),
+  'shared-opts':el=>openSharedOpts(el.dataset.id),
+  'sho-add':()=>{const id=SH.optId;closeSheet('sh-shopts');openSharedNew(id);},
+  'sho-leave':()=>{const id=SH.optId;closeSheet('sh-shopts');sharedLeave(id);},
   'share-toggle':el=>shareToggle(el.dataset.key),
   'friend-remove':el=>friendRemove(el.dataset.id,el.dataset.name),
   'sharing-refresh':()=>loadSharing(true),
