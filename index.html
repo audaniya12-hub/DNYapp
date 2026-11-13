@@ -3752,6 +3752,12 @@ function renderSharing(){
 function openInvite(){
   if(!getAuth()){toast('Sign in under Cloud sync first.');openSheet('sh-account');return;}
   openSheet('sh-invite');
+  loadMyCode();
+}
+async function loadMyCode(){
+  const r=await shRpc('dny_my_code',{});
+  if(r.ok&&typeof r.json==='string'&&/^[A-Z2-9]{8}$/.test(r.json)){SH.code=r.json;renderInvite();}
+  else{const m=$('inv-msg');if(m)m.textContent=rpcErrText(r);}
 }
 function renderInvite(){
   const el=$('invite-body');if(!el)return;
@@ -3759,11 +3765,11 @@ function renderInvite(){
   let h='';
   if(!String(S.name||'').trim())h+='<div class="info-box">Add your name in Sharing settings so your friend knows it is you.</div>';
   if(!S.share.on)h+='<div class="info-box">Sharing is off. Your friend will see only your name. Turn it on in Sharing settings.</div>';
-  h+='<div class="sheet-lbl">Invite someone</div>';
+  h+='<div class="sheet-lbl">Your friend code</div>';
   if(SH.code){
-    h+='<div class="sh-code" id="inv-show">'+esc(SH.code.slice(0,4)+' '+SH.code.slice(4))+'</div><div class="sheet-note">One person can use this code. It works for 7 days.</div>'
-      +'<button class="sheet-btn" data-act="invite-share">Share code</button><button class="sheet-btn ghost" data-act="invite-create">Make a new code</button>';
-  }else h+='<button class="sheet-btn" data-act="invite-create">Create invite code</button>';
+    h+='<div class="sh-code" id="inv-show">'+esc(SH.code.slice(0,4)+' '+SH.code.slice(4))+'</div><div class="sheet-note">This is your code. It never expires and many friends can use it. Reset it if it gets to the wrong person.</div>'
+      +'<button class="sheet-btn" data-act="invite-share">Share code</button><button class="sheet-btn ghost" data-act="invite-create">Reset code</button>';
+  }else h+='<div class="sheet-note">Loading your code...</div>';
   h+='<div class="sheet-lbl" style="margin-top:20px">Have a code?</div><input class="sheet-input" id="inv-code" maxlength="12" autocomplete="off" autocapitalize="characters" placeholder="ABCD EFGH"/>'
     +'<div class="sh-msg" id="inv-msg" role="status"></div><button class="sheet-btn soft" data-act="invite-accept">Add friend</button>'
     +'<div class="sheet-note">Friends see your name. They also see your streak and daily percentage if you allow it. They never see your habit names, only the habits you share.</div>';
@@ -3771,8 +3777,9 @@ function renderInvite(){
   if(keep&&$('inv-code'))$('inv-code').value=keep;
 }
 async function inviteCreate(){
-  const r=await shRpc('dny_create_invite',{});
-  if(r.ok&&typeof r.json==='string'&&/^[A-Z2-9]{8}$/.test(r.json)){SH.code=r.json;renderInvite();}
+  if(!confirm('Reset your code? The old code will stop working. Friends you already added stay connected.'))return;
+  const r=await shRpc('dny_reset_code',{});
+  if(r.ok&&typeof r.json==='string'&&/^[A-Z2-9]{8}$/.test(r.json)){SH.code=r.json;renderInvite();toast('New code ready');}
   else toast(rpcErrText(r));
 }
 async function inviteShare(){
@@ -3793,7 +3800,7 @@ async function inviteAccept(){
   const r=await shRpc('dny_accept_invite',{p_code:code});
   if(!r.ok||!r.json||typeof r.json!=='object'){if(msg)msg.textContent=rpcErrText(r);return;}
   if(r.json.error){
-    const t={invalid:'That code is not valid or it has expired.',too_many:'Too many wrong tries. Try again in an hour.',own:'That is your own code.'}[r.json.error]||'Could not use that code.';
+    const t={invalid:'That code is not valid. Ask your friend for their current code.',too_many:'Too many wrong tries. Try again in an hour.',own:'That is your own code.'}[r.json.error]||'Could not use that code.';
     if(msg)msg.textContent=t;return;
   }
   closeSheet('sh-invite');
