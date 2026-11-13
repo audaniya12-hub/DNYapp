@@ -352,6 +352,18 @@ html.fonts-ok .sp-credit{animation:fade-in .5s ease forwards}
 .j-txt{font-size:13px;line-height:1.55;color:var(--t1);white-space:pre-wrap;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
 .j-k{font-size:10px;font-weight:600;letter-spacing:.06em;color:var(--t3);text-transform:uppercase;margin-top:6px}
 
+/* ===== PAUSE AND SETTINGS ===== */
+.pause-card{margin:0 18px;padding:20px 18px;text-align:center}
+.pause-drop{width:72px;height:72px;display:block;margin:0 auto 10px}
+.pause-t{font-family:'Lora',Georgia,serif;font-size:19px;font-weight:600;line-height:1.25}
+.pause-s{font-size:12.5px;color:var(--t2);line-height:1.55;margin:8px 0 4px}
+#set-pause:not(:empty){margin-bottom:16px}
+.rate-stars{display:flex;justify-content:center;gap:6px;margin:4px 0 8px}
+.rate-star{width:46px;height:46px;display:flex;align-items:center;justify-content:center;color:var(--t3)}
+.rate-star svg{width:32px;height:32px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linejoin:round}
+.rate-star.on{color:var(--accent)}
+.rate-star.on svg{fill:currentColor}
+.gender-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px}
 /* ===== PROFILE ===== */
 .profile-hero{padding:18px;display:flex;align-items:center;gap:14px}
 .avatar-lg{width:62px;height:62px;border-radius:50%;overflow:hidden;background:var(--accent);display:flex;align-items:center;justify-content:center;font-family:'Lora',Georgia,serif;font-weight:700;font-size:22px;color:var(--accent-ink);flex-shrink:0;position:relative;border:2px solid var(--accent-line)}
@@ -822,6 +834,12 @@ const SPLASH_MSGS={
       <div class="ob-sub">Your name appears in your daily greeting and on your profile.</div>
       <div class="ob-lbl">Your name</div>
       <input class="ob-input" id="ob-name" placeholder="e.g. Sadiq" type="text" maxlength="40" autocomplete="name"/>
+      <div class="ob-lbl">Gender (optional)</div>
+      <div class="gender-grid" id="ob-gender">
+        <button class="ob-day" data-act="ob-gender" data-g="female" aria-pressed="false">Female</button>
+        <button class="ob-day" data-act="ob-gender" data-g="male" aria-pressed="false">Male</button>
+      </div>
+      <div class="sheet-note" style="margin-top:0">DNY uses this only to show options that fit you.</div>
       <div class="ob-spacer"></div>
       <button class="btn" data-act="ob-name">Continue</button>
     </div>
@@ -1094,9 +1112,10 @@ const SPLASH_MSGS={
         <button class="settings-row" data-act="open-sheet" data-sheet="sh-habits"><div class="settings-ic"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div><div class="settings-lbl">Manage habits<span style="display:block;font-size:11px;color:var(--t3);margin-top:1px">Add, edit or delete</span></div><div class="settings-arr">›</div></button>
         <button class="settings-row" data-act="open-sheet" data-sheet="sh-profile"><div class="settings-ic"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><div class="settings-lbl">Name and my why</div><div class="settings-arr">›</div></button>
         <button class="settings-row" data-act="open-sheet" data-sheet="sh-theme"><div class="settings-ic"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></svg></div><div class="settings-lbl">Appearance<span id="theme-sub" style="display:block;font-size:11px;color:var(--t3);margin-top:1px">Auto</span></div><div class="settings-arr">›</div></button>
-        <button class="settings-row" data-act="open-sheet" data-sheet="sh-notif"><div class="settings-ic"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div><div class="settings-lbl">Reminders</div><div class="settings-arr">›</div></button>
+        <button class="settings-row" data-act="open-sheet" data-sheet="sh-notif"><div class="settings-ic"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div><div class="settings-lbl">Notifications</div><div class="settings-arr">›</div></button>
         <button class="settings-row" data-act="open-sheet" data-sheet="sh-rest"><div class="settings-ic"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></div><div class="settings-lbl">Rest days<span id="rest-sub" style="display:block;font-size:11px;color:var(--t3);margin-top:1px">None</span></div><div class="settings-arr">›</div></button>
         <button class="settings-row" data-act="start-tour"><div class="settings-ic"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 .9-1 1.7"/><path d="M12 17h.01"/></svg></div><div class="settings-lbl">App tour</div><div class="settings-arr">›</div></button>
+        <button class="settings-row" data-act="goto" data-tab="settings"><div class="settings-ic"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h0a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div><div class="settings-lbl">Settings<span style="display:block;font-size:11px;color:var(--t3);margin-top:1px">Support, rating, sharing and more</span></div><div class="settings-arr">›</div></button>
       </div>
       <div class="gap"></div>
       <div class="settings-g-lbl">Your data</div>
@@ -1104,6 +1123,24 @@ const SPLASH_MSGS={
         <button class="settings-row" data-act="open-sheet" data-sheet="sh-account"><div class="settings-ic"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg></div><div class="settings-lbl">Cloud sync<span id="acct-sub" style="display:block;font-size:11px;color:var(--t3);margin-top:1px">Off</span></div><div class="settings-arr">›</div></button>
         <button class="settings-row" data-act="open-sheet" data-sheet="sh-backup"><div class="settings-ic"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4v16"/><path d="M3 8l4-4 4 4"/><path d="M17 20V4"/><path d="M13 16l4 4 4-4"/></svg></div><div class="settings-lbl">Backup and restore</div><div class="settings-arr">›</div></button>
         <button class="settings-row" data-act="reset"><div class="settings-ic"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></div><div class="settings-lbl danger-txt">Reset all data</div><div class="settings-arr">›</div></button>
+      </div>
+      <div class="gap"></div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="screen" id="s-settings">
+      <div class="topbar"><div class="tb-side"><button class="tb-back" data-act="settings-back" aria-label="Back"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg></button></div><div class="tb-mini">Settings</div><div class="tb-side tb-r"></div></div>
+      <div class="lg-head"><div class="lg-title">Settings</div></div>
+      <div id="set-pause"></div>
+      <div class="card settings-list">
+        <button class="settings-row" data-act="mail-bugs"><div class="settings-ic"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div><div class="settings-lbl">Bugs and feedback<span style="display:block;font-size:11px;color:var(--t3);margin-top:1px">Report a problem or share an idea</span></div><div class="settings-arr">›</div></button>
+        <button class="settings-row" data-act="mail-contact"><div class="settings-ic"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><polyline points="3 7 12 13 21 7"/></svg></div><div class="settings-lbl">Contact us<span style="display:block;font-size:11px;color:var(--t3);margin-top:1px">Private support</span></div><div class="settings-arr">›</div></button>
+      </div>
+      <div class="gap"></div>
+      <div class="card settings-list">
+        <button class="settings-row" data-act="open-rate"><div class="settings-ic"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div><div class="settings-lbl">Rate app</div><div class="settings-arr">›</div></button>
+        <button class="settings-row" data-act="share-app"><div class="settings-ic"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg></div><div class="settings-lbl">Share app</div><div class="settings-arr">›</div></button>
+        <button class="settings-row" data-act="open-sheet" data-sheet="sh-whatsnew"><div class="settings-ic"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><line x1="12" y1="11" x2="12" y2="16"/><path d="M12 8h.01"/></svg></div><div class="settings-lbl">What's New</div><div class="settings-arr">›</div></button>
       </div>
       <div class="gap"></div>
     </div>
@@ -1145,6 +1182,13 @@ const SPLASH_MSGS={
       <label class="sheet-lbl" for="pf-why">My why</label>
       <textarea class="sheet-ta" id="pf-why" maxlength="500" placeholder="I want to become more disciplined and live with purpose."></textarea>
       <div class="sheet-note">DNY shows your reason on hard days.</div>
+      <div class="sheet-lbl">Gender</div>
+      <div class="seg in" id="pf-gender" role="group" aria-label="Gender">
+        <button data-act="pf-gender" data-g="female">Female</button>
+        <button data-act="pf-gender" data-g="male">Male</button>
+        <button data-act="pf-gender" data-g="">Not set</button>
+      </div>
+      <div class="sheet-note">DNY uses this only to show options that fit you.</div>
       <button class="sheet-btn" data-act="save-profile">Save</button>
       <button class="sheet-btn ghost" data-act="close-sheet" data-sheet="sh-profile">Cancel</button>
     </div>
@@ -1281,9 +1325,9 @@ const SPLASH_MSGS={
 </div>
 
 <div class="overlay" id="sh-notif" data-act="overlay-close">
-  <div class="sheet" role="dialog" aria-modal="true" aria-label="Reminders">
+  <div class="sheet" role="dialog" aria-modal="true" aria-label="Notifications">
     <div class="sheet-handle"></div>
-    <div class="sheet-title">Reminders</div>
+    <div class="sheet-title">Notifications</div>
     <div class="sheet-body">
       <div class="info-box" id="notif-status">Turn on a reminder to get a notification on your phone, even when DNY is closed.</div>
       <div class="notif-box">
@@ -1348,16 +1392,30 @@ const SPLASH_MSGS={
   </div>
 </div>
 
+<div class="overlay" id="sh-rate" data-act="overlay-close">
+  <div class="sheet" role="dialog" aria-modal="true" aria-label="Rate DNY">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Rate DNY</div>
+    <div class="sheet-body">
+      <div class="sheet-note" style="margin-top:0;text-align:center">How is DNY working for you?</div>
+      <div class="rate-stars" id="rate-stars" role="group" aria-label="Rating"><button class="rate-star" data-act="rate-star" data-n="1" aria-label="1 star"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></button><button class="rate-star" data-act="rate-star" data-n="2" aria-label="2 stars"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></button><button class="rate-star" data-act="rate-star" data-n="3" aria-label="3 stars"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></button><button class="rate-star" data-act="rate-star" data-n="4" aria-label="4 stars"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></button><button class="rate-star" data-act="rate-star" data-n="5" aria-label="5 stars"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></button></div>
+      <label class="sheet-lbl" for="rate-note">Comment (optional)</label>
+      <textarea class="sheet-ta" id="rate-note" maxlength="500" placeholder="Tell us what you like or what to fix."></textarea>
+      <button class="sheet-btn" id="rate-send" data-act="rate-send">Send</button>
+      <button class="sheet-btn ghost" data-act="close-sheet" data-sheet="sh-rate">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <div class="overlay" id="sh-whatsnew" data-act="overlay-close">
   <div class="sheet" role="dialog" aria-modal="true" aria-label="What is new">
     <div class="sheet-handle"></div>
     <div class="sheet-title">What's new in DNY</div>
     <div class="sheet-body">
       <ul class="wn-list">
-        <li>Streak freezes. You get 2 each week. A freeze covers a day you miss while a streak is running, so one slip does not end it. Freezes refill every Monday.</li>
-        <li>Streak alerts. DNY reminds you at 9 pm, 10 pm and 11 pm if you have not checked in. It tells you when a freeze saves your streak.</li>
-        <li>Weekly report. Every Monday at 8:00 am you get a notification on how your week went.</li>
-        <li>Sharing. Invite friends and family with a code. See their streaks and daily progress, and build shared habits together. You choose what they see.</li>
+        <li>Settings. Open it from your Profile. Report a bug, contact support, rate DNY, share the app and see what is new.</li>
+        <li>Notifications. The Reminders page in your Profile is now called Notifications.</li>
+        <li>Pause during menstruation. Women can pause from Settings. Your streak stays safe and DNY stops habit reminders, streak alerts and the weekly report until you resume. Set your gender under Name and my why to see it.</li>
       </ul>
       <button class="sheet-btn" data-act="wn-tour">Take a quick tour</button>
       <button class="sheet-btn ghost" data-act="wn-close">Got it</button>
@@ -1544,7 +1602,7 @@ function load(){
 let S=load();
 LAST_SIG=canon(S);
 
-const DEF={history:{},catlog:{},hlog:{},focusLog:{},checked:{},partial:{},skipped:{},off:{},frozen:{},alerts:{streak:true,report:true},share:{on:false,streak:true,score:true},offDays:[],todayDate:'',sessions:[],focusTotal:0,journal:[],rems:[],plan:{},name:'',why:'',avatar:'',onboarded:false};
+const DEF={history:{},catlog:{},hlog:{},focusLog:{},checked:{},partial:{},skipped:{},off:{},frozen:{},alerts:{streak:true,report:true},share:{on:false,streak:true,score:true},offDays:[],pauses:[],gender:'',todayDate:'',sessions:[],focusTotal:0,journal:[],rems:[],plan:{},name:'',why:'',avatar:'',onboarded:false};
 
 const AT_RE=/^([01]\d|2[0-3]):[0-5]\d$/;
 const DATE_RE=/^\d{4}-\d{2}-\d{2}$/;
@@ -1602,6 +1660,12 @@ function migrate(){
   S.share={on:!!S.share.on,streak:S.share.streak!==false,score:S.share.score!==false};
   S.offDays=[...new Set(S.offDays.map(Number).filter(n=>Number.isInteger(n)&&n>=0&&n<=6))];
   if(S.offDays.length>=7)S.offDays=[];
+  if(S.gender!=='female'&&S.gender!=='male')S.gender='';
+  // Pause ranges: from a day to a day, or from a day with no end while the pause is on.
+  S.pauses=S.pauses
+    .filter(p=>p&&typeof p==='object'&&DATE_RE.test(p.from)&&(!p.to||(DATE_RE.test(p.to)&&p.to>=p.from)))
+    .map(p=>({from:p.from,to:p.to||''}))
+    .slice(-60);
   if((S.reflectionGood||S.reflectionDiff)&&!S.journal.length){
     S.journal.push({date:S.todayDate||TODAY_KEY,good:String(S.reflectionGood||''),diff:String(S.reflectionDiff||'')});
   }
@@ -1670,9 +1734,12 @@ function frozenDay(k){return S.frozen[k]===true&&!(S.history[k]>0)&&!S.off[k];}
 function isRest(k){
   if(frozenDay(k))return true;
   if(S.history[k]!=null)return false;
-  return !!S.off[k]||S.offDays.includes(parseKey(k).getDay());
+  return isOffDay(k);
 }
-function isOffDay(k){return !!S.off[k]||S.offDays.includes(parseKey(k).getDay());}
+// Pause during menstruation. A paused day counts as a day off, so it never breaks a streak and never uses a freeze.
+function pausedOn(k){return S.pauses.some(p=>k>=p.from&&(!p.to||k<=p.to));}
+function pauseOpen(){return S.pauses.some(p=>!p.to);}
+function isOffDay(k){return !!S.off[k]||S.offDays.includes(parseKey(k).getDay())||pausedOn(k);}
 
 // Saves the numbers for one day. Rest days leave no score so they do not count as missed.
 function commitDay(key){
@@ -1786,11 +1853,11 @@ function catRun(cat){
 function todayReflection(){return S.journal.find(e=>e.date===TODAY_KEY)||null;}
 
 // ===== NAV + SHEETS =====
-const TABS=['today','progress','focus','plan','sharing','person','profile'];
+const TABS=['today','progress','focus','plan','sharing','person','profile','settings'];
 let LAST_TAB='today';
 function goTo(t){
   const cur=TABS.find(x=>$('s-'+x).classList.contains('active'));
-  if(t==='profile'&&cur&&cur!=='profile')LAST_TAB=cur;
+  if(t==='profile'&&cur&&cur!=='profile'&&cur!=='settings')LAST_TAB=cur;
   TABS.forEach(s=>{
     $('s-'+s).classList.toggle('active',s===t);
     const nb=$('nav-'+s);if(nb)nb.classList.toggle('active',s===t);
@@ -1803,12 +1870,13 @@ function goTo(t){
   if(t==='plan')renderPlan();
   if(t==='sharing')loadSharing();
   if(t==='profile')renderProfile();
+  if(t==='settings')renderSettings();
 }
 document.querySelectorAll('.screen').forEach(sc=>{
   sc.addEventListener('scroll',()=>{sc.classList.toggle('scrolled',sc.scrollTop>36);},{passive:true});
 });
 function openSheet(id){
-  if(id==='sh-profile'){$('pf-name').value=S.name||'';$('pf-why').value=S.why||'';}
+  if(id==='sh-profile'){$('pf-name').value=S.name||'';$('pf-why').value=S.why||'';setPfGender(S.gender);}
   if(id==='sh-habits'){SEL_MODE=false;SEL.clear();renderManage();}
   if(id==='sh-arrange')renderArrange();
   if(id==='sh-suggest'){PICK.sg.clear();renderPicker('sg');}
@@ -1836,9 +1904,10 @@ function renderToday(){
   setText('ring-pct',st.score+'%');
   $('ring-fill').style.strokeDashoffset=String(175-(175*st.score/100));
   const resting=isOffDay(TODAY_KEY)&&st.reqDone===0;
-  setText('hero-main',resting?'Day off':st.reqN?st.reqDone+' of '+st.reqN+' habits done':'No habits today');
+  const paused=pausedOn(TODAY_KEY);
+  setText('hero-main',resting?(paused?'Paused':'Day off'):st.reqN?st.reqDone+' of '+st.reqN+' habits done':'No habits today');
   const sub=[];
-  if(resting)sub.push('Nothing counts against you today. Anything you do still counts.');
+  if(resting)sub.push(paused?'Rest well. Your streak is safe. Anything you do still counts.':'Nothing counts against you today. Anything you do still counts.');
   else if(st.reqN&&st.reqDone===st.reqN)sub.push('Everything done for today.');
   else sub.push('One habit at a time.');
   if(!resting&&st.exN)sub.push(st.exDone+' of '+st.exN+' extra.');
@@ -1942,7 +2011,9 @@ function renderNextUp(st,resting,hr){
   const el=$('next-up');
   if(!S.habits.length){el.innerHTML='';return;}
   if(resting){
-    el.innerHTML='<div class="card next-card"><div class="next-ok">'+ico('moon')+'<span><b>Rest day</b>Enjoy it. Your streak is safe.</span></div></div>';
+    el.innerHTML=pausedOn(TODAY_KEY)
+      ?'<div class="card next-card"><div class="next-ok">'+ico('moon')+'<span><b>Paused</b>Rest well. Your streak is safe. Tap Resume below when you are ready.</span></div></div>'
+      :'<div class="card next-card"><div class="next-ok">'+ico('moon')+'<span><b>Rest day</b>Enjoy it. Your streak is safe.</span></div></div>';
     return;
   }
   const h=pickNext(hr);
@@ -1970,6 +2041,7 @@ function renderTodayTools(){
   const off=!!S.off[TODAY_KEY]&&S.off[TODAY_KEY]!==2;
   const el=$('today-tools');
   el.innerHTML='<button class="tool-btn" data-act="goto" data-tab="focus">'+ico('hourglass')+'<span>Focus timer<br><small>Start a focus session</small></span></button>'
+    +(pauseOpen()?'<button class="tool-btn" data-act="pause-end">'+ico('moon')+'<span>Resume from pause<br><small>Habits and reminders start again</small></span></button>':'')
     +(S.habits.length?'<button class="tool-btn quiet" data-act="day-off">'+ico('moon')+'<span>'+(off?'Today is a day off. Undo':'Take today off')+'</span></button>':'');
 }
 let HA_ID=null;
@@ -2000,6 +2072,83 @@ function dayOffToggle(){
   recordToday();
   renderToday();renderProfile();
   toast(S.off[TODAY_KEY]?'Today is a day off':'Day off removed');
+}
+// ===== SETTINGS: SUPPORT, SHARE, RATE =====
+const SUPPORT_EMAIL='';
+function mailTo(subject,intro){
+  if(!SUPPORT_EMAIL){toast('Support email is not set yet');return;}
+  location.href='mailto:'+SUPPORT_EMAIL+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(intro+'\n\n\nDNY version: '+APP_VER);
+}
+async function shareApp(){
+  const data={title:'DNY',text:'I use DNY to build my daily habits. Try it.',url:'https://dnyapp.vercel.app/'};
+  try{if(navigator.share){await navigator.share(data);return;}}
+  catch(e){if(e&&e.name==='AbortError')return;}
+  try{await navigator.clipboard.writeText(data.url);toast('Link copied');}
+  catch(e){toast('Copy this link: dnyapp.vercel.app');}
+}
+let RATE_N=0;
+function setRate(n){
+  RATE_N=n;
+  document.querySelectorAll('#rate-stars .rate-star').forEach(b=>b.classList.toggle('on',+b.dataset.n<=n));
+}
+function openRate(){setRate(0);$('rate-note').value='';openSheet('sh-rate');}
+async function sendRating(){
+  if(!RATE_N){toast('Pick a star rating first');return;}
+  const btn=$('rate-send');
+  if(btn.disabled)return;
+  btn.disabled=true;
+  try{
+    const a=getAuth()?await validAuth():null;
+    const r=await sbFetch('/rest/v1/rpc/dny_submit_rating',{
+      method:'POST',
+      headers:a?{Authorization:'Bearer '+a.access_token}:{},
+      body:{p_rating:RATE_N,p_comment:$('rate-note').value.trim().slice(0,500),p_app:APP_VER}
+    });
+    if(!r.ok)throw new Error('rate '+r.status);
+    closeSheet('sh-rate');
+    toast('Thank you for your rating');
+  }catch(e){
+    toast('Could not send. Check your connection and try again.');
+  }finally{btn.disabled=false;}
+}
+
+// ===== PAUSE DURING MENSTRUATION =====
+// Women can pause. A paused day is a day off: no missed day, no freeze used, the streak stays.
+// Phone reminders, streak alerts and the weekly report stay quiet until the pause ends.
+function pauseChanged(msg){
+  recordToday();
+  renderToday();renderProfile();renderSettings();
+  afterReminderChange(false);
+  scheduleProgress(500);
+  toast(msg);
+}
+function pauseStart(){
+  if(S.gender!=='female'||pauseOpen())return;
+  S.pauses.push({from:TODAY_KEY,to:''});
+  S.pauses=S.pauses.slice(-60);
+  pauseChanged('Paused. Rest well. Your streak is safe.');
+}
+function pauseEnd(){
+  const p=S.pauses.find(x=>!x.to);
+  if(!p)return;
+  // A pause that began today and ends today covered no full day, so it leaves no record.
+  if(p.from>=TODAY_KEY)S.pauses.splice(S.pauses.indexOf(p),1);
+  else p.to=addDays(TODAY_KEY,-1);
+  pauseChanged('Pause ended. Welcome back.');
+}
+const DROP_SVG='<svg class="pause-drop" viewBox="0 0 64 64" aria-hidden="true"><path d="M32 6C23 17 14 26 14 38a18 18 0 0 0 36 0C50 26 41 17 32 6z" fill="var(--accent)" opacity=".9"/><rect x="25" y="29" width="5" height="16" rx="2" fill="#fff"/><rect x="34" y="29" width="5" height="16" rx="2" fill="#fff"/></svg>';
+function renderSettings(){
+  const el=$('set-pause');
+  if(!el)return;
+  if(S.gender!=='female'){el.innerHTML='';return;}
+  const open=S.pauses.find(p=>!p.to);
+  const since=open?parseKey(open.from).toLocaleDateString('en-GB',{day:'numeric',month:'long'}):'';
+  el.innerHTML='<div class="card pause-card">'+DROP_SVG
+    +'<div class="pause-t">Pause during menstruation</div>'
+    +'<div class="pause-s">'+(open
+      ?'Paused since '+since+'. Your streak is safe. Habit reminders, streak alerts and your weekly report stay quiet until you resume.'
+      :'Take a break while you rest. Your streak stays safe and no day counts as missed. Habit reminders, streak alerts and your weekly report stay quiet until you resume.')+'</div>'
+    +'<button class="sheet-btn'+(open?' soft':'')+'" data-act="'+(open?'pause-end':'pause-start')+'">'+(open?'Resume':'Start pause')+'</button></div>';
 }
 function renderRestDays(){
   $('rest-days').innerHTML=[1,2,3,4,5,6,0].map(d=>'<button class="day-btn'+(S.offDays.includes(d)?' on':'')+'" data-act="rest-day" data-day="'+d+'" aria-pressed="'+S.offDays.includes(d)+'">'+DAYS_S[d]+'</button>').join('');
@@ -2838,12 +2987,20 @@ function renderProfile(){
   if(S.avatar){img.src=S.avatar;img.classList.remove('hidden');$('avatar-lg-ini').classList.add('hidden');}
   else{img.classList.add('hidden');$('avatar-lg-ini').classList.remove('hidden');}
 }
+let PF_G='';
+function setPfGender(g){
+  PF_G=g==='female'||g==='male'?g:'';
+  document.querySelectorAll('#pf-gender button').forEach(b=>b.classList.toggle('on',b.dataset.g===PF_G));
+}
 function saveProfile(){
   S.name=$('pf-name').value.trim().slice(0,40);
   S.why=$('pf-why').value.trim().slice(0,500);
-  save();closeSheet('sh-profile');
-  renderProfile();renderToday();
-  toast('Saved');
+  const wasFemale=S.gender==='female';
+  S.gender=PF_G;
+  closeSheet('sh-profile');
+  // Pause is only for women. If the gender changes while a pause is on, the pause ends.
+  if(wasFemale&&S.gender!=='female'&&pauseOpen()){pauseEnd();}
+  else{save();renderProfile();renderToday();renderSettings();toast('Saved');}
 }
 function onAvatar(input){
   const f=input.files&&input.files[0];
@@ -3190,7 +3347,7 @@ function scheduleNotif(key){
   if(next<=new Date())next.setDate(next.getDate()+1);
   const target=next.getTime();
   notifTimers[key]=setTimeout(()=>{
-    if(!PUSH_ACTIVE&&Date.now()-target<30*60*1000)showBanner(NOTIF_MSG[key][0],NOTIF_MSG[key][1]);
+    if(!PUSH_ACTIVE&&!pausedOn(dateStr(new Date()))&&Date.now()-target<30*60*1000)showBanner(NOTIF_MSG[key][0],NOTIF_MSG[key][1]);
     scheduleNotif(key);
   },target-Date.now());
 }
@@ -3276,13 +3433,14 @@ async function syncPush(opts){
     const reg=await navigator.serviceWorker.ready;
     let sub=await reg.pushManager.getSubscription();
     if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64uToBytes(VAPID_PUBLIC)});
+    const paused=pausedOn(dateStr(new Date()));
     const p256=sub.getKey('p256dh'),au=sub.getKey('auth');
     if(!p256||!au)throw new Error('no keys');
     const row={
       user_id:a.user.id,endpoint:sub.endpoint,p256dh:bytesToB64u(p256),auth:bytesToB64u(au),
       tz:(Intl.DateTimeFormat().resolvedOptions().timeZone)||'Africa/Lagos',
-      morning_on:prefs.morning.enabled,morning_time:clampTime(prefs.morning.time),
-      evening_on:prefs.evening.enabled,evening_time:clampTime(prefs.evening.time),
+      morning_on:prefs.morning.enabled&&!paused,morning_time:clampTime(prefs.morning.time),
+      evening_on:prefs.evening.enabled&&!paused,evening_time:clampTime(prefs.evening.time),
       updated_at:new Date().toISOString()
     };
     (opts.reset||[]).forEach(k=>{row['last_'+k]=null;});
@@ -3534,6 +3692,7 @@ function buildReminderItems(now){
   });
   for(let i=0;i<REM_DAYS;i++){
     const key=addDays(t0,i);
+    if(pausedOn(key))continue;
     activeHabits(key).forEach(h=>{
       if(!h.rem)return;
       if(i===0&&habitMark(h.id))return;
@@ -3610,7 +3769,8 @@ function progressPayload(){
     today_score:Math.max(0,Math.min(100,Math.round(+S.history[TODAY_KEY]||0))),
     today_active:!isOffDay(TODAY_KEY)&&activeHabits(TODAY_KEY).length>0,
     streak:st.cur,best:st.best,
-    active_dows:[0,1,2,3,4,5,6].filter(d=>!S.offDays.includes(d)),
+    // While paused, no day is active. The server then sends no streak alerts, freeze notices or weekly report.
+    active_dows:pausedOn(TODAY_KEY)?[]:[0,1,2,3,4,5,6].filter(d=>!S.offDays.includes(d)),
     scores,frozen,name:String(S.name||'').trim().slice(0,40),
     alerts:!!S.alerts.streak,report:!!S.alerts.report,
     share:!!S.share.on,share_streak:!!S.share.streak,share_score:!!S.share.score
@@ -4138,7 +4298,7 @@ function ydayMark(id,val){
 }
 
 // ===== APP TOUR AND WHAT'S NEW =====
-const APP_VER='2026-11-12';
+const APP_VER='2026-11-13';
 function markSeen(){try{localStorage.setItem('dny-seen',APP_VER);}catch(e){}}
 function maybeWhatsNew(){
   let v=null;
@@ -4153,7 +4313,7 @@ const TOUR=[
   {tab:'focus',sel:'#nav-focus',t:'Focus',d:'Start a timer for study or deep work.'},
   {tab:'plan',sel:'#nav-plan',t:'Plan',d:'Write your evening reflection, plan tomorrow and add reminders.'},
   {tab:'sharing',sel:'#nav-sharing',t:'Sharing',d:'Invite friends and family. See their streaks and do shared habits together.'},
-  {tab:'today',sel:'#s-today .av-btn',t:'Your profile',d:'Tap your picture at the top right. Reminders, theme, rest days, cloud sync and your habits are there.'}
+  {tab:'today',sel:'#s-today .av-btn',t:'Your profile',d:'Tap your picture at the top right. Notifications, theme, rest days, settings, cloud sync and your habits are there.'}
 ];
 let TOUR_I=0;
 function startTour(){
@@ -4191,6 +4351,7 @@ function tourEnd(){
 }
 
 // ===== ACTIONS =====
+let OB_G='';
 const ACTIONS={
   'skip-splash':()=>skipSplash(),
   'arr-up':el=>arrangeMove(el.dataset.id,-1),
@@ -4204,9 +4365,24 @@ const ACTIONS={
   'wn-close':()=>closeSheet('sh-whatsnew'),
   'goto':el=>goTo(el.dataset.tab),
   'open-profile':()=>goTo('profile'),
+  'settings-back':()=>goTo('profile'),
+  'mail-bugs':()=>mailTo('DNY bug or feedback','Tell us what happened or what you would like to see.'),
+  'mail-contact':()=>mailTo('DNY support','How can we help?'),
+  'share-app':()=>shareApp(),
+  'open-rate':()=>openRate(),
+  'rate-star':el=>setRate(+el.dataset.n),
+  'rate-send':()=>sendRating(),
+  'pause-start':()=>pauseStart(),
+  'pause-end':()=>pauseEnd(),
+  'pf-gender':el=>setPfGender(el.dataset.g),
+  'ob-gender':el=>{
+    const g=el.dataset.g,on=OB_G===g;
+    OB_G=on?'':g;
+    document.querySelectorAll('#ob-gender .ob-day').forEach(b=>{const x=b.dataset.g===OB_G;b.classList.toggle('on',x);b.setAttribute('aria-pressed',String(x));});
+  },
   'profile-back':()=>goTo(LAST_TAB||'today'),
   'ob-next':el=>obStep(+el.dataset.step),
-  'ob-name':()=>{const v=$('ob-name').value.trim();if(v)S.name=v.slice(0,40);save();startPicker();obStep(5);},
+  'ob-name':()=>{const v=$('ob-name').value.trim();if(v)S.name=v.slice(0,40);S.gender=OB_G;save();startPicker();obStep(5);},
   'pick-toggle':pickToggle,
   'pick-all':el=>{const c=el.dataset.ctx;pickList(c).forEach(h=>PICK[c].add(h.id));renderPicker(c);},
   'pick-none':el=>{const c=el.dataset.ctx;PICK[c].clear();renderPicker(c);},
@@ -4321,7 +4497,7 @@ const ACTIONS={
     scheduleNotif(key);
     syncPush({ask:p[key].enabled,reset:[key]});
   },
-  'notif-save':()=>{closeSheet('sh-notif');toast('Reminders saved');},
+  'notif-save':()=>{closeSheet('sh-notif');toast('Notifications saved');},
   'alert-toggle':el=>alertToggle(el.dataset.key),
   'open-invite':()=>openInvite(),
   'invite-create':()=>inviteCreate(),
