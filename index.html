@@ -3714,17 +3714,22 @@ function sharedHabitCard(h){
   const joined=(h.members||[]).filter(m=>m.status==='joined');
   const waiting=(h.members||[]).filter(m=>m.status==='invited').map(m=>m.name);
   let rows='';
+  const meM=joined.find(m=>m.id===me);
+  const doneToday=!!(meM&&meM.days&&+meM.days[TODAY_KEY]===1);
   joined.forEach(m=>{
     const days=m.days||{},isMe=m.id===me;
     let dots='';
     for(let i=6;i>=0;i--){const v=+days[addDays(TODAY_KEY,-i)];dots+='<span class="sh-dot'+(v===1?' on':v===2?' s2':v===3?' s3':'')+'"></span>';}
     const n=memberStreak(days);
     rows+='<div class="sh-mem"><div class="sh-mem-main"><div class="sh-mem-n">'+esc(isMe?'You':m.name)+'</div><div class="sh-mem-s">'+(n?dayWord(n)+' in a row':'No streak yet')+'</div><div class="sh-dots" aria-hidden="true">'+dots+'</div></div>'
-      +(isMe?'<button class="sh-check'+(+days[TODAY_KEY]===1?' on':'')+'" data-act="shared-toggle" data-id="'+id+'" aria-label="Mark '+title+' done today">'+ico('check')+'</button>':'')+'</div>';
+      +'</div>';
   });
   return '<div class="card sh-habit"><div class="sh-habit-h"><div class="sh-habit-t">'+title+'</div></div>'+rows
     +(waiting.length?'<div class="sh-wait">Waiting for '+esc(waiting.join(', '))+'</div>':'')
-    +'<div class="sh-habit-f"><button class="rec-btn" data-act="shared-opts" data-id="'+id+'">Options</button></div></div>';
+    +'<div class="next-btns sh-btns">'+(doneToday
+      ?'<button class="next-more sh-undo" data-act="shared-toggle" data-id="'+id+'">Done today. Undo</button>'
+      :'<button class="next-done" data-act="shared-toggle" data-id="'+id+'">Done</button>')
+    +'<button class="next-more" data-act="shared-opts" data-id="'+id+'">Options</button></div></div>';
 }
 function renderSharing(){
   const el=$('sharing-body');
