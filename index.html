@@ -666,11 +666,27 @@ html.fonts-ok .sp-credit{animation:fade-in .5s ease forwards}
 .sh-ring-wrap{position:relative;display:flex;align-items:center;justify-content:center}
 .sh-ring-wrap span{position:absolute;font-size:13px;font-weight:700;color:var(--t1)}
 .sh-list{display:flex;flex-direction:column;gap:10px;padding:0 18px}
-.sh-person{padding:13px 14px}
-.sh-ptop{display:flex;align-items:center;gap:12px}
-.sh-wk{margin-top:12px;padding-top:11px;border-top:1px solid var(--line)}
-.sh-wk-t{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--t3);margin-bottom:8px}
+.sh-person{display:block;width:100%;text-align:left;padding:13px 14px;color:inherit}
+.sh-person:active{background:var(--s2)}
 .sh-wk-r{display:flex;justify-content:space-between}
+.pp-head{display:flex;flex-direction:column;align-items:center;padding:18px 18px 6px}
+.pp-av{position:relative;width:104px;height:104px;border-radius:50%;background:var(--accent-dim);color:var(--accent);display:flex;align-items:center;justify-content:center;font-family:'Lora',Georgia,serif;font-size:40px;font-weight:700}
+.pp-av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%}
+.pp-badge{position:absolute;right:-6px;bottom:-4px;width:40px;height:40px;border-radius:50%;background:var(--s2);border:2px solid var(--bg);display:flex;align-items:center;justify-content:center}
+.pp-name{font-family:'Lora',Georgia,serif;font-size:26px;font-weight:600;margin-top:14px;color:var(--t1)}
+.pp-sub{font-size:13px;color:var(--t3);margin-top:3px}
+.pp-card{margin:0 18px;padding:14px}
+.pp-today{display:flex;align-items:center;gap:20px}
+.pp-pct{position:absolute;font-size:22px;font-weight:700;color:var(--t1)}
+.pp-stats{flex:1;display:flex;flex-direction:column;gap:10px}
+.pp-st span{display:block;font-size:12px;color:var(--t3)}
+.pp-st b{font-size:18px;font-weight:700;color:var(--accent)}
+.pp-habit{margin:0 18px 10px;padding:14px}
+.pp-ht{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px}
+.pp-chip{font-size:11px;font-weight:600;color:var(--t3);background:var(--s3);border-radius:10px;padding:4px 9px;white-space:nowrap}
+.pp-chip.on{color:var(--accent);background:var(--accent-dim)}
+
+.sh-ptop{display:flex;align-items:center;gap:12px}
 .sh-wd{display:flex;flex-direction:column;align-items:center;gap:5px}
 .sh-wl{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--t3)}
 .sh-wd.today .sh-wl{background:var(--accent);color:var(--accent-ink)}
@@ -1003,6 +1019,11 @@ const SPLASH_MSGS={
       <div class="topbar"><div class="tb-side"></div><div class="tb-mini">Sharing</div><div class="tb-side tb-r"><button class="av-btn" data-act="open-profile" aria-label="Profile"><span class="av-ini">DY</span><img class="av-img hidden" alt=""/></button></div></div>
       <div class="lg-head"><div class="lg-title">Sharing</div></div>
       <div id="sharing-body"></div>
+    </div>
+
+    <div class="screen" id="s-person">
+      <div class="topbar"><div class="tb-side"><button class="tb-back" data-act="person-back" aria-label="Back"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg></button></div><div class="tb-mini" id="pp-mini">Profile</div><div class="tb-side tb-r"></div></div>
+      <div id="person-body"></div>
     </div>
 
     <div class="screen" id="s-plan">
@@ -1776,7 +1797,7 @@ function catRun(cat){
 function todayReflection(){return S.journal.find(e=>e.date===TODAY_KEY)||null;}
 
 // ===== NAV + SHEETS =====
-const TABS=['today','progress','focus','plan','sharing','profile'];
+const TABS=['today','progress','focus','plan','sharing','person','profile'];
 let LAST_TAB='today';
 function goTo(t){
   const cur=TABS.find(x=>$('s-'+x).classList.contains('active'));
@@ -1785,6 +1806,7 @@ function goTo(t){
     $('s-'+s).classList.toggle('active',s===t);
     const nb=$('nav-'+s);if(nb)nb.classList.toggle('active',s===t);
   });
+  if(t==='person'){const nb=$('nav-sharing');if(nb)nb.classList.add('active');}
   const sc=$('s-'+t);if(sc){sc.scrollTop=0;sc.classList.remove('scrolled');}
   if(t==='today')renderToday();
   if(t==='progress')renderProgress();
@@ -3625,7 +3647,7 @@ async function syncProgress(){
 }
 
 // ===== SHARING =====
-var SH={data:null,loading:false,err:'',code:'',newFor:'',optId:''};
+var SH={data:null,loading:false,err:'',code:'',newFor:'',optId:'',pid:''};
 const MILESTONES=[3,7,14,21,30,50,75,100,150,200,365,500,1000];
 function myId(){const a=getAuth();return a?a.user.id:'';}
 function initialOf(n){const t=String(n||'').trim();return t?t.charAt(0).toUpperCase():'?';}
@@ -3669,21 +3691,22 @@ function weekRings(week){
   let h='';
   for(let i=6;i>=0;i--){
     const k=addDays(TODAY_KEY,-i),v=Math.round(+week[k]||0),L='SMTWTFS'[parseKey(k).getDay()];
-    h+='<div class="sh-wd'+(i===0?' today':'')+'"><span class="sh-wl">'+L+'</span>'+ringSvg(v,34,6)+'</div>';
+    h+='<div class="sh-wd'+(i===0?' today':'')+'"><span class="sh-wl">'+L+'</span>'+ringSvg(v,38,7)+'</div>';
   }
-  return '<div class="sh-wk"><div class="sh-wk-t">Last 7 days</div><div class="sh-wk-r" aria-hidden="true">'+h+'</div></div>';
+  return '<div class="sh-wk-r" aria-hidden="true">'+h+'</div>';
 }
 function personCard(o){
   const sub=o.streak!=null?streakWord(o.streak):'';
   const pct=o.score!=null?'<div class="sh-pct">'+o.score+'%</div>':'<div class="sh-pct dim">'+esc(o.hidden||'Private')+'</div>';
-  return '<div class="card sh-person"><div class="sh-ptop"><div class="sh-av">'+esc(initialOf(o.name))+'</div><div class="sh-pmain"><div class="sh-pname">'+esc(o.name)+(o.me?'<span class="sh-you">You</span>':'')+'</div>'
+  return '<button class="card sh-person" data-act="open-person" data-pid="'+esc(o.me?'me':o.id)+'" aria-label="Open '+esc(o.name)+'"><div class="sh-ptop"><div class="sh-av">'+esc(initialOf(o.name))+'</div><div class="sh-pmain"><div class="sh-pname">'+esc(o.name)+(o.me?'<span class="sh-you">You</span>':'')+'</div>'
     +(sub?'<div class="sh-psub">'+esc(sub)+'</div>':'')+pct+'</div>'
-    +(o.score!=null?'<div class="sh-ring-wrap">'+ringSvg(o.score,60,7)+'</div>':'')+'</div>'+(o.week?weekRings(o.week):'')+'</div>';
+    +(o.score!=null?'<div class="sh-ring-wrap">'+ringSvg(o.score,60,7)+'</div>':'')+'</div></button>';
 }
 function friendView(f){
   const shared=!!f.shared;
   const fresh=f.day_key&&String(f.day_key)>=TODAY_KEY;
   return {
+    id:f.id,best:shared&&f.best!=null?+f.best:null,
     name:f.name||'Friend',
     streak:shared&&f.streak!=null?+f.streak:null,
     score:shared&&f.score!=null?(fresh?+f.score:0):null,
@@ -3771,6 +3794,66 @@ function renderSharing(){
   h+='<div class="sh-sec"><div class="sec-lbl">Shared habits</div></div>';
   h+=d.habits.length?d.habits.map(sharedHabitCard).join(''):'<div class="sheet-note" style="padding:0 18px">'+(d.friends.length?'Start a habit that you and your friends tick off together.':'Add a friend first. Then start a habit together.')+'</div>';
   el.innerHTML=h;
+  if($('s-person').classList.contains('active'))renderPerson();
+}
+
+// ----- person profile -----
+function personInfo(pid){
+  const d=SH.data;
+  if(pid==='me'){
+    const st=calcStreaks(),ds=dayStats(TODAY_KEY),week={};
+    for(let i=0;i<7;i++){const k=addDays(TODAY_KEY,-i);week[k]=+S.history[k]||0;}
+    return {me:true,id:myId(),name:S.name||'Me',streak:st.cur,best:st.best,score:Math.round(+S.history[TODAY_KEY]||0),week,photo:S.avatar||'',done:ds.reqDone,total:ds.reqN};
+  }
+  const f=d&&d.friends.find(x=>x.id===pid);
+  if(!f)return null;
+  const v=friendView(f);v.me=false;return v;
+}
+function personHabits(p){
+  const me=myId();
+  return ((SH.data&&SH.data.habits)||[]).filter(h=>{
+    if(h.mine!=='joined')return false;
+    const ms=h.members||[];
+    return ms.some(m=>m.id===p.id&&m.status==='joined')&&ms.some(m=>m.id===me&&m.status==='joined');
+  });
+}
+function renderPerson(){
+  const el=$('person-body');if(!el)return;
+  const p=SH.pid?personInfo(SH.pid):null;
+  if(!p){el.innerHTML='<div class="sheet-note" style="padding:24px 18px">This person is not in your list any more.</div>';return;}
+  setText('pp-mini',p.me?'You':p.name);
+  const av=p.photo?'<img src="'+esc(p.photo)+'" alt=""/>':esc(initialOf(p.name));
+  let h='<div class="pp-head"><div class="pp-av">'+av+(p.score!=null?'<span class="pp-badge">'+ringSvg(p.score,34,6)+'</span>':'')+'</div>'
+    +'<div class="pp-name">'+esc(p.me?'Me':p.name)+'</div>'
+    +'<div class="pp-sub">'+(p.streak!=null?esc(streakWord(p.streak)):esc(p.hidden||'Private'))+'</div></div>';
+  h+='<div class="sh-sec"><div class="sec-lbl">Last 7 days</div></div><div class="card pp-card">';
+  h+=p.week?weekRings(p.week):'<div class="sheet-note">'+(p.hidden==='Not sharing'?'Not sharing yet.':'Daily percentage is private.')+'</div>';
+  h+='</div>';
+  h+='<div class="sh-sec"><div class="sec-lbl">Today</div></div><div class="card pp-card pp-today">';
+  if(p.score!=null){
+    h+='<div class="sh-ring-wrap">'+ringSvg(p.score,104,14)+'<span class="pp-pct">'+p.score+'%</span></div><div class="pp-stats">'
+      +(p.me&&p.total?'<div class="pp-st"><span>Habits</span><b>'+p.done+'/'+p.total+'</b></div>':'')
+      +(p.streak!=null?'<div class="pp-st"><span>Streak</span><b>'+dayWord(p.streak)+'</b></div>':'')
+      +(p.best!=null&&p.best>0?'<div class="pp-st"><span>Best</span><b>'+dayWord(p.best)+'</b></div>':'')+'</div>';
+  }else h+='<div class="sheet-note">'+esc(p.hidden==='Not sharing'?'This friend has not turned on sharing.':'Daily percentage is private.')+'</div>';
+  h+='</div>';
+  h+='<div class="sh-sec"><div class="sec-lbl">Shared habit progress</div></div>';
+  const hs=personHabits(p);
+  if(!hs.length)h+='<div class="sheet-note" style="padding:0 18px">'+(p.me?'You have no shared habits yet.':'You have no shared habits with '+esc(p.name)+' yet.')+'</div>';
+  hs.forEach(hb=>{
+    const m=(hb.members||[]).find(x=>x.id===p.id)||{days:{}},days=m.days||{};
+    let dots='',cnt=0;
+    for(let i=6;i>=0;i--){const v=+days[addDays(TODAY_KEY,-i)];if(v>0)cnt++;dots+='<span class="sh-dot'+(v===1?' on':v===2?' s2':v===3?' s3':'')+'"></span>';}
+    const n=memberStreak(days),today=+days[TODAY_KEY]===1;
+    h+='<div class="card pp-habit"><div class="pp-ht"><div class="sh-habit-t">'+esc(hb.title)+'</div><span class="pp-chip'+(today?' on':'')+'">'+(today?'Done today':'Not yet today')+'</span></div>'
+      +'<div class="sh-mem-s">'+(n?dayWord(n)+' in a row':'No streak yet')+' · '+cnt+' of last 7 days</div><div class="sh-dots" aria-hidden="true">'+dots+'</div></div>';
+  });
+  el.innerHTML=h;
+}
+function openPerson(pid){
+  SH.pid=pid;
+  renderPerson();
+  goTo('person');
 }
 
 // ----- invite -----
@@ -4263,6 +4346,8 @@ const ACTIONS={
   'shared-decline':el=>sharedRespond(el.dataset.id,false),
   'shared-leave':el=>sharedLeave(el.dataset.id),
   'shared-opts':el=>openSharedOpts(el.dataset.id),
+  'open-person':el=>openPerson(el.dataset.pid),
+  'person-back':()=>goTo('sharing'),
   'sho-add':()=>{const id=SH.optId;closeSheet('sh-shopts');openSharedNew(id);},
   'sho-leave':()=>{const id=SH.optId;closeSheet('sh-shopts');sharedLeave(id);},
   'share-toggle':el=>shareToggle(el.dataset.key),
