@@ -1300,18 +1300,7 @@ const SPLASH_MSGS={
         </div>
         <div class="notif-time"><label for="notif-evening-time">Time</label><input type="time" id="notif-evening-time" value="20:00" data-notif-time="evening"/></div>
       </div>
-      <div class="notif-box">
-        <div class="notif-top">
-          <div class="nt"><b>Streak alerts</b><span>At 9 pm, 10 pm and 11 pm if you have not checked in. A freeze notice when one saves your streak.</span></div>
-          <button class="tog" id="tog-streak" role="switch" aria-checked="false" aria-label="Streak alerts" data-act="alert-toggle" data-key="streak"></button>
-        </div>
-      </div>
-      <div class="notif-box">
-        <div class="notif-top">
-          <div class="nt"><b>Weekly report</b><span>Every Monday at 8:00 am. It tells you how your week went.</span></div>
-          <button class="tog" id="tog-report" role="switch" aria-checked="false" aria-label="Weekly report" data-act="alert-toggle" data-key="report"></button>
-        </div>
-      </div>
+      <div class="info-box"><b>Streak alerts and weekly report are always on.</b><br>You get a nudge at 9 pm, 10 pm and 11 pm if you have not checked in. A freeze notice comes when one saves your streak. Your weekly report arrives every Monday at 8:00 am. You only need to be signed in under Cloud sync and allow notifications.</div>
       <div class="sheet-lbl">Habit reminders</div>
       <div class="mlist" id="notif-habits"></div>
       <div class="sheet-note">Tap a habit to set or change its reminder.</div>
@@ -1555,7 +1544,7 @@ function load(){
 let S=load();
 LAST_SIG=canon(S);
 
-const DEF={history:{},catlog:{},hlog:{},focusLog:{},checked:{},partial:{},skipped:{},off:{},frozen:{},alerts:{streak:false,report:false},share:{on:false,streak:true,score:true},offDays:[],todayDate:'',sessions:[],focusTotal:0,journal:[],rems:[],plan:{},name:'',why:'',avatar:'',onboarded:false};
+const DEF={history:{},catlog:{},hlog:{},focusLog:{},checked:{},partial:{},skipped:{},off:{},frozen:{},alerts:{streak:true,report:true},share:{on:false,streak:true,score:true},offDays:[],todayDate:'',sessions:[],focusTotal:0,journal:[],rems:[],plan:{},name:'',why:'',avatar:'',onboarded:false};
 
 const AT_RE=/^([01]\d|2[0-3]):[0-5]\d$/;
 const DATE_RE=/^\d{4}-\d{2}-\d{2}$/;
@@ -1609,7 +1598,7 @@ function migrate(){
   Object.keys(S.skipped).forEach(id=>{delete S.partial[id];});
   Object.keys(S.off).forEach(k=>{if(!/^\d{4}-\d{2}-\d{2}$/.test(k)||!S.off[k])delete S.off[k];else S.off[k]=S.off[k]===2?2:1;});
   Object.keys(S.frozen).forEach(k=>{if(!DATE_RE.test(k)||S.frozen[k]!==true)delete S.frozen[k];});
-  S.alerts={streak:!!S.alerts.streak,report:!!S.alerts.report};
+  S.alerts={streak:true,report:true};
   S.share={on:!!S.share.on,streak:S.share.streak!==false,score:S.share.score!==false};
   S.offDays=[...new Set(S.offDays.map(Number).filter(n=>Number.isInteger(n)&&n>=0&&n<=6))];
   if(S.offDays.length>=7)S.offDays=[];
@@ -4389,6 +4378,15 @@ document.querySelectorAll('[data-notif-time]').forEach(inp=>{
 // Stop pinch zoom so the app stays fixed on iPhone.
 ['gesturestart','gesturechange','gestureend'].forEach(t=>document.addEventListener(t,e=>e.preventDefault()));
 captureInviteLink();
+// Alerts are always on. The phone still needs one tap of permission, so ask once on the first tap after sign in.
+document.addEventListener('pointerup',function askOnce(){
+  try{
+    if(!getAuth()||!pushSupported()||(isIOS()&&!isStandalone()))return;
+    if(Notification.permission!=='default'||localStorage.getItem('dny-askpush'))return;
+    localStorage.setItem('dny-askpush','1');
+    syncPush({ask:true});
+  }catch(e){}
+},true);
 let started=false;
 function showApp(){
   $('main-app').style.display='flex';
