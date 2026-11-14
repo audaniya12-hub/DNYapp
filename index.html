@@ -500,6 +500,8 @@ html.fonts-ok .sp-credit{animation:fade-in .5s ease forwards}
   --bg-art:radial-gradient(70% 38% at 12% -4%,rgba(111,195,160,.22),transparent 70%),radial-gradient(55% 34% at 105% 24%,rgba(214,176,102,.13),transparent 70%),radial-gradient(60% 22% at -5% 70%,rgba(127,178,214,.16),transparent 70%);
 }
 .app,#onboarding,#splash{background:var(--bg-art),var(--bg)}
+/* On a new iPhone install whose page area stops short of the screen bottom, fade the content into the plain strip. */
+html.short .app::after{content:'';position:absolute;left:0;right:0;bottom:0;height:56px;pointer-events:none;z-index:15;background:linear-gradient(to bottom,transparent,var(--bg))}
 .ic{width:1.15em;height:1.15em;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;vertical-align:-.2em}
 .pill .ic{width:15px;height:15px}
 .icon-btn .ic{width:17px;height:17px}
@@ -4750,6 +4752,18 @@ document.querySelectorAll('[data-notif-time]').forEach(inp=>{
     ];
     close.addEventListener('click',()=>{box.remove();bars.forEach(b=>b.remove());});
   }
+})();
+// Some new iPhone installs get a page area shorter than the screen. The page cannot draw in the missing strip.
+// Mark it so the bottom of the app fades into the strip instead of ending in a hard line. Looks only, no layout change.
+(function(){
+  function mark(){
+    const gap=outerHeight-innerHeight;
+    const on=/iPhone|iPod/.test(navigator.userAgent)&&navigator.standalone===true&&innerHeight>innerWidth&&gap>=8&&gap<=90;
+    document.documentElement.classList.toggle('short',on);
+  }
+  mark();
+  addEventListener('resize',()=>setTimeout(mark,150));
+  addEventListener('orientationchange',()=>setTimeout(mark,300));
 })();
 captureInviteLink();
 // Alerts are always on. The phone still needs one tap of permission, so ask once on the first tap after sign in.
