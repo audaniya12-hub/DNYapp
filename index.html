@@ -79,8 +79,6 @@ html.fonts-ok .sp-card{animation:sp-in .7s ease both}
 .sp-msg{margin:26px auto 0;max-width:260px;font-family:'Lora',Georgia,serif;font-size:16px;color:var(--t1);line-height:1.5}
 .sp-tap{margin-top:30px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--t3);opacity:0}
 html.fonts-ok .sp-tap{animation:fade-in .5s 1.4s ease forwards}
-/* Set by a script only on an iPhone install whose viewport stops short of the screen bottom. */
-html.vfix body,html.vfix .app,html.vfix #onboarding,html.vfix #splash,html.vfix .overlay{height:var(--app-h);bottom:auto}
 @keyframes fade-in{to{opacity:1}}
 
 /* ===== STATUS BAR FILL, CREDIT, TOUR ===== */
@@ -4683,41 +4681,6 @@ document.querySelectorAll('[data-notif-time]').forEach(inp=>{
       window.scrollTo(0,0);
     },80);
   });
-})();
-// A new Home Screen install on iPhone can start with a viewport that stops short of the screen bottom.
-// Detect it, ask the phone to measure again, and if it is still short, size the app to the full screen.
-(function(){
-  const root=document.documentElement;
-  const IOS=/iPhone|iPod|iPad/.test(navigator.userAgent);
-  const STAND=()=>window.navigator.standalone===true||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches);
-  function gap(){
-    if(!IOS||!STAND()||window.innerHeight<=window.innerWidth)return 0;
-    const g=Math.round(screen.height-window.innerHeight);
-    return g>=8&&g<=90?g:0;
-  }
-  function apply(){
-    if(gap()){root.style.setProperty('--app-h',screen.height+'px');root.classList.add('vfix');}
-    else root.classList.remove('vfix');
-  }
-  let kicked=false;
-  function check(){
-    if(!gap()){apply();return;}
-    if(!kicked){
-      kicked=true;
-      const m=document.querySelector('meta[name=viewport]');
-      if(m){
-        const c=m.getAttribute('content');
-        m.setAttribute('content',c+',minimal-ui=no');
-        requestAnimationFrame(()=>{m.setAttribute('content',c);setTimeout(apply,150);});
-        return;
-      }
-    }
-    apply();
-  }
-  check();
-  [300,900,2000].forEach(t=>setTimeout(check,t));
-  ['resize','orientationchange','pageshow'].forEach(t=>window.addEventListener(t,()=>setTimeout(check,150)));
-  document.addEventListener('visibilitychange',()=>{if(!document.hidden)setTimeout(check,150);});
 })();
 captureInviteLink();
 // Alerts are always on. The phone still needs one tap of permission, so ask once on the first tap after sign in.
