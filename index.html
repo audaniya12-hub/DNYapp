@@ -737,6 +737,10 @@ html.fonts-ok .sp-credit{animation:fade-in .5s ease forwards}
 #ptr svg{width:20px;height:20px;fill:none;stroke:var(--t2);stroke-width:2.4;stroke-linecap:round}
 #ptr.spin svg{animation:ptr-spin .8s linear infinite}
 @keyframes ptr-spin{to{transform:rotate(360deg)}}
+@keyframes pg-r{from{opacity:0;transform:translateX(36px)}to{opacity:1;transform:none}}
+@keyframes pg-l{from{opacity:0;transform:translateX(-36px)}to{opacity:1;transform:none}}
+.screen.pg-r{animation:pg-r .2s ease}
+.screen.pg-l{animation:pg-l .2s ease}
 @keyframes sc-in{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
 .screen.sc-in{animation:sc-in .22s ease}
 
@@ -1522,19 +1526,16 @@ const SPLASH_MSGS={
   <div class="wn-card" id="wn-card" data-view="main" role="dialog" aria-modal="true" aria-label="What is new">
     <div class="wn-panel" id="wn-main">
       <div class="wn-hero">
-        <div class="wn-col"><b>Pull to refresh</b><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="52" r="36" fill="#2F6B55" opacity=".10"/><rect x="26" y="14" width="48" height="72" rx="10" fill="#fff" stroke="#D9CFB8" stroke-width="2"/><path d="M33 29c0-4 4-6 4-11 3 2 5 5 5 8 0 3-2 5-4.500 5-2.500 0-4.500-0.500-4.500-2z" fill="#F2A93B"/><rect x="46" y="22" width="22" height="10" rx="5" fill="#E7F1EC"/><rect x="33" y="42" width="34" height="10" rx="4" fill="#E7F1EC"/><rect x="33" y="58" width="34" height="10" rx="4" fill="#E7F1EC"/></svg></div>
-        <div class="wn-col"><b>Swipe back</b><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="52" r="36" fill="#2F6B55" opacity=".10"/><rect x="26" y="14" width="48" height="72" rx="10" fill="#fff" stroke="#D9CFB8" stroke-width="2"/><rect x="33" y="24" width="34" height="10" rx="4" fill="#E7F1EC"/><rect x="33" y="40" width="15" height="14" rx="4" fill="#3E8C70"/><rect x="52" y="40" width="15" height="14" rx="4" fill="#3E8C70"/><rect x="33" y="60" width="34" height="10" rx="4" fill="#E7F1EC"/></svg></div>
-        <div class="wn-col"><b>Bottom shortcuts</b><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="52" r="36" fill="#2F6B55" opacity=".10"/><rect x="26" y="14" width="48" height="72" rx="10" fill="#fff" stroke="#D9CFB8" stroke-width="2"/><circle cx="50" cy="38" r="9" fill="#3E8C70"/><rect x="38" y="52" width="24" height="9" rx="4.500" fill="#E7F1EC"/><rect x="32" y="70" width="36" height="11" rx="5.500" fill="#2F6B55" opacity=".35"/></svg></div>
+        <div class="wn-col"><b>Swipe tabs</b><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="52" r="36" fill="#2F6B55" opacity=".10"/><rect x="26" y="14" width="48" height="72" rx="10" fill="#fff" stroke="#D9CFB8" stroke-width="2"/><path d="M33 29c0-4 4-6 4-11 3 2 5 5 5 8 0 3-2 5-4.500 5-2.500 0-4.500-0.500-4.500-2z" fill="#F2A93B"/><rect x="46" y="22" width="22" height="10" rx="5" fill="#E7F1EC"/><rect x="33" y="42" width="34" height="10" rx="4" fill="#E7F1EC"/><rect x="33" y="58" width="34" height="10" rx="4" fill="#E7F1EC"/></svg></div>
+        <div class="wn-col"><b>Swipe down</b><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="52" r="36" fill="#2F6B55" opacity=".10"/><rect x="26" y="14" width="48" height="72" rx="10" fill="#fff" stroke="#D9CFB8" stroke-width="2"/><rect x="33" y="24" width="34" height="10" rx="4" fill="#E7F1EC"/><rect x="33" y="40" width="15" height="14" rx="4" fill="#3E8C70"/><rect x="52" y="40" width="15" height="14" rx="4" fill="#3E8C70"/><rect x="33" y="60" width="34" height="10" rx="4" fill="#E7F1EC"/></svg></div>
+        <div class="wn-col"><b>Swipe back</b><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="52" r="36" fill="#2F6B55" opacity=".10"/><rect x="26" y="14" width="48" height="72" rx="10" fill="#fff" stroke="#D9CFB8" stroke-width="2"/><circle cx="50" cy="38" r="9" fill="#3E8C70"/><rect x="38" y="52" width="24" height="9" rx="4.500" fill="#E7F1EC"/><rect x="32" y="70" width="36" height="11" rx="5.500" fill="#2F6B55" opacity=".35"/></svg></div>
       </div>
       <div class="wn-body">
         <div class="wn-ver">Update 15 Nov 2026 · Latest</div>
-        <h2 class="wn-h">Refresh and swipe back</h2>
+        <h2 class="wn-h">Swipe to move around</h2>
         <ul class="wn-items">
-          <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7"/><polyline points="21 3 21 8 16 8"/></svg><span>Pull to refresh. Pull any screen down to check for updates, sync your data and redraw.</span></li>
-          <li><svg viewBox="0 0 24 24" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg><span>Swipe right to go back. It works on Focus, Plan and Settings. The old left and down swipes are gone.</span></li>
-          <li><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="14" width="8" height="6" rx="2"/><rect x="13" y="14" width="8" height="6" rx="2"/></svg><span>Shortcuts moved. Focus and Plan now sit at the bottom of Today.</span></li>
-          <li><svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg><span>Cleaner Today. The streak header scrolls away with the page and Remember your why is gone from Today.</span></li>
-          <li><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2"/></svg><span>Status bar. In light mode the time and signal now show dark.</span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="15 18 9 12 15 6"/><polyline points="9 6 15 12 9 18" opacity=".45"/></svg><span>Swipe between tabs. Swipe left or right to move between Today, Progress and Sharing.</span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg><span>Swipe down to close. Manage habits, Name and my why, Appearance, Notifications, Rest days, Cloud sync and Backup now close with a swipe down.</span></li>
         </ul>
       </div>
       <div class="wn-foot">
@@ -1547,7 +1548,7 @@ const SPLASH_MSGS={
       <div class="wn-body">
         <h2 class="wn-h" style="margin-bottom:6px">Release history</h2>
         <div class="wn-ver">Earlier updates to DNY.</div>
-        <div class="wn-vh">Update 15 Nov 2026, new Today</div><ul class="wn-bul"><li>New header with your streak and week. Ticks mark the days you did a habit.</li><li>Greeting on open. It shows when you open the app.</li><li>Focus and Plan became shortcuts. Your profile became the You tab.</li></ul><div class="wn-vh">Update 15 Nov 2026, bottom bar</div><ul class="wn-bul"><li>Floating bar. The tab bar floats just above the home indicator, with your habits showing behind it.</li><li>Full screen. New iPhone installs fill the screen to the bottom edge.</li><li>Clear scrolling. The last item on every screen stops just above the bar.</li></ul><div class="wn-vh">Update 13 Nov 2026</div><ul class="wn-bul"><li>Settings. Open it from your Profile to report a bug, contact support, rate DNY and share the app.</li><li>Notifications. Reminders in your Profile now has a new name.</li><li>Pause during menstruation. Women can pause from the Progress tab. Your streak stays safe and no freeze is used.</li><li>Gender. Pick male or female once. DNY shows options that fit you.</li></ul><div class="wn-vh">Update 12 Nov 2026</div><ul class="wn-bul"><li>Streak freezes. You get 2 each week. A freeze covers a missed day while a streak runs. They refill every Monday.</li><li>Streak alerts at 9 pm, 10 pm and 11 pm if you have not checked in.</li><li>A weekly report notification every Monday at 8:00 am.</li><li>Sharing. Invite friends and family with a code. See their streaks and daily progress, and build shared habits.</li></ul><div class="wn-vh">Update 29 Oct 2026</div><ul class="wn-bul"><li>Reminders on the Plan page, like the iPhone Reminders app, with Today, Scheduled, All and Urgent views.</li><li>Your reminders sync through cloud sync.</li></ul><div class="wn-vh">Update 22 Oct 2026</div><ul class="wn-bul"><li>An Afternoon section on Today, with a part of the day picker for each habit.</li><li>A quiet rhythm card on Progress. It shows your last 7 days with a short note for the day.</li></ul>
+        <div class="wn-vh">Update 15 Nov 2026, refresh and swipe back</div><ul class="wn-bul"><li>Pull to refresh. Pull any screen down to check for updates, sync and redraw.</li><li>Swipe right to go back from Focus, Plan and Settings.</li><li>Focus and Plan moved to the bottom of Today. The streak header scrolls away. Remember your why left Today.</li><li>Status bar. Light mode now shows dark time and signal.</li></ul><div class="wn-vh">Update 15 Nov 2026, new Today</div><ul class="wn-bul"><li>New header with your streak and week. Ticks mark the days you did a habit.</li><li>Greeting on open. It shows when you open the app.</li><li>Focus and Plan became shortcuts. Your profile became the You tab.</li></ul><div class="wn-vh">Update 15 Nov 2026, bottom bar</div><ul class="wn-bul"><li>Floating bar. The tab bar floats just above the home indicator, with your habits showing behind it.</li><li>Full screen. New iPhone installs fill the screen to the bottom edge.</li><li>Clear scrolling. The last item on every screen stops just above the bar.</li></ul><div class="wn-vh">Update 13 Nov 2026</div><ul class="wn-bul"><li>Settings. Open it from your Profile to report a bug, contact support, rate DNY and share the app.</li><li>Notifications. Reminders in your Profile now has a new name.</li><li>Pause during menstruation. Women can pause from the Progress tab. Your streak stays safe and no freeze is used.</li><li>Gender. Pick male or female once. DNY shows options that fit you.</li></ul><div class="wn-vh">Update 12 Nov 2026</div><ul class="wn-bul"><li>Streak freezes. You get 2 each week. A freeze covers a missed day while a streak runs. They refill every Monday.</li><li>Streak alerts at 9 pm, 10 pm and 11 pm if you have not checked in.</li><li>A weekly report notification every Monday at 8:00 am.</li><li>Sharing. Invite friends and family with a code. See their streaks and daily progress, and build shared habits.</li></ul><div class="wn-vh">Update 29 Oct 2026</div><ul class="wn-bul"><li>Reminders on the Plan page, like the iPhone Reminders app, with Today, Scheduled, All and Urgent views.</li><li>Your reminders sync through cloud sync.</li></ul><div class="wn-vh">Update 22 Oct 2026</div><ul class="wn-bul"><li>An Afternoon section on Today, with a part of the day picker for each habit.</li><li>A quiet rhythm card on Progress. It shows your last 7 days with a short note for the day.</li></ul>
       </div>
       <div class="wn-foot" style="justify-content:flex-end">
         <button class="wn-ok" data-act="wn-close">OK</button>
@@ -4448,7 +4449,7 @@ function ydayMark(id,val){
 }
 
 // ===== APP TOUR AND WHAT'S NEW =====
-const APP_VER='2026-11-15.3';
+const APP_VER='2026-11-15.4';
 function markSeen(){try{localStorage.setItem('dny-seen',APP_VER);}catch(e){}}
 function wnView(v){
   $('wn-card').dataset.view=v;
@@ -4815,6 +4816,122 @@ const BACK_TO={focus:'today',plan:'today',settings:'profile',person:'sharing'};
     axis='';
   },{passive:true});
   document.addEventListener('touchcancel',()=>{reset(true);sc=null;axis='';},{passive:true});
+})();
+// Swipe left or right to move between Today, Progress and Sharing.
+(function(){
+  const ORDER=['today','progress','sharing'];
+  let sc=null,sx=0,sy=0,axis='',idx=-1;
+  function hScroll(el){
+    while(el&&el!==document.body&&el.nodeType===1){
+      if(el.scrollWidth>el.clientWidth+2){
+        const o=getComputedStyle(el).overflowX;
+        if(o==='auto'||o==='scroll')return true;
+      }
+      el=el.parentElement;
+    }
+    return false;
+  }
+  function reset(animate){
+    if(!sc)return;
+    const el=sc;
+    el.style.transition=animate?'transform .18s ease,opacity .18s ease':'';
+    el.style.transform='';el.style.opacity='';
+    if(animate)setTimeout(()=>{el.style.transition='';},200);
+  }
+  document.addEventListener('touchstart',e=>{
+    sc=null;axis='';idx=-1;
+    if(e.touches.length!==1||!started)return;
+    if(document.querySelector('.overlay.show,#tour.show'))return;
+    const t=e.target;
+    if(t.closest&&t.closest('input,textarea,select,.overlay,.sheet'))return;
+    if(hScroll(t))return;
+    const i=ORDER.findIndex(x=>$('s-'+x).classList.contains('active'));
+    if(i<0)return;
+    idx=i;sc=$('s-'+ORDER[i]);sx=e.touches[0].clientX;sy=e.touches[0].clientY;
+  },{passive:true});
+  document.addEventListener('touchmove',e=>{
+    if(!sc||e.touches.length!==1)return;
+    const dx=e.touches[0].clientX-sx,dy=e.touches[0].clientY-sy;
+    if(!axis){
+      if(Math.abs(dx)<10&&Math.abs(dy)<10)return;
+      if(Math.abs(dx)>Math.abs(dy)*1.3)axis='x';
+      else{sc=null;return;}
+    }
+    // No page on that side: pull back with resistance.
+    const blocked=(dx>0&&idx===0)||(dx<0&&idx===ORDER.length-1);
+    const m=blocked?dx*0.2:dx;
+    sc.style.transition='none';
+    sc.style.transform='translateX('+m+'px)';
+    sc.style.opacity=String(Math.max(.4,1-Math.abs(m)/500));
+  },{passive:true});
+  document.addEventListener('touchend',e=>{
+    if(!sc||!axis){sc=null;return;}
+    const dx=e.changedTouches[0].clientX-sx;
+    const to=dx<-70?idx+1:dx>70?idx-1:-1;
+    if(to>=0&&to<ORDER.length){
+      const el=sc,dir=dx<0?'r':'l';
+      el.style.transition='transform .12s ease,opacity .12s ease';
+      el.style.transform='translateX('+(dx<0?'-':'')+'40%)';el.style.opacity='0';
+      sc=null;
+      setTimeout(()=>{
+        goTo(ORDER[to]);
+        const n=$('s-'+ORDER[to]);
+        n.classList.remove('pg-r','pg-l');void n.offsetWidth;n.classList.add('pg-'+dir);
+        setTimeout(()=>n.classList.remove('pg-r','pg-l'),260);
+      },110);
+    }else{reset(true);sc=null;}
+    axis='';
+  },{passive:true});
+  document.addEventListener('touchcancel',()=>{reset(true);sc=null;axis='';},{passive:true});
+})();
+// Swipe down on a sheet to close it. The gender sheet cannot be closed this way because it is required.
+(function(){
+  let sheet=null,ov=null,sy=0,sx=0,live=false;
+  document.addEventListener('touchstart',e=>{
+    sheet=null;live=false;
+    if(e.touches.length!==1)return;
+    const t=e.target;
+    if(!t.closest)return;
+    if(t.closest('input,textarea,select'))return;
+    const o=t.closest('.overlay.show');
+    if(!o||o.getAttribute('data-act')!=='overlay-close')return;
+    const sh=t.closest('.sheet');
+    if(!sh)return;
+    const body=t.closest('.sheet-body');
+    if(body&&body.scrollTop>0)return;
+    sheet=sh;ov=o;sy=e.touches[0].clientY;sx=e.touches[0].clientX;
+  },{passive:true});
+  document.addEventListener('touchmove',e=>{
+    if(!sheet||e.touches.length!==1)return;
+    const dy=e.touches[0].clientY-sy,dx=e.touches[0].clientX-sx;
+    if(!live){
+      if(Math.abs(dx)<8&&Math.abs(dy)<8)return;
+      if(dy>0&&Math.abs(dy)>Math.abs(dx)*1.3)live=true;
+      else{sheet=null;return;}
+    }
+    sheet.style.animation='none';
+    sheet.style.transition='none';
+    sheet.style.transform='translateY('+Math.max(0,dy)+'px)';
+  },{passive:true});
+  document.addEventListener('touchend',e=>{
+    if(!sheet||!live){sheet=null;return;}
+    const dy=e.changedTouches[0].clientY-sy;
+    const sh=sheet,o=ov;
+    sheet=null;live=false;
+    if(dy>90){
+      sh.style.transition='transform .18s ease';
+      sh.style.transform='translateY(100%)';
+      setTimeout(()=>{o.classList.remove('show');sh.style.transform='';sh.style.transition='';sh.style.animation='';},180);
+    }else{
+      sh.style.transition='transform .18s ease';
+      sh.style.transform='';
+      setTimeout(()=>{sh.style.transition='';sh.style.animation='';},200);
+    }
+  },{passive:true});
+  document.addEventListener('touchcancel',()=>{
+    if(sheet){sheet.style.transform='';sheet.style.transition='';sheet.style.animation='';}
+    sheet=null;live=false;
+  },{passive:true});
 })();
 // Pull down to refresh. It checks for a new version, syncs your data and redraws every screen.
 (function(){
