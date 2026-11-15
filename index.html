@@ -1539,6 +1539,7 @@ const SPLASH_MSGS={
         <ul class="wn-items">
           <li><svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="15 18 9 12 15 6"/><polyline points="9 6 15 12 9 18" opacity=".45"/></svg><span>Swipe between tabs. Swipe left or right to move between Today, Progress, Sharing and You.</span></li>
           <li><svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg><span>Swipe down to close. Manage habits, Name and my why, Appearance, Notifications, Rest days, Cloud sync and Backup now close with a swipe down.</span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="6 15 12 9 18 15"/></svg><span>Back to Today. On You, pull down from the top to go straight to Today.</span></li>
           <li><svg viewBox="0 0 24 24" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg><span>Plan swipe fixed. Swipe right now works anywhere on Plan, even over the text boxes.</span></li>
           <li><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="6" rx="2"/><rect x="3" y="14" width="18" height="6" rx="2"/></svg><span>Sharing order. Highlights now sit at the bottom of Sharing.</span></li>
         </ul>
@@ -4995,8 +4996,16 @@ const BACK_TO={focus:'today',plan:'today',settings:'profile',person:'sharing'};
   },{passive:true});
   document.addEventListener('touchend',()=>{
     if(!sc||!live){sc=null;return;}
+    const onYou=sc.id==='s-profile';
     sc=null;live=false;
-    if(pull>=GO*0.5){place(34,0);run();}
+    if(pull>=GO*0.5){
+      if(onYou){
+        // On You, pulling down takes you to Today instead of refreshing.
+        hide();goTo('today');
+        const n=$('s-today');n.classList.remove('pg-r','pg-l');void n.offsetWidth;n.classList.add('pg-l');
+        setTimeout(()=>n.classList.remove('pg-r','pg-l'),260);
+      }else{place(34,0);run();}
+    }
     else{hide();}
     pull=0;
   },{passive:true});
