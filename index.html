@@ -1539,6 +1539,8 @@ const SPLASH_MSGS={
         <ul class="wn-items">
           <li><svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="15 18 9 12 15 6"/><polyline points="9 6 15 12 9 18" opacity=".45"/></svg><span>Swipe between tabs. Swipe left or right to move between Today, Progress, Sharing and You.</span></li>
           <li><svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg><span>Swipe down to close. Manage habits, Name and my why, Appearance, Notifications, Rest days, Cloud sync and Backup now close with a swipe down.</span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg><span>Plan swipe fixed. Swipe right now works anywhere on Plan, even over the text boxes.</span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="6" rx="2"/><rect x="3" y="14" width="18" height="6" rx="2"/></svg><span>Sharing order. Highlights now sit at the bottom of Sharing.</span></li>
         </ul>
       </div>
       <div class="wn-foot">
@@ -4083,11 +4085,6 @@ function renderSharing(){
   const week={};for(let i=0;i<7;i++){const k=addDays(TODAY_KEY,-i);week[k]=+S.history[k]||0;}
   let h='<div class="sh-actions"><button class="rec-btn" data-act="open-invite">'+ico('userplus')+' Add friend</button><button class="rec-btn" data-act="shared-new">'+ico('people')+' Shared habit</button></div>';
   if(SH.err)h+='<div class="sheet-note" style="padding:8px 18px 0">'+esc(SH.err)+'</div>';
-  const hl=sharingHighlights();
-  if(hl.length){
-    h+='<div class="sh-sec"><div class="sec-lbl">Highlights</div></div><div class="sh-hl">'
-      +hl.map(x=>'<div class="card sh-hl-card"><div class="sh-ring-wrap">'+ringSvg(x.p,84,10)+'<span>'+x.p+'%</span></div><div class="sh-hl-t">'+esc(x.t)+'</div><div class="sh-hl-s">'+esc(x.s)+'</div></div>').join('')+'</div>';
-  }
   h+='<div class="sh-sec"><div class="sec-lbl">Progress today</div><button class="sh-link" data-act="open-sheet" data-sheet="sh-share-settings">Settings</button></div><div class="sh-list">';
   h+=personCard({name:S.name||'Me',me:true,streak:st.cur,score:my,week});
   d.friends.forEach(f=>{h+=personCard(friendView(f));});
@@ -4096,6 +4093,11 @@ function renderSharing(){
   else if(!S.share.on)h+='<div class="sheet-note" style="padding:10px 18px 0">Sharing is off. Friends see only your name. Turn it on in Settings.</div>';
   h+='<div class="sh-sec"><div class="sec-lbl">Shared habits</div></div>';
   h+=d.habits.length?d.habits.map(sharedHabitCard).join(''):'<div class="sheet-note" style="padding:0 18px">'+(d.friends.length?'Start a habit that you and your friends tick off together.':'Add a friend first. Then start a habit together.')+'</div>';
+  const hl=sharingHighlights();
+  if(hl.length){
+    h+='<div class="sh-sec"><div class="sec-lbl">Highlights</div></div><div class="sh-hl">'
+      +hl.map(x=>'<div class="card sh-hl-card"><div class="sh-ring-wrap">'+ringSvg(x.p,84,10)+'<span>'+x.p+'%</span></div><div class="sh-hl-t">'+esc(x.t)+'</div><div class="sh-hl-s">'+esc(x.s)+'</div></div>').join('')+'</div>';
+  }
   el.innerHTML=h;
   if($('s-person').classList.contains('active'))renderPerson();
 }
@@ -4469,7 +4471,7 @@ function maybeWhatsNew(){
 const TOUR=[
   {tab:'today',sel:'#nav-today',t:'Today',d:'Your habits for the day. Tap a habit to tick it.'},
   {tab:'progress',sel:'#nav-progress',t:'Progress',d:'Your streaks, reports and daily score. Missed evening habits from yesterday show here.'},
-  {tab:'today',sel:'#s-today .shortcuts',t:'Focus and Plan',d:'Start a focus timer, write your evening reflection or add reminders. Swipe left or down to close them.'},
+  {tab:'today',sel:'#s-today .shortcuts',t:'Focus and Plan',d:'Start a focus timer, write your evening reflection or add reminders. Swipe right to go back.'},
   {tab:'sharing',sel:'#nav-sharing',t:'Sharing',d:'Invite friends and family. See their streaks and do shared habits together.'},
   {tab:'profile',sel:'#nav-profile',t:'You',d:'Notifications, theme, rest days, settings, cloud sync and your habits are here.'}
 ];
@@ -4489,6 +4491,7 @@ function tourShow(){
   setText('tour-next',TOUR_I===TOUR.length-1?'Done':'Next');
   requestAnimationFrame(()=>requestAnimationFrame(()=>{
     const t=document.querySelector(s.sel),ring=$('tour-ring'),card=$('tour-card');
+    if(t&&s.sel.indexOf('#nav-')!==0)t.scrollIntoView({block:'center'});
     if(!t){ring.style.display='none';card.style.top='auto';card.style.bottom='120px';return;}
     const r=t.getBoundingClientRect();
     ring.style.display='block';
@@ -4788,7 +4791,7 @@ const BACK_TO={focus:'today',plan:'today',settings:'profile',person:'sharing'};
     if(e.touches.length!==1)return;
     if(document.querySelector('.overlay.show,#tour.show'))return;
     const t=e.target;
-    if(t.closest&&t.closest('input,textarea,select,.overlay,.sheet'))return;
+    {const f=t.closest&&t.closest('input,textarea,select');if(f&&f===document.activeElement)return;if(t.closest&&t.closest('.overlay,.sheet'))return;}
     const id=Object.keys(BACK_TO).find(x=>{const el=$('s-'+x);return el&&el.classList.contains('active');});
     if(!id)return;
     sc=$('s-'+id);back=BACK_TO[id];sx=e.touches[0].clientX;sy=e.touches[0].clientY;
@@ -4846,7 +4849,7 @@ const BACK_TO={focus:'today',plan:'today',settings:'profile',person:'sharing'};
     if(e.touches.length!==1||!started)return;
     if(document.querySelector('.overlay.show,#tour.show'))return;
     const t=e.target;
-    if(t.closest&&t.closest('input,textarea,select,.overlay,.sheet'))return;
+    {const f=t.closest&&t.closest('input,textarea,select');if(f&&f===document.activeElement)return;if(t.closest&&t.closest('.overlay,.sheet'))return;}
     if(hScroll(t))return;
     const i=ORDER.findIndex(x=>$('s-'+x).classList.contains('active'));
     if(i<0)return;
