@@ -106,6 +106,9 @@ html.fonts-ok .sp-card{animation:sp-in .7s ease both}
 @keyframes sp-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 .sp-logo{font-family:'Lora',Georgia,serif;font-size:58px;font-weight:700;letter-spacing:.14em;color:var(--accent);line-height:1;padding-left:.14em}
 .sp-sub{margin-top:8px;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--t3)}
+.sp-hello{margin:28px auto 0;max-width:300px;font-family:'Lora',Georgia,serif;font-size:22px;font-weight:700;color:var(--t1);line-height:1.25;overflow-wrap:anywhere}
+.sp-hello:empty{display:none}
+.sp-hello+.sp-msg{margin-top:10px}
 .sp-msg{margin:26px auto 0;max-width:260px;font-family:'Lora',Georgia,serif;font-size:16px;color:var(--t1);line-height:1.5}
 .sp-tap{margin-top:30px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--t3);opacity:0}
 html.fonts-ok .sp-tap{animation:fade-in .5s 1.4s ease forwards}
@@ -711,6 +714,28 @@ html.fonts-ok .sp-credit{animation:fade-in .5s ease forwards}
 .tg-text{transition:opacity .18s,transform .18s}
 .screen.scrolled .tg-text{opacity:0;transform:translateY(-4px)}
 
+/* ===== TODAY HEADER: streak and week ===== */
+.topbar.tb-week{display:flex;justify-content:flex-start;align-items:center;gap:12px;padding:calc(var(--safe-top) + 10px) 16px 10px}
+.tw-streak{display:flex;align-items:center;gap:5px;flex-shrink:0;font-size:19px;font-weight:600;color:#E8962A;padding-left:4px}
+.tw-streak svg{width:30px;height:30px;fill:#F2A93B;stroke:#F2A93B;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round}
+.tw-strip{flex:1;min-width:0;display:flex;justify-content:space-between;align-items:center;padding:6px 8px;border-radius:30px;background:var(--glass);border:1px solid var(--glass-brd)}
+.tw-d{width:34px;height:34px;box-sizing:border-box;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;color:var(--t3);background:var(--s2);flex-shrink:0}
+.tw-d.today{box-shadow:inset 0 0 0 2px var(--t2);color:var(--t1);background:transparent}
+.tw-d.done{background:var(--accent);color:var(--accent-ink)}
+.tw-d.today.done{box-shadow:0 0 0 2px var(--bg),0 0 0 3.5px var(--accent)}
+.tw-d svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.8;stroke-linecap:round;stroke-linejoin:round}
+@media (max-width:380px){.tw-d{width:30px;height:30px;font-size:13px}.tw-strip{padding:5px 6px}}
+
+/* ===== SHORTCUTS UNDER TODAY ===== */
+.shortcuts{display:flex;gap:12px;margin:12px 18px 0}
+.sc-card{flex:1;min-width:0;display:flex;align-items:center;gap:10px;padding:12px 14px;min-height:60px;border-radius:var(--r);background:var(--glass);border:1px solid var(--glass-brd);color:var(--t1);text-align:left}
+.sc-card .ic{width:22px;height:22px;color:var(--accent);flex-shrink:0}
+.sc-t{font-size:14px;font-weight:600}
+.sc-s{font-size:11px;color:var(--t3);margin-top:1px;font-weight:400}
+@media (max-width:359px){.shortcuts{margin:12px 12px 0}}
+@keyframes sc-in{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+.screen.sc-in{animation:sc-in .22s ease}
+
 /* ===== STREAK FREEZES ===== */
 .fz-card{margin:14px 18px 0;padding:14px}
 .fz-row{display:flex;align-items:center;gap:12px}
@@ -812,6 +837,7 @@ html.vp-short{min-height:calc(100% + env(safe-area-inset-top,0px));min-height:mi
   <div class="sp-card">
     <div class="sp-logo">DNY</div>
     <div class="sp-sub">Discipline Every Day</div>
+    <div class="sp-hello" id="sp-hello"></div>
     <div class="sp-msg"></div>
     <div class="sp-tap">Tap to continue</div>
   </div>
@@ -868,7 +894,12 @@ const SPLASH_MSGS={
     try{sessionStorage.setItem('dny-sp-msg-'+k,msg);}catch(e){}
   }
   var el=document.querySelector('#splash .sp-msg');
-  if(el)el.textContent=msg;
+  var word=h>=5&&h<12?'Good morning':h>=12&&h<17?'Good afternoon':'Good evening';
+  var nm='';
+  try{var sv=JSON.parse(localStorage.getItem('dny2'));nm=((sv&&sv.name)||'').trim().split(/\s+/)[0];}catch(e){}
+  var hl=document.getElementById('sp-hello');
+  if(hl)hl.textContent=word+(nm?', '+nm:'');
+  if(el)el.textContent=msg.replace(/^Good (morning|afternoon|evening|night)\.\s*/,'');
 })();
 </script>
 
@@ -959,7 +990,7 @@ const SPLASH_MSGS={
 
     <!-- TODAY -->
     <div class="screen active" id="s-today">
-      <div class="topbar tb-greet"><div class="tb-mini-c">Today</div><div class="tg-text"><div class="tg-hello" id="today-gr">Hello</div><div class="tg-date" id="today-dt"></div></div><div class="tb-side tb-r"><div class="pill" title="Current streak"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg> <span id="streak-n">0</span></div><button class="av-btn" data-act="open-profile" aria-label="Profile"><span class="av-ini">DY</span><img class="av-img hidden" alt=""/></button></div></div>
+      <div class="topbar tb-week"><div class="tw-streak" title="Current streak"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg><span id="streak-n">0</span></div><div class="tw-strip" id="week-strip" aria-label="This week"></div></div>
 
       <div class="card hero">
         <div>
@@ -973,6 +1004,11 @@ const SPLASH_MSGS={
           </svg>
           <div class="ring-pct" id="ring-pct">0%</div>
         </div>
+      </div>
+
+      <div class="shortcuts">
+        <button class="sc-card" data-act="goto" data-tab="focus"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg><span><span class="sc-t">Focus</span><span class="sc-s" style="display:block">Start a timer</span></span></button>
+        <button class="sc-card" data-act="goto" data-tab="plan"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg><span><span class="sc-t">Plan</span><span class="sc-s" style="display:block">Reflect and remind</span></span></button>
       </div>
 
       <div id="missed-y"></div>
@@ -994,7 +1030,7 @@ const SPLASH_MSGS={
 
     <!-- PROGRESS -->
     <div class="screen" id="s-progress">
-      <div class="topbar"><div class="tb-side"></div><div class="tb-mini">Progress</div><div class="tb-side tb-r"><button class="av-btn" data-act="open-profile" aria-label="Profile"><span class="av-ini">DY</span><img class="av-img hidden" alt=""/></button></div></div>
+      <div class="topbar"><div class="tb-side"></div><div class="tb-mini">Progress</div><div class="tb-side tb-r"></div></div>
       <div class="lg-head"><div class="lg-title">Progress</div></div>
       <div id="week-card"></div>
       <div class="stats-grid" id="stat-tiles"></div>
@@ -1061,7 +1097,7 @@ const SPLASH_MSGS={
 
     <!-- FOCUS -->
     <div class="screen" id="s-focus">
-      <div class="topbar"><div class="tb-side"></div><div class="tb-mini">Focus</div><div class="tb-side tb-r"><button class="av-btn" data-act="open-profile" aria-label="Profile"><span class="av-ini">DY</span><img class="av-img hidden" alt=""/></button></div></div>
+      <div class="topbar"><div class="tb-side"><button class="tb-back" data-act="shortcut-back" aria-label="Back"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg></button></div><div class="tb-mini">Focus</div><div class="tb-side tb-r"></div></div>
       <div class="lg-head"><div class="lg-title">Focus</div><div class="lg-sub" id="focus-ct">0 sessions today</div></div>
       <div class="focus-modes" id="fmodes">
         <button class="fmode on" data-act="fmode" data-mins="25" data-label="Pomodoro"><div class="fmode-name">Pomodoro</div><div class="fmode-dur">25 min</div></button>
@@ -1098,7 +1134,7 @@ const SPLASH_MSGS={
 
     <!-- PLAN -->
     <div class="screen" id="s-sharing">
-      <div class="topbar"><div class="tb-side"></div><div class="tb-mini">Sharing</div><div class="tb-side tb-r"><button class="av-btn" data-act="open-profile" aria-label="Profile"><span class="av-ini">DY</span><img class="av-img hidden" alt=""/></button></div></div>
+      <div class="topbar"><div class="tb-side"></div><div class="tb-mini">Sharing</div><div class="tb-side tb-r"></div></div>
       <div class="lg-head"><div class="lg-title">Sharing</div></div>
       <div id="sharing-body"></div>
     </div>
@@ -1109,7 +1145,7 @@ const SPLASH_MSGS={
     </div>
 
     <div class="screen" id="s-plan">
-      <div class="topbar"><div class="tb-side"></div><div class="tb-mini">Plan &amp; Reflect</div><div class="tb-side tb-r"><button class="av-btn" data-act="open-profile" aria-label="Profile"><span class="av-ini">DY</span><img class="av-img hidden" alt=""/></button></div></div>
+      <div class="topbar"><div class="tb-side"><button class="tb-back" data-act="shortcut-back" aria-label="Back"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg></button></div><div class="tb-mini">Plan &amp; Reflect</div><div class="tb-side tb-r"></div></div>
       <div class="lg-head"><div class="lg-title">Plan &amp; Reflect</div></div>
       <div class="gap"></div>
       <div class="sec-lbl">Evening reflection</div>
@@ -1154,8 +1190,8 @@ const SPLASH_MSGS={
 
     <!-- PROFILE -->
     <div class="screen" id="s-profile">
-      <div class="topbar"><div class="tb-side"><button class="tb-back" data-act="profile-back" aria-label="Back"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg></button></div><div class="tb-mini">Profile</div><div class="tb-side tb-r"></div></div>
-      <div class="lg-head"><div class="lg-title">Profile</div></div>
+      <div class="topbar"><div class="tb-side"></div><div class="tb-mini">You</div><div class="tb-side tb-r"></div></div>
+      <div class="lg-head"><div class="lg-title">You</div></div>
       <div class="profile-hero">
         <button class="avatar-lg" data-act="pick-avatar" aria-label="Change photo">
           <span id="avatar-lg-ini">DY</span>
@@ -1219,17 +1255,13 @@ const SPLASH_MSGS={
       <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
       <span class="nav-lbl">Progress</span>
     </button>
-    <button class="nav-btn" id="nav-focus" data-act="goto" data-tab="focus">
-      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
-      <span class="nav-lbl">Focus</span>
-    </button>
-    <button class="nav-btn" id="nav-plan" data-act="goto" data-tab="plan">
-      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-      <span class="nav-lbl">Plan</span>
-    </button>
     <button class="nav-btn" id="nav-sharing" data-act="goto" data-tab="sharing">
       <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
       <span class="nav-lbl">Sharing</span>
+    </button>
+    <button class="nav-btn" id="nav-profile" data-act="goto" data-tab="profile">
+      <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span class="nav-lbl">You</span>
     </button>
   </nav>
 </div>
@@ -1487,17 +1519,18 @@ const SPLASH_MSGS={
   <div class="wn-card" id="wn-card" data-view="main" role="dialog" aria-modal="true" aria-label="What is new">
     <div class="wn-panel" id="wn-main">
       <div class="wn-hero">
-        <div class="wn-col"><b>Floating bar</b><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="52" r="36" fill="#2F6B55" opacity=".10"/><rect x="26" y="14" width="48" height="72" rx="10" fill="#fff" stroke="#D9CFB8" stroke-width="2"/><rect x="33" y="24" width="34" height="10" rx="4" fill="#E7F1EC"/><rect x="33" y="40" width="34" height="10" rx="4" fill="#E7F1EC"/><rect x="32" y="68" width="36" height="11" rx="5.5" fill="#3E8C70"/></svg></div>
-        <div class="wn-col"><b>Full screen</b><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="52" r="36" fill="#2F6B55" opacity=".10"/><rect x="26" y="14" width="48" height="72" rx="10" fill="#3E8C70"/><rect x="31" y="19" width="38" height="62" rx="6" fill="#E7F1EC"/><rect x="36" y="26" width="28" height="8" rx="3" fill="#fff"/><rect x="36" y="40" width="28" height="8" rx="3" fill="#fff"/><rect x="36" y="54" width="28" height="8" rx="3" fill="#fff"/><rect x="36" y="68" width="28" height="8" rx="3" fill="#fff"/></svg></div>
-        <div class="wn-col"><b>Clear scrolling</b><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="52" r="36" fill="#2F6B55" opacity=".10"/><rect x="26" y="14" width="48" height="72" rx="10" fill="#fff" stroke="#D9CFB8" stroke-width="2"/><rect x="33" y="22" width="34" height="9" rx="4" fill="#E7F1EC"/><rect x="33" y="36" width="34" height="9" rx="4" fill="#E7F1EC"/><rect x="33" y="50" width="34" height="9" rx="4" fill="#3E8C70"/><rect x="32" y="68" width="36" height="11" rx="5.5" fill="#2F6B55" opacity=".35"/></svg></div>
+        <div class="wn-col"><b>New header</b><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="52" r="36" fill="#2F6B55" opacity=".10"/><rect x="26" y="14" width="48" height="72" rx="10" fill="#fff" stroke="#D9CFB8" stroke-width="2"/><path d="M33 29c0-4 4-6 4-11 3 2 5 5 5 8 0 3-2 5-4.500 5-2.500 0-4.500-0.500-4.500-2z" fill="#F2A93B"/><rect x="46" y="22" width="22" height="10" rx="5" fill="#E7F1EC"/><rect x="33" y="42" width="34" height="10" rx="4" fill="#E7F1EC"/><rect x="33" y="58" width="34" height="10" rx="4" fill="#E7F1EC"/></svg></div>
+        <div class="wn-col"><b>Shortcuts</b><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="52" r="36" fill="#2F6B55" opacity=".10"/><rect x="26" y="14" width="48" height="72" rx="10" fill="#fff" stroke="#D9CFB8" stroke-width="2"/><rect x="33" y="24" width="34" height="10" rx="4" fill="#E7F1EC"/><rect x="33" y="40" width="15" height="14" rx="4" fill="#3E8C70"/><rect x="52" y="40" width="15" height="14" rx="4" fill="#3E8C70"/><rect x="33" y="60" width="34" height="10" rx="4" fill="#E7F1EC"/></svg></div>
+        <div class="wn-col"><b>You tab</b><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="52" r="36" fill="#2F6B55" opacity=".10"/><rect x="26" y="14" width="48" height="72" rx="10" fill="#fff" stroke="#D9CFB8" stroke-width="2"/><circle cx="50" cy="38" r="9" fill="#3E8C70"/><rect x="38" y="52" width="24" height="9" rx="4.500" fill="#E7F1EC"/><rect x="32" y="70" width="36" height="11" rx="5.500" fill="#2F6B55" opacity=".35"/></svg></div>
       </div>
       <div class="wn-body">
         <div class="wn-ver">Update 15 Nov 2026 · Latest</div>
-        <h2 class="wn-h">Minor fix: the bottom bar</h2>
+        <h2 class="wn-h">A cleaner Today</h2>
         <ul class="wn-items">
-          <li><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="14" width="18" height="6" rx="3"/></svg><span>Floating bar. The tab bar now floats just above the home indicator, with your habits showing behind it.</span></li>
-          <li><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="3"/><line x1="10" y1="18" x2="14" y2="18"/></svg><span>Full screen. New iPhone installs now fill the screen to the bottom edge. The empty strip under the bar is gone.</span></li>
-          <li><svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg><span>Clear scrolling. The last item on every screen now stops just above the bar.</span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg><span>New header. Your streak and this week sit at the top of Today. A tick marks each day you did a habit.</span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><polyline points="12 5 19 12 12 19"/></svg><span>Greeting on open. Your greeting now shows when you open the app, and it has left the header.</span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="8" height="8" rx="2"/><rect x="13" y="4" width="8" height="8" rx="2"/></svg><span>Shortcuts. Focus and Plan moved under Today. Swipe left or down to close them.</span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>You tab. Your profile now lives in the bar as You, after Sharing. The picture is gone from the headers.</span></li>
         </ul>
       </div>
       <div class="wn-foot">
@@ -1510,7 +1543,7 @@ const SPLASH_MSGS={
       <div class="wn-body">
         <h2 class="wn-h" style="margin-bottom:6px">Release history</h2>
         <div class="wn-ver">Earlier updates to DNY.</div>
-        <div class="wn-vh">Update 13 Nov 2026</div><ul class="wn-bul"><li>Settings. Open it from your Profile to report a bug, contact support, rate DNY and share the app.</li><li>Notifications. Reminders in your Profile now has a new name.</li><li>Pause during menstruation. Women can pause from the Progress tab. Your streak stays safe and no freeze is used.</li><li>Gender. Pick male or female once. DNY shows options that fit you.</li></ul><div class="wn-vh">Update 12 Nov 2026</div><ul class="wn-bul"><li>Streak freezes. You get 2 each week. A freeze covers a missed day while a streak runs. They refill every Monday.</li><li>Streak alerts at 9 pm, 10 pm and 11 pm if you have not checked in.</li><li>A weekly report notification every Monday at 8:00 am.</li><li>Sharing. Invite friends and family with a code. See their streaks and daily progress, and build shared habits.</li></ul><div class="wn-vh">Update 29 Oct 2026</div><ul class="wn-bul"><li>Reminders on the Plan page, like the iPhone Reminders app, with Today, Scheduled, All and Urgent views.</li><li>Your reminders sync through cloud sync.</li></ul><div class="wn-vh">Update 22 Oct 2026</div><ul class="wn-bul"><li>An Afternoon section on Today, with a part of the day picker for each habit.</li><li>A quiet rhythm card on Progress. It shows your last 7 days with a short note for the day.</li></ul>
+        <div class="wn-vh">Update 15 Nov 2026, bottom bar</div><ul class="wn-bul"><li>Floating bar. The tab bar floats just above the home indicator, with your habits showing behind it.</li><li>Full screen. New iPhone installs fill the screen to the bottom edge.</li><li>Clear scrolling. The last item on every screen stops just above the bar.</li></ul><div class="wn-vh">Update 13 Nov 2026</div><ul class="wn-bul"><li>Settings. Open it from your Profile to report a bug, contact support, rate DNY and share the app.</li><li>Notifications. Reminders in your Profile now has a new name.</li><li>Pause during menstruation. Women can pause from the Progress tab. Your streak stays safe and no freeze is used.</li><li>Gender. Pick male or female once. DNY shows options that fit you.</li></ul><div class="wn-vh">Update 12 Nov 2026</div><ul class="wn-bul"><li>Streak freezes. You get 2 each week. A freeze covers a missed day while a streak runs. They refill every Monday.</li><li>Streak alerts at 9 pm, 10 pm and 11 pm if you have not checked in.</li><li>A weekly report notification every Monday at 8:00 am.</li><li>Sharing. Invite friends and family with a code. See their streaks and daily progress, and build shared habits.</li></ul><div class="wn-vh">Update 29 Oct 2026</div><ul class="wn-bul"><li>Reminders on the Plan page, like the iPhone Reminders app, with Today, Scheduled, All and Urgent views.</li><li>Your reminders sync through cloud sync.</li></ul><div class="wn-vh">Update 22 Oct 2026</div><ul class="wn-bul"><li>An Afternoon section on Today, with a part of the day picker for each habit.</li><li>A quiet rhythm card on Progress. It shows your last 7 days with a short note for the day.</li></ul>
       </div>
       <div class="wn-foot" style="justify-content:flex-end">
         <button class="wn-ok" data-act="wn-close">OK</button>
@@ -1951,15 +1984,22 @@ function todayReflection(){return S.journal.find(e=>e.date===TODAY_KEY)||null;}
 // ===== NAV + SHEETS =====
 const TABS=['today','progress','focus','plan','sharing','person','profile','settings'];
 let LAST_TAB='today';
+const SHORTCUT_TABS=['focus','plan'];
 function goTo(t){
   const cur=TABS.find(x=>$('s-'+x).classList.contains('active'));
-  if(t==='profile'&&cur&&cur!=='profile'&&cur!=='settings')LAST_TAB=cur;
   TABS.forEach(s=>{
     $('s-'+s).classList.toggle('active',s===t);
     const nb=$('nav-'+s);if(nb)nb.classList.toggle('active',s===t);
   });
   if(t==='person'){const nb=$('nav-sharing');if(nb)nb.classList.add('active');}
-  const sc=$('s-'+t);if(sc){sc.scrollTop=0;sc.classList.remove('scrolled');}
+  if(SHORTCUT_TABS.includes(t)){const nb=$('nav-today');if(nb)nb.classList.add('active');}
+  if(t==='settings'){const nb=$('nav-profile');if(nb)nb.classList.add('active');}
+  const sc=$('s-'+t);if(sc){
+    sc.scrollTop=0;sc.classList.remove('scrolled');
+    sc.style.transform='';sc.style.opacity='';sc.style.transition='';
+    sc.classList.remove('sc-in');
+    if(SHORTCUT_TABS.includes(t)&&cur==='today'){void sc.offsetWidth;sc.classList.add('sc-in');}
+  }
   if(t==='today')renderToday();
   if(t==='progress')renderProgress();
   if(t==='focus')renderFocus();
@@ -1991,12 +2031,9 @@ const ACC={morning:true,afternoon:true,any:true,evening:true};
 
 function renderToday(){
   const now=new Date(),hr=now.getHours();
-  const first=(S.name||'').trim().split(/\s+/)[0];
-  setText('today-gr',(hr<12?'Good morning':hr<17?'Good afternoon':'Good evening')+(first?', '+first:''));
-  setText('today-dt',now.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'}));
-
   const st=dayStats(TODAY_KEY);
   setText('streak-n',calcStreaks().cur);
+  renderWeekStrip(st);
   setText('ring-pct',st.score+'%');
   $('ring-fill').style.strokeDashoffset=String(175-(175*st.score/100));
   const resting=isOffDay(TODAY_KEY)&&st.reqDone===0;
@@ -2133,10 +2170,24 @@ function renderMissedYesterday(){
   const show=S.history[y]===0&&!isOffDay(y)&&S.history[y2]>0;
   $('missed-y').innerHTML=show?'<div class="card recover"><div class="recover-t">Yesterday was missed</div><div class="recover-s">Was it a real day off? Mark it and your streak keeps going. Your history stays.</div><div class="rec-row"><span>'+esc(dayLabel(y))+'</span><button class="rec-btn" data-act="mark-off" data-k="'+y+'">Mark as day off</button></div></div>':'';
 }
+function renderWeekStrip(st){
+  const el=$('week-strip');if(!el)return;
+  const start=addDays(TODAY_KEY,-parseKey(TODAY_KEY).getDay());
+  const L=['S','M','T','W','T','F','S'];
+  let h='';
+  for(let i=0;i<7;i++){
+    const k=addDays(start,i);
+    const isToday=k===TODAY_KEY;
+    const done=isToday?(st.reqDone>0||st.exDone>0):(k<TODAY_KEY&&S.history[k]>0);
+    h+='<div class="tw-d'+(isToday?' today':'')+(done?' done':'')+'">'
+      +(done?'<svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="5 12.5 10 17.5 19 7.5"/></svg>':L[i])+'</div>';
+  }
+  el.innerHTML=h;
+}
 function renderTodayTools(){
   const off=!!S.off[TODAY_KEY]&&S.off[TODAY_KEY]!==2;
   const el=$('today-tools');
-  el.innerHTML='<button class="tool-btn" data-act="goto" data-tab="focus">'+ico('hourglass')+'<span>Focus timer<br><small>Start a focus session</small></span></button>'
+  el.innerHTML=''
     +(pauseOpen()?'<button class="tool-btn" data-act="pause-end">'+ico('moon')+'<span>Resume from pause<br><small>Habits and reminders start again</small></span></button>':'')
     +(S.habits.length?'<button class="tool-btn quiet" data-act="day-off">'+ico('moon')+'<span>'+(off?'Today is a day off. Undo':'Take today off')+'</span></button>':'');
 }
@@ -4397,7 +4448,7 @@ function ydayMark(id,val){
 }
 
 // ===== APP TOUR AND WHAT'S NEW =====
-const APP_VER='2026-11-15.1';
+const APP_VER='2026-11-15.2';
 function markSeen(){try{localStorage.setItem('dny-seen',APP_VER);}catch(e){}}
 function wnView(v){
   $('wn-card').dataset.view=v;
@@ -4414,10 +4465,9 @@ function maybeWhatsNew(){
 const TOUR=[
   {tab:'today',sel:'#nav-today',t:'Today',d:'Your habits for the day. Tap a habit to tick it.'},
   {tab:'progress',sel:'#nav-progress',t:'Progress',d:'Your streaks, reports and daily score. Missed evening habits from yesterday show here.'},
-  {tab:'focus',sel:'#nav-focus',t:'Focus',d:'Start a timer for study or deep work.'},
-  {tab:'plan',sel:'#nav-plan',t:'Plan',d:'Write your evening reflection, plan tomorrow and add reminders.'},
+  {tab:'today',sel:'#s-today .shortcuts',t:'Focus and Plan',d:'Start a focus timer, write your evening reflection or add reminders. Swipe left or down to close them.'},
   {tab:'sharing',sel:'#nav-sharing',t:'Sharing',d:'Invite friends and family. See their streaks and do shared habits together.'},
-  {tab:'today',sel:'#s-today .av-btn',t:'Your profile',d:'Tap your picture at the top right. Notifications, theme, rest days, settings, cloud sync and your habits are there.'}
+  {tab:'profile',sel:'#nav-profile',t:'You',d:'Notifications, theme, rest days, settings, cloud sync and your habits are here.'}
 ];
 let TOUR_I=0;
 function startTour(){
@@ -4497,7 +4547,7 @@ const ACTIONS={
     document.querySelectorAll('#ob-gender .ob-day').forEach(b=>{const x=b.dataset.g===OB_G;b.classList.toggle('on',x);b.setAttribute('aria-pressed',String(x));});
     const n=$('ob-gender-note');n.textContent='DNY uses this only to show options that fit you.';n.style.color='';
   },
-  'profile-back':()=>goTo(LAST_TAB||'today'),
+  'shortcut-back':()=>goTo('today'),
   'ob-next':el=>obStep(+el.dataset.step),
   'ob-name':()=>{
     if(!OB_G){
@@ -4716,6 +4766,55 @@ document.querySelectorAll('[data-notif-time]').forEach(inp=>{
       window.scrollTo(0,0);
     },80);
   });
+})();
+// Swipe left or down to close Focus and Plan and return to Today.
+(function(){
+  let sc=null,sx=0,sy=0,axis='',atTop=false;
+  const FAR=80;
+  function reset(animate){
+    if(!sc)return;
+    const el=sc;
+    el.style.transition=animate?'transform .18s ease,opacity .18s ease':'';
+    el.style.transform='';el.style.opacity='';
+    if(animate)setTimeout(()=>{el.style.transition='';},200);
+  }
+  document.addEventListener('touchstart',e=>{
+    sc=null;axis='';
+    if(e.touches.length!==1)return;
+    if(document.querySelector('.overlay.show,#tour.show'))return;
+    const t=e.target;
+    if(t.closest&&t.closest('input,textarea,select,.overlay,.sheet'))return;
+    const el=SHORTCUT_TABS.map(x=>$('s-'+x)).find(x=>x&&x.classList.contains('active'));
+    if(!el)return;
+    sc=el;sx=e.touches[0].clientX;sy=e.touches[0].clientY;atTop=el.scrollTop<=0;
+  },{passive:true});
+  document.addEventListener('touchmove',e=>{
+    if(!sc||e.touches.length!==1)return;
+    const dx=e.touches[0].clientX-sx,dy=e.touches[0].clientY-sy;
+    if(!axis){
+      if(Math.abs(dx)<10&&Math.abs(dy)<10)return;
+      if(Math.abs(dx)>Math.abs(dy)*1.3&&dx<0)axis='x';
+      else if(Math.abs(dy)>Math.abs(dx)*1.3&&dy>0&&atTop)axis='y';
+      else{sc=null;return;}
+    }
+    sc.style.transition='none';
+    if(axis==='x'){const m=Math.min(0,dx);sc.style.transform='translateX('+m+'px)';sc.style.opacity=String(Math.max(.35,1+m/400));}
+    else{const m=Math.max(0,dy);sc.style.transform='translateY('+m+'px)';sc.style.opacity=String(Math.max(.35,1-m/500));}
+  },{passive:true});
+  document.addEventListener('touchend',e=>{
+    if(!sc||!axis){sc=null;return;}
+    const c=e.changedTouches[0];
+    const d=axis==='x'?-(c.clientX-sx):(c.clientY-sy);
+    if(d>FAR){
+      const el=sc,x=axis==='x';
+      el.style.transition='transform .16s ease,opacity .16s ease';
+      el.style.transform=x?'translateX(-100%)':'translateY(100%)';el.style.opacity='0';
+      sc=null;
+      setTimeout(()=>goTo('today'),150);
+    }else{reset(true);sc=null;}
+    axis='';
+  },{passive:true});
+  document.addEventListener('touchcancel',()=>{reset(true);sc=null;axis='';},{passive:true});
 })();
 // Keep the content spacing and the toast equal to the real height of the tab bar.
 (function(){
