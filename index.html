@@ -42,6 +42,9 @@
   --c-faith:#2F6B55;--c-mind:#3C6E8F;--c-body:#8F6720;--c-mental:#7B6AA6;--c-life:#B0574A;
   --r:14px;--r-sm:10px;
   --safe-top:env(safe-area-inset-top,0px);--safe-bot:env(safe-area-inset-bottom,0px);
+  /* Floating tab bar. The gap under it is derived from the real bottom inset: just enough to clear the home indicator,
+     never less than 8px. --nav-h is measured from the bar itself (see the ResizeObserver near the end of the script). */
+  --nav-gap:max(8px,calc(var(--safe-bot) - 18px));--nav-h:68px;
 }
 @media (prefers-color-scheme:dark){
   :root:not([data-theme=light]){
@@ -535,13 +538,14 @@ html.short .app::after{content:'';position:absolute;left:0;right:0;bottom:0;heig
 .topbar{background:var(--glass-nav);-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);border-bottom:1px solid var(--glass-brd);box-shadow:0 1px 0 var(--glass-hi) inset}
 
 /* floating tab bar */
-.nav{position:absolute;left:14px;right:14px;bottom:calc(8px + min(var(--safe-bot),20px));z-index:30;padding:6px;border-radius:30px;
+.nav{position:absolute;left:14px;right:14px;bottom:var(--nav-gap);z-index:30;padding:6px;border-radius:30px;
   background:var(--glass-nav);-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);
   border:1px solid var(--glass-brd);box-shadow:0 12px 34px rgba(0,0,0,.16),inset 0 1px 0 var(--glass-hi)}
 .nav-btn{border-radius:24px;padding:7px 2px;transition:background .2s}
 .nav-btn.active{background:var(--accent-dim);box-shadow:inset 0 1px 0 var(--glass-hi)}
-.screen{padding-bottom:112px}
-.toast{bottom:calc(98px + var(--safe-bot))}
+/* Content stops 16px above the bar. The space follows the bar's real height and gap. */
+.screen{padding-bottom:calc(var(--nav-h) + var(--nav-gap) + 16px)}
+.toast{bottom:calc(var(--nav-h) + var(--nav-gap) + 14px)}
 #hs-sug{margin-bottom:10px}
 
 /* sheets and overlays */
@@ -4695,6 +4699,15 @@ document.querySelectorAll('[data-notif-time]').forEach(inp=>{
   mark();
   addEventListener('resize',()=>setTimeout(mark,150));
   addEventListener('orientationchange',()=>setTimeout(mark,300));
+})();
+// Keep the content spacing equal to the real height of the tab bar.
+(function(){
+  const nav=document.querySelector('.nav');
+  if(!nav||!window.ResizeObserver)return;
+  new ResizeObserver(()=>{
+    const h=Math.round(nav.getBoundingClientRect().height);
+    if(h>0)document.documentElement.style.setProperty('--nav-h',h+'px');
+  }).observe(nav);
 })();
 captureInviteLink();
 // Alerts are always on. The phone still needs one tap of permission, so ask once on the first tap after sign in.
