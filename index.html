@@ -737,6 +737,9 @@ html.fonts-ok .sp-credit{animation:fade-in .5s ease forwards}
 #ptr svg{width:20px;height:20px;fill:none;stroke:var(--t2);stroke-width:2.4;stroke-linecap:round}
 #ptr.spin svg{animation:ptr-spin .8s linear infinite}
 @keyframes ptr-spin{to{transform:rotate(360deg)}}
+/* Progress, Sharing and You: the title sits at the top. No empty bar above it. */
+#s-progress>.topbar,#s-sharing>.topbar,#s-profile>.topbar{display:none}
+#s-progress>.lg-head,#s-sharing>.lg-head,#s-profile>.lg-head{padding-top:calc(var(--safe-top) + 14px)}
 @keyframes pg-r{from{opacity:0;transform:translateX(36px)}to{opacity:1;transform:none}}
 @keyframes pg-l{from{opacity:0;transform:translateX(-36px)}to{opacity:1;transform:none}}
 .screen.pg-r{animation:pg-r .2s ease}
