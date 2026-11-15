@@ -1534,7 +1534,7 @@ const SPLASH_MSGS={
         <div class="wn-ver">Update 15 Nov 2026 · Latest</div>
         <h2 class="wn-h">Swipe to move around</h2>
         <ul class="wn-items">
-          <li><svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="15 18 9 12 15 6"/><polyline points="9 6 15 12 9 18" opacity=".45"/></svg><span>Swipe between tabs. Swipe left or right to move between Today, Progress and Sharing.</span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="15 18 9 12 15 6"/><polyline points="9 6 15 12 9 18" opacity=".45"/></svg><span>Swipe between tabs. Swipe left or right to move between Today, Progress, Sharing and You.</span></li>
           <li><svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg><span>Swipe down to close. Manage habits, Name and my why, Appearance, Notifications, Rest days, Cloud sync and Backup now close with a swipe down.</span></li>
         </ul>
       </div>
@@ -4817,9 +4817,9 @@ const BACK_TO={focus:'today',plan:'today',settings:'profile',person:'sharing'};
   },{passive:true});
   document.addEventListener('touchcancel',()=>{reset(true);sc=null;axis='';},{passive:true});
 })();
-// Swipe left or right to move between Today, Progress and Sharing.
+// Swipe left or right to move between Today, Progress, Sharing and You.
 (function(){
-  const ORDER=['today','progress','sharing'];
+  const ORDER=['today','progress','sharing','profile'];
   let sc=null,sx=0,sy=0,axis='',idx=-1;
   function hScroll(el){
     while(el&&el!==document.body&&el.nodeType===1){
