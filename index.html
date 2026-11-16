@@ -1087,7 +1087,6 @@ const SPLASH_MSGS={
       <div class="stats-grid" id="stat-tiles"></div>
       <div id="freeze-card"></div>
       <div id="prog-pause"></div>
-      <div id="yday"></div>
       <div id="recover"></div>
       <div id="past-days"></div>
 
@@ -1585,6 +1584,7 @@ const SPLASH_MSGS={
           <li><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span>Edit past days. Fix or fill in the last 7 days from Progress. Your streak and score update like a live check in.</span></li>
           <li><svg viewBox="0 0 24 24" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg><span>Starter habits. A new account with no habits now shows three easy habits to tap and add.</span></li>
           <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg><span>Delete account. Remove your account and cloud data from You. Your password is needed.</span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg><span>One place for missed habits. The Yesterday evening card is gone. Use Edit on any of the last 7 days in Progress, including yesterday.</span></li>
         </ul>
       </div>
       <div class="wn-foot">
@@ -2504,7 +2504,6 @@ function renderProgress(){
   const noData=!Object.keys(S.history).length;
   $('stat-tiles').innerHTML=noData?'<div class="card fempty" style="grid-column:1/-1">Your progress shows here after your first day. Tick a habit on Today to begin.</div>':tiles.map(t=>'<div class="stat-c"><div class="stat-v" style="color:'+t[2]+'">'+esc(t[0])+'</div><div class="stat-l">'+esc(t[1])+'</div></div>').join('');
   renderFreezeCard();
-  renderYesterday();
   renderRecover();
   renderPastDays();
   renderReport();
@@ -4499,63 +4498,8 @@ function arrangeMove(id,dir){
   renderToday();
 }
 
-// ===== YESTERDAY REVIEW =====
-// Lets you mark yesterday's missed evening habits. Streak and score are rebuilt from the day's record.
-let YD={y:'',ids:[]};
-function eveningHabit(h){return h.at?timeGroup(h.at)==='evening':h.time==='evening';}
-function recomputeFromLog(key){
-  const log=S.hlog[key];
-  if(!log)return;
-  let req=0,earn=0;
-  const cats={};
-  activeHabits(key).forEach(h=>{
-    const v=log[h.id];
-    if(v===undefined||v===3)return;
-    if(h.tier==='bonus')return;
-    const w=WEIGHT[h.tier];
-    req+=w;
-    if(v===1)earn+=w;else if(v===2)earn+=w/2;
-    const c=cats[h.cat]||(cats[h.cat]=[0,0]);
-    c[1]++;if(v===1||v===2)c[0]++;
-  });
-  S.history[key]=req?Math.round(earn/req*100):0;
-  S.catlog[key]=cats;
-  // A day that is no longer missed gives its freeze back.
-  if(S.history[key]>0)delete S.frozen[key];
-}
-function renderYesterday(){
-  const el=$('yday');
-  if(!el)return;
-  const y=addDays(TODAY_KEY,-1);
-  const log=S.hlog[y];
-  if(!log||S.history[y]==null){YD={y:'',ids:[]};el.innerHTML='';return;}
-  if(YD.y!==y)YD={y:y,ids:activeHabits(y).filter(h=>log[h.id]===0&&eveningHabit(h)).map(h=>h.id)};
-  const hs=YD.ids.map(id=>S.habits.find(h=>h.id===id)).filter(Boolean);
-  if(!hs.length){el.innerHTML='';return;}
-  const left=hs.filter(h=>log[h.id]===0).length;
-  const note=left
-    ?'You missed '+left+' evening '+(left===1?'habit':'habits')+' on '+esc(dayLabel(y))+'. If you did any of them, mark them. Your streak and score will update.'
-    :'All marked. Your streak and score are updated.';
-  el.innerHTML='<div class="card recover"><div class="recover-t">Yesterday evening</div><div class="recover-s">'+note+'</div>'
-    +hs.map(h=>'<div class="rec-row"><span>'+esc(h.title)+'</span>'
-      +(log[h.id]===1
-        ?'<button class="rec-btn" data-act="yday-undo" data-id="'+esc(h.id)+'">Undo</button>'
-        :'<button class="rec-btn" data-act="yday-mark" data-id="'+esc(h.id)+'">Mark done</button>')
-      +'</div>').join('')+'</div>';
-}
-function ydayMark(id,val){
-  const y=addDays(TODAY_KEY,-1);
-  const log=S.hlog[y];
-  if(!log||YD.y!==y||!YD.ids.includes(id)||(log[id]!==0&&log[id]!==1))return;
-  log[id]=val;
-  recomputeFromLog(y);
-  save();
-  renderProgress();renderToday();
-  toast(val?'Marked done. Streak updated.':'Undone.');
-}
-
 // ===== APP TOUR AND WHAT'S NEW =====
-const APP_VER='2026-11-16.1';
+const APP_VER='2026-11-16.2';
 function markSeen(){try{localStorage.setItem('dny-seen',APP_VER);}catch(e){}}
 function wnView(v){
   $('wn-card').dataset.view=v;
@@ -4571,7 +4515,7 @@ function maybeWhatsNew(){
 }
 const TOUR=[
   {tab:'today',sel:'#nav-today',t:'Today',d:'Your habits for the day. Tap a habit to tick it.'},
-  {tab:'progress',sel:'#nav-progress',t:'Progress',d:'Your streaks, reports and daily score. Missed evening habits from yesterday show here.'},
+  {tab:'progress',sel:'#nav-progress',t:'Progress',d:'Your streaks, reports and daily score. Fix missed habits from the last 7 days here.'},
   {tab:'today',sel:'#s-today .shortcuts',t:'Focus and Plan',d:'Start a focus timer, write your evening reflection or add reminders. Swipe right to go back.'},
   {tab:'sharing',sel:'#nav-sharing',t:'Sharing',d:'Invite friends and family. See their streaks and do shared habits together.'},
   {tab:'profile',sel:'#nav-profile',t:'You',d:'Notifications, theme, rest days, settings, cloud sync and your habits are here.'}
@@ -4983,8 +4927,6 @@ const ACTIONS={
   'skip-splash':()=>skipSplash(),
   'arr-up':el=>arrangeMove(el.dataset.id,-1),
   'arr-down':el=>arrangeMove(el.dataset.id,1),
-  'yday-mark':el=>ydayMark(el.dataset.id,1),
-  'yday-undo':el=>ydayMark(el.dataset.id,0),
   'start-tour':()=>startTour(),
   'tour-next':()=>tourNext(),
   'tour-skip':()=>tourEnd(),
