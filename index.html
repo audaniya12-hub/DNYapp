@@ -11,6 +11,7 @@
 <meta name="theme-color" content="#F7F3EA" media="(prefers-color-scheme: light)"/>
 <meta name="theme-color" content="#0E1714" media="(prefers-color-scheme: dark)"/>
 <title>DNY</title>
+<script>try{var _l=JSON.parse(localStorage.getItem("dny-lock"));if(_l&&_l.h)document.documentElement.classList.add("lock-on");}catch(e){}</script>
 <script>try{var _t=localStorage.getItem("dny-theme");if(_t==="light"||_t==="dark")document.documentElement.setAttribute("data-theme",_t);}catch(e){}</script>
 <script>
 // Detect the short iOS 26 viewport (see html.vp-short in the CSS). window.innerHeight is not reliable here, so a fixed
@@ -838,6 +839,46 @@ html.fonts-ok .sp-credit{animation:fade-in .5s ease forwards}
    the page itself tall enough that iOS gives it the full viewport. The class is added by the script in the head, and
    only when the shortfall is measured, so installs that are already full height are not touched. */
 html.vp-short{min-height:calc(100% + env(safe-area-inset-top,0px));min-height:min(100lvh,calc(100% + env(safe-area-inset-top,0px)))}
+
+/* ===== App lock, past days, starter habits ===== */
+#lock{position:fixed;inset:0;z-index:10050;display:none;flex-direction:column;align-items:center;justify-content:center;background:var(--bg);padding:calc(var(--safe-top) + 16px) 24px calc(var(--safe-bot) + 16px);touch-action:none;overflow:hidden}
+html.lock-on #lock{display:flex}
+.lk-wrap{width:100%;max-width:320px;display:flex;flex-direction:column;align-items:center}
+.lk-logo{font-size:28px;font-weight:700;letter-spacing:.08em;color:var(--accent)}
+.lk-title{font-size:17px;font-weight:600;margin-top:16px;color:var(--t1);text-align:center}
+.lk-dots{display:flex;gap:14px;margin:20px 0 8px;height:14px}
+.lk-dot{width:13px;height:13px;border-radius:50%;border:1.5px solid var(--accent);transition:background .12s}
+.lk-dot.on{background:var(--accent)}
+.lk-msg{min-height:18px;font-size:12.5px;color:var(--danger);text-align:center;margin-bottom:10px;line-height:1.4}
+.lk-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;width:100%}
+.lk-key{height:clamp(52px,8.4vh,64px);border-radius:var(--r);background:var(--s1);border:1px solid var(--line);font-size:24px;font-weight:500;color:var(--t1);touch-action:manipulation;display:flex;align-items:center;justify-content:center}
+.lk-key:active{background:var(--s3)}
+.lk-key .ic{width:24px;height:24px}
+.lk-link{margin-top:14px;font-size:14px;font-weight:600;color:var(--accent);padding:8px 12px;min-height:40px}
+.lk-fp{display:none;width:100%;max-width:320px;flex-direction:column;touch-action:pan-y}
+#lock.fp .lk-wrap{display:none}
+#lock.fp .lk-fp{display:flex}
+.lk-fp .lk-title{margin:0 0 6px}
+.lk-sub{font-size:13px;color:var(--t2);text-align:center;line-height:1.5;margin-bottom:14px}
+.lk-lens{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px}
+.lk-len{padding:11px;border-radius:var(--r-sm);background:var(--s2);border:1px solid var(--line);font-size:14px;font-weight:600;color:var(--t2)}
+.lk-len.on{background:var(--accent-dim);border-color:var(--accent-line);color:var(--accent)}
+.pd-s{display:block;font-size:11px;color:var(--t3);margin-top:2px;font-style:normal}
+.de-row{padding:10px 0;border-top:1px solid var(--line)}
+.de-row:first-child{border-top:none}
+.de-t{font-size:14px;font-weight:600;margin-bottom:8px}
+.de-seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:6px}
+.de-seg button{min-height:40px;border-radius:var(--r-sm);background:var(--s2);border:1px solid var(--line);font-size:13px;font-weight:600;color:var(--t2)}
+.de-seg button.on{background:var(--accent-dim);border-color:var(--accent-line);color:var(--accent)}
+.starter{margin:18px 18px 0;padding:16px}
+.starter-t{font-size:16px;font-weight:600}
+.starter-s{font-size:12.5px;color:var(--t2);margin:4px 0 10px;line-height:1.5}
+.starter-row{width:100%;display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--line);text-align:left;min-height:var(--tap)}
+.starter-main{flex:1;min-width:0}
+.starter-n{display:block;font-size:14.5px;font-weight:600}
+.starter-d{display:block;font-size:12px;color:var(--t3);margin-top:2px}
+.starter-plus{width:34px;height:34px;border-radius:50%;background:var(--accent-dim);color:var(--accent);border:1px solid var(--accent-line);display:flex;align-items:center;justify-content:center;font-size:20px;line-height:1;flex:none}
+.starter-own{width:100%;margin-top:8px;padding:12px;border:1.5px dashed var(--accent-line);border-radius:var(--r-sm);color:var(--accent);font-size:14px;font-weight:600;background:var(--accent-dim)}
 </style>
 </head>
 <body>
@@ -1048,6 +1089,7 @@ const SPLASH_MSGS={
       <div id="prog-pause"></div>
       <div id="yday"></div>
       <div id="recover"></div>
+      <div id="past-days"></div>
 
       <div class="gap"></div>
       <div class="sec-lbl">Report</div>
@@ -1224,6 +1266,7 @@ const SPLASH_MSGS={
         <button class="settings-row" data-act="open-sheet" data-sheet="sh-theme"><div class="settings-ic"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></svg></div><div class="settings-lbl">Appearance<span id="theme-sub" style="display:block;font-size:11px;color:var(--t3);margin-top:1px">Auto</span></div><div class="settings-arr">›</div></button>
         <button class="settings-row" data-act="open-sheet" data-sheet="sh-notif"><div class="settings-ic"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div><div class="settings-lbl">Notifications</div><div class="settings-arr">›</div></button>
         <button class="settings-row" data-act="open-sheet" data-sheet="sh-rest"><div class="settings-ic"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></div><div class="settings-lbl">Rest days<span id="rest-sub" style="display:block;font-size:11px;color:var(--t3);margin-top:1px">None</span></div><div class="settings-arr">›</div></button>
+        <button class="settings-row" data-act="open-sheet" data-sheet="sh-lock"><div class="settings-ic"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div><div class="settings-lbl">App lock<span id="lock-sub" style="display:block;font-size:11px;color:var(--t3);margin-top:1px">Off</span></div><div class="settings-arr">›</div></button>
         <button class="settings-row" data-act="start-tour"><div class="settings-ic"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 .9-1 1.7"/><path d="M12 17h.01"/></svg></div><div class="settings-lbl">App tour</div><div class="settings-arr">›</div></button>
         <button class="settings-row" data-act="goto" data-tab="settings"><div class="settings-ic"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h0a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div><div class="settings-lbl">Settings<span style="display:block;font-size:11px;color:var(--t3);margin-top:1px">Support, rating, sharing and more</span></div><div class="settings-arr">›</div></button>
       </div>
@@ -1233,6 +1276,7 @@ const SPLASH_MSGS={
         <button class="settings-row" data-act="open-sheet" data-sheet="sh-account"><div class="settings-ic"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg></div><div class="settings-lbl">Cloud sync<span id="acct-sub" style="display:block;font-size:11px;color:var(--t3);margin-top:1px">Off</span></div><div class="settings-arr">›</div></button>
         <button class="settings-row" data-act="open-sheet" data-sheet="sh-backup"><div class="settings-ic"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4v16"/><path d="M3 8l4-4 4 4"/><path d="M17 20V4"/><path d="M13 16l4 4 4-4"/></svg></div><div class="settings-lbl">Backup and restore</div><div class="settings-arr">›</div></button>
         <button class="settings-row" data-act="reset"><div class="settings-ic"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></div><div class="settings-lbl danger-txt">Reset all data</div><div class="settings-arr">›</div></button>
+        <button class="settings-row" data-act="open-sheet" data-sheet="sh-delete"><div class="settings-ic"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/><line x1="17" y1="3" x2="22" y2="8"/><line x1="22" y1="3" x2="17" y2="8"/></svg></div><div class="settings-lbl danger-txt">Delete account</div><div class="settings-arr">›</div></button>
       </div>
       <div class="gap"></div>
     </div>
@@ -1529,19 +1573,18 @@ const SPLASH_MSGS={
   <div class="wn-card" id="wn-card" data-view="main" role="dialog" aria-modal="true" aria-label="What is new">
     <div class="wn-panel" id="wn-main">
       <div class="wn-hero">
-        <div class="wn-col"><b>Swipe tabs</b><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="52" r="36" fill="#2F6B55" opacity=".10"/><rect x="26" y="14" width="48" height="72" rx="10" fill="#fff" stroke="#D9CFB8" stroke-width="2"/><path d="M33 29c0-4 4-6 4-11 3 2 5 5 5 8 0 3-2 5-4.500 5-2.500 0-4.500-0.500-4.500-2z" fill="#F2A93B"/><rect x="46" y="22" width="22" height="10" rx="5" fill="#E7F1EC"/><rect x="33" y="42" width="34" height="10" rx="4" fill="#E7F1EC"/><rect x="33" y="58" width="34" height="10" rx="4" fill="#E7F1EC"/></svg></div>
-        <div class="wn-col"><b>Swipe down</b><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="52" r="36" fill="#2F6B55" opacity=".10"/><rect x="26" y="14" width="48" height="72" rx="10" fill="#fff" stroke="#D9CFB8" stroke-width="2"/><rect x="33" y="24" width="34" height="10" rx="4" fill="#E7F1EC"/><rect x="33" y="40" width="15" height="14" rx="4" fill="#3E8C70"/><rect x="52" y="40" width="15" height="14" rx="4" fill="#3E8C70"/><rect x="33" y="60" width="34" height="10" rx="4" fill="#E7F1EC"/></svg></div>
-        <div class="wn-col"><b>Swipe back</b><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="52" r="36" fill="#2F6B55" opacity=".10"/><rect x="26" y="14" width="48" height="72" rx="10" fill="#fff" stroke="#D9CFB8" stroke-width="2"/><circle cx="50" cy="38" r="9" fill="#3E8C70"/><rect x="38" y="52" width="24" height="9" rx="4.500" fill="#E7F1EC"/><rect x="32" y="70" width="36" height="11" rx="5.500" fill="#2F6B55" opacity=".35"/></svg></div>
+        <div class="wn-col"><b>App lock</b><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="52" r="36" fill="#2F6B55" opacity=".10"/><rect x="26" y="14" width="48" height="72" rx="10" fill="#fff" stroke="#D9CFB8" stroke-width="2"/><path d="M42 48v-6a8 8 0 0 1 16 0v6" fill="none" stroke="#3E8C70" stroke-width="3.5"/><rect x="37" y="48" width="26" height="18" rx="4" fill="#3E8C70"/><circle cx="50" cy="57" r="3" fill="#fff"/><circle cx="39" cy="76" r="2.5" fill="#E7F1EC"/><circle cx="46" cy="76" r="2.5" fill="#E7F1EC"/><circle cx="54" cy="76" r="2.5" fill="#E7F1EC"/><circle cx="61" cy="76" r="2.5" fill="#E7F1EC"/></svg></div>
+        <div class="wn-col"><b>Past days</b><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="52" r="36" fill="#2F6B55" opacity=".10"/><rect x="26" y="14" width="48" height="72" rx="10" fill="#fff" stroke="#D9CFB8" stroke-width="2"/><circle cx="35.0" cy="34" r="2.4" fill="#3E8C70"/><circle cx="40.1" cy="34" r="2.4" fill="#3E8C70"/><circle cx="45.2" cy="34" r="2.4" fill="#3E8C70"/><circle cx="50.3" cy="34" r="2.4" fill="#3E8C70"/><circle cx="55.4" cy="34" r="2.4" fill="#3E8C70"/><circle cx="60.5" cy="34" r="2.4" fill="#E7F1EC"/><circle cx="65.6" cy="34" r="2.4" fill="#E7F1EC"/><rect x="33" y="46" width="34" height="10" rx="4" fill="#E7F1EC"/><rect x="33" y="61" width="34" height="10" rx="4" fill="#3E8C70"/><polyline points="38 66 41 69 47 63" fill="none" stroke="#fff" stroke-width="2"/></svg></div>
+        <div class="wn-col"><b>Start easy</b><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="52" r="36" fill="#2F6B55" opacity=".10"/><rect x="26" y="14" width="48" height="72" rx="10" fill="#fff" stroke="#D9CFB8" stroke-width="2"/><rect x="33" y="24" width="34" height="12" rx="5" fill="#E7F1EC"/><circle cx="60" cy="30" r="4" fill="#3E8C70"/><rect x="33" y="42" width="34" height="12" rx="5" fill="#E7F1EC"/><circle cx="60" cy="48" r="4" fill="#3E8C70"/><rect x="33" y="60" width="34" height="12" rx="5" fill="#E7F1EC"/><circle cx="60" cy="66" r="4" fill="#3E8C70"/></svg></div>
       </div>
       <div class="wn-body">
-        <div class="wn-ver">Update 15 Nov 2026 · Latest</div>
-        <h2 class="wn-h">Swipe to move around</h2>
+        <div class="wn-ver">Update 16 Nov 2026 · Latest</div>
+        <h2 class="wn-h">Lock your app and fix your days</h2>
         <ul class="wn-items">
-          <li><svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="15 18 9 12 15 6"/><polyline points="9 6 15 12 9 18" opacity=".45"/></svg><span>Swipe between tabs. Swipe left or right to move between Today, Progress, Sharing and You.</span></li>
-          <li><svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg><span>Swipe down to close. Manage habits, Name and my why, Appearance, Notifications, Rest days, Cloud sync and Backup now close with a swipe down.</span></li>
-          <li><svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="6 15 12 9 18 15"/></svg><span>Back to Today. On You, pull down from the top to go straight to Today.</span></li>
-          <li><svg viewBox="0 0 24 24" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg><span>Plan swipe fixed. Swipe right now works anywhere on Plan, even over the text boxes.</span></li>
-          <li><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="6" rx="2"/><rect x="3" y="14" width="18" height="6" rx="2"/></svg><span>Sharing order. Highlights now sit at the bottom of Sharing.</span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>App lock. Turn on a 4 or 6 digit PIN in You. DNY asks for it every time you open the app. Forgot your PIN? Your account password sets a new one.</span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span>Edit past days. Fix or fill in the last 7 days from Progress. Your streak and score update like a live check in.</span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg><span>Starter habits. A new account with no habits now shows three easy habits to tap and add.</span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg><span>Delete account. Remove your account and cloud data from You. Your password is needed.</span></li>
         </ul>
       </div>
       <div class="wn-foot">
@@ -1554,6 +1597,7 @@ const SPLASH_MSGS={
       <div class="wn-body">
         <h2 class="wn-h" style="margin-bottom:6px">Release history</h2>
         <div class="wn-ver">Earlier updates to DNY.</div>
+        <div class="wn-vh">Update 15 Nov 2026, swipe to move around</div><ul class="wn-bul"><li>Swipe between tabs. Swipe left or right to move between Today, Progress, Sharing and You.</li><li>Swipe down to close. Manage habits, Name and my why, Appearance, Notifications, Rest days, Cloud sync and Backup now close with a swipe down.</li><li>Back to Today. On You, pull down from the top to go straight to Today.</li><li>Plan swipe fixed. Swipe right now works anywhere on Plan, even over the text boxes.</li><li>Sharing order. Highlights now sit at the bottom of Sharing.</li></ul>
         <div class="wn-vh">Update 15 Nov 2026, refresh and swipe back</div><ul class="wn-bul"><li>Pull to refresh. Pull any screen down to check for updates, sync and redraw.</li><li>Swipe right to go back from Focus, Plan and Settings.</li><li>Focus and Plan moved to the bottom of Today. The streak header scrolls away. Remember your why left Today.</li><li>Status bar. Light mode now shows dark time and signal.</li></ul><div class="wn-vh">Update 15 Nov 2026, new Today</div><ul class="wn-bul"><li>New header with your streak and week. Ticks mark the days you did a habit.</li><li>Greeting on open. It shows when you open the app.</li><li>Focus and Plan became shortcuts. Your profile became the You tab.</li></ul><div class="wn-vh">Update 15 Nov 2026, bottom bar</div><ul class="wn-bul"><li>Floating bar. The tab bar floats just above the home indicator, with your habits showing behind it.</li><li>Full screen. New iPhone installs fill the screen to the bottom edge.</li><li>Clear scrolling. The last item on every screen stops just above the bar.</li></ul><div class="wn-vh">Update 13 Nov 2026</div><ul class="wn-bul"><li>Settings. Open it from your Profile to report a bug, contact support, rate DNY and share the app.</li><li>Notifications. Reminders in your Profile now has a new name.</li><li>Pause during menstruation. Women can pause from the Progress tab. Your streak stays safe and no freeze is used.</li><li>Gender. Pick male or female once. DNY shows options that fit you.</li></ul><div class="wn-vh">Update 12 Nov 2026</div><ul class="wn-bul"><li>Streak freezes. You get 2 each week. A freeze covers a missed day while a streak runs. They refill every Monday.</li><li>Streak alerts at 9 pm, 10 pm and 11 pm if you have not checked in.</li><li>A weekly report notification every Monday at 8:00 am.</li><li>Sharing. Invite friends and family with a code. See their streaks and daily progress, and build shared habits.</li></ul><div class="wn-vh">Update 29 Oct 2026</div><ul class="wn-bul"><li>Reminders on the Plan page, like the iPhone Reminders app, with Today, Scheduled, All and Urgent views.</li><li>Your reminders sync through cloud sync.</li></ul><div class="wn-vh">Update 22 Oct 2026</div><ul class="wn-bul"><li>An Afternoon section on Today, with a part of the day picker for each habit.</li><li>A quiet rhythm card on Progress. It shows your last 7 days with a short note for the day.</li></ul>
       </div>
       <div class="wn-foot" style="justify-content:flex-end">
@@ -1631,6 +1675,55 @@ const SPLASH_MSGS={
       <div class="sheet-note">Importing replaces everything on this device with the backup file.</div>
       <button class="sheet-btn ghost" data-act="close-sheet" data-sheet="sh-backup">Close</button>
     </div>
+  </div>
+</div>
+
+<div class="overlay" id="sh-lock" data-act="overlay-close">
+  <div class="sheet" role="dialog" aria-modal="true" aria-label="App lock">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">App lock</div>
+    <div class="sheet-body" id="lock-body"></div>
+  </div>
+</div>
+
+<div class="overlay" id="sh-delete" data-act="overlay-close">
+  <div class="sheet" role="dialog" aria-modal="true" aria-label="Delete account">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Delete account</div>
+    <div class="sheet-body" id="del-body"></div>
+  </div>
+</div>
+
+<div class="overlay" id="sh-day" data-act="overlay-close">
+  <div class="sheet" role="dialog" aria-modal="true" aria-label="Edit day">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="day-title">Edit day</div>
+    <div class="sheet-body">
+      <div class="info-box" id="day-note"></div>
+      <div id="day-list"></div>
+      <button class="sheet-btn" data-act="close-sheet" data-sheet="sh-day">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- APP LOCK -->
+<div id="lock" role="dialog" aria-modal="true" aria-label="App lock">
+  <div class="lk-wrap">
+    <div class="lk-logo">DNY</div>
+    <div class="lk-title" id="lk-title">Enter your PIN</div>
+    <div class="lk-dots" id="lk-dots"></div>
+    <div class="lk-msg" id="lk-msg" role="status"></div>
+    <div class="lk-pad"><button class="lk-key" data-act="lock-key" data-k="1">1</button><button class="lk-key" data-act="lock-key" data-k="2">2</button><button class="lk-key" data-act="lock-key" data-k="3">3</button><button class="lk-key" data-act="lock-key" data-k="4">4</button><button class="lk-key" data-act="lock-key" data-k="5">5</button><button class="lk-key" data-act="lock-key" data-k="6">6</button><button class="lk-key" data-act="lock-key" data-k="7">7</button><button class="lk-key" data-act="lock-key" data-k="8">8</button><button class="lk-key" data-act="lock-key" data-k="9">9</button><span></span><button class="lk-key" data-act="lock-key" data-k="0">0</button><button class="lk-key" data-act="lock-key" data-k="back" aria-label="Delete"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/><line x1="18" y1="9" x2="12" y2="15"/><line x1="12" y1="9" x2="18" y2="15"/></svg></button></div>
+    <button class="lk-link" id="lk-forgot" data-act="lock-forgot">Forgot PIN?</button>
+    <button class="lk-link hidden" id="lk-cancel" data-act="lock-cancel">Cancel</button>
+  </div>
+  <div class="lk-fp">
+    <div class="lk-title">Reset your PIN</div>
+    <div class="lk-sub">Enter your account password. Then you set a new PIN.</div>
+    <input class="sheet-input" id="lk-pw" type="password" autocomplete="current-password" maxlength="72" aria-label="Account password"/>
+    <div class="lk-msg" id="lk-fmsg" role="status" style="margin-top:6px"></div>
+    <button class="sheet-btn" id="lk-fgo" data-act="lock-forgot-go" style="margin-top:0">Continue</button>
+    <button class="sheet-btn ghost" data-act="lock-forgot-back">Back</button>
   </div>
 </div>
 
@@ -2029,6 +2122,8 @@ function openSheet(id){
   if(id==='sh-suggest'){PICK.sg.clear();renderPicker('sg');}
   if(id==='sh-account')renderAccount();
   if(id==='sh-rest')renderRestDays();
+  if(id==='sh-lock')renderLock();
+  if(id==='sh-delete')renderDelete();
   if(id==='sh-notif'){renderNotifHabits();renderAlertToggles();}
   if(id==='sh-invite')renderInvite();
   if(id==='sh-shared-new')renderSharedNew();
@@ -2049,9 +2144,11 @@ function renderToday(){
   $('ring-fill').style.strokeDashoffset=String(175-(175*st.score/100));
   const resting=isOffDay(TODAY_KEY)&&st.reqDone===0;
   const paused=pausedOn(TODAY_KEY);
-  setText('hero-main',resting?(paused?'Paused':'Day off'):st.reqN?st.reqDone+' of '+st.reqN+' habits done':'No habits today');
+  const none=!S.habits.length;
+  setText('hero-main',none?'No habits yet':resting?(paused?'Paused':'Day off'):st.reqN?st.reqDone+' of '+st.reqN+' habits done':'No habits today');
   const sub=[];
-  if(resting)sub.push(paused?'Rest well. Your streak is safe. Anything you do still counts.':'Nothing counts against you today. Anything you do still counts.');
+  if(none)sub.push('Add a habit below to begin.');
+  else if(resting)sub.push(paused?'Rest well. Your streak is safe. Anything you do still counts.':'Nothing counts against you today. Anything you do still counts.');
   else if(st.reqN&&st.reqDone===st.reqN)sub.push('Everything done for today.');
   else sub.push('One habit at a time.');
   if(!resting&&st.exN)sub.push(st.exDone+' of '+st.exN+' extra.');
@@ -2098,7 +2195,9 @@ function buildTaskList(){
   const root=$('task-root');
   const all=activeHabits(TODAY_KEY);
   if(!S.habits.length){
-    root.innerHTML='<div class="card ref-card"><div class="ref-desc" style="margin:0 0 10px">You have no habits yet. Add your first one.</div><button class="ref-btn" data-act="habit-new">Add a habit</button></div>';
+    root.innerHTML='<div class="card starter"><div class="starter-t">Start with one small habit</div><div class="starter-s">Tap a habit to add it. You can change or remove it any time.</div>'
+      +STARTERS.map(x=>'<button class="starter-row" data-act="starter-add" data-id="'+x.id+'"><span class="starter-main"><span class="starter-n">'+esc(x.title)+'</span><span class="starter-d">'+esc(x.sub+' · '+TIME_LBL[x.time])+'</span></span><span class="starter-plus" aria-hidden="true">+</span></button>').join('')
+      +'<button class="starter-own" data-act="habit-new">Create your own habit</button></div>';
     return;
   }
   if(!all.length){
@@ -2407,6 +2506,7 @@ function renderProgress(){
   renderFreezeCard();
   renderYesterday();
   renderRecover();
+  renderPastDays();
   renderReport();
   renderChart();
   renderAreas();
@@ -4455,7 +4555,7 @@ function ydayMark(id,val){
 }
 
 // ===== APP TOUR AND WHAT'S NEW =====
-const APP_VER='2026-11-15.4';
+const APP_VER='2026-11-16.1';
 function markSeen(){try{localStorage.setItem('dny-seen',APP_VER);}catch(e){}}
 function wnView(v){
   $('wn-card').dataset.view=v;
@@ -4512,6 +4612,348 @@ function tourEnd(){
   markSeen();
 }
 
+// ===== STARTER HABITS =====
+// Shown when a person has no habits. One tap adds the habit.
+const STARTERS=[
+  {id:'st-water',title:'Drink water',sub:'8 glasses',cat:'body',tier:'standard',time:'any',easy:'2 glasses'},
+  {id:'st-read',title:'Read 10 minutes',sub:'Any book',cat:'mind',tier:'standard',time:'evening',easy:'2 pages'},
+  {id:'st-walk',title:'Walk 20 minutes',sub:'Outside if you can',cat:'body',tier:'standard',time:'afternoon',easy:'5 minutes'}
+];
+function addStarter(id){
+  const d=STARTERS.find(x=>x.id===id);
+  if(!d||S.habits.some(h=>h.id===id))return;
+  const h=normHabit(clone(d));
+  if(!h)return;
+  S.habits.push(h);
+  recordToday();
+  renderToday();renderFocus();renderProfile();
+  toast(h.title+' added');
+}
+
+// ===== PAST DAYS =====
+// The last 7 days can be filled in or fixed. A day is rebuilt from its habit record, so streaks and scores
+// change the same way as a live check in. Today is changed on the Today tab.
+const PAST_DAYS=7;
+function pastKeys(){const out=[];for(let i=1;i<=PAST_DAYS;i++)out.push(addDays(TODAY_KEY,-i));return out;}
+function dayTag(k){
+  if(frozenDay(k))return 'Streak freeze used';
+  const v=S.history[k];
+  if(v==null)return 'Rest day';
+  return v===0?'Missed':v+'%';
+}
+function renderPastDays(){
+  const el=$('past-days');
+  if(!el)return;
+  if(!S.habits.length){el.innerHTML='';return;}
+  el.innerHTML='<div class="card recover"><div class="recover-t">Past days</div>'
+    +'<div class="recover-s">Forgot to tick a habit? Fix or fill in the last 7 days. Your streak and score update.</div>'
+    +pastKeys().map(k=>'<div class="rec-row"><span>'+esc(dayLabel(k))+'<em class="pd-s">'+esc(dayTag(k))+'</em></span><button class="rec-btn" data-act="day-open" data-k="'+k+'">Edit</button></div>').join('')+'</div>';
+}
+// Rebuilds one day from its record. A day with nothing counted is a rest day, like on a live day.
+function rebuildDay(k){
+  const log=S.hlog[k]||{};
+  let req=0,earn=0,reqN=0;
+  const cats={};
+  activeHabits(k).forEach(h=>{
+    const v=log[h.id];
+    if(v===undefined||v===3||h.tier==='bonus')return;
+    const w=WEIGHT[h.tier];
+    req+=w;reqN++;
+    if(v===1)earn+=w;else if(v===2)earn+=w/2;
+    const c=cats[h.cat]||(cats[h.cat]=[0,0]);
+    c[1]++;if(v===1||v===2)c[0]++;
+  });
+  S.catlog[k]=cats;
+  if(!reqN){
+    if(!S.off[k])S.off[k]=2;
+    delete S.history[k];
+  }else{
+    if(S.off[k]===2)delete S.off[k];
+    if(earn===0&&isOffDay(k))delete S.history[k];
+    else S.history[k]=Math.round(earn/req*100);
+  }
+  if(S.history[k]>0)delete S.frozen[k];
+  applyFreezes(k,addDays(TODAY_KEY,-1));
+}
+let DE={k:'',all:false,orig:null};
+function openDay(k){
+  if(!pastKeys().includes(k))return;
+  const log=S.hlog[k];
+  DE={k:k,all:!log,orig:log?new Set(Object.keys(log)):null};
+  renderDay();
+  openSheet('sh-day');
+}
+function renderDay(){
+  const k=DE.k;
+  if(!k)return;
+  setText('day-title',dayLabel(k));
+  setText('day-note',dayTag(k)+'. Tap Done, Small or Skip. Tap again to clear. Your streak and score update as you go.');
+  const log=S.hlog[k]||{};
+  const list=sortByTime(activeHabits(k));
+  const seg=(id,v,t,on)=>'<button class="'+(on?'on':'')+'" data-act="day-mark" data-id="'+esc(id)+'" data-v="'+v+'" aria-pressed="'+on+'">'+t+'</button>';
+  $('day-list').innerHTML=list.length?list.map(h=>{
+    const m=log[h.id]||0;
+    return '<div class="de-row"><div class="de-t">'+esc(h.title)+'</div><div class="de-seg">'
+      +seg(h.id,1,'Done',m===1)+(h.easy?seg(h.id,2,'Small',m===2):'')+seg(h.id,3,'Skip',m===3)+'</div></div>';
+  }).join(''):'<div class="empty-note">No habits were planned on this day.</div>';
+}
+function dayMark(id,val){
+  const k=DE.k;
+  if(!k||!pastKeys().includes(k)||![1,2,3].includes(val))return;
+  if(!activeHabits(k).some(h=>h.id===id))return;
+  if(!S.hlog[k]){
+    const l={};
+    activeHabits(k).forEach(h=>{l[h.id]=0;});
+    S.hlog[k]=l;
+  }
+  const log=S.hlog[k];
+  if((log[id]||0)===val){
+    if(DE.all||(DE.orig&&DE.orig.has(id)))log[id]=0;else delete log[id];
+  }else log[id]=val;
+  rebuildDay(k);
+  save();
+  renderDay();renderProgress();renderToday();
+}
+
+// ===== APP LOCK =====
+// A PIN kept on this phone. DNY stores a salted hash and never the PIN. It keeps casual eyes out. It is not encryption.
+// Forgot PIN asks for the account password, then sets a new PIN.
+const LK_KEY='dny-lock',LK_FAIL='dny-lock-fail',LK_ITER=120000;
+let LK={mode:'unlock',len:4,buf:'',first:'',stage:'enter',after:null,busy:false},LK_PICK=4,LK_TM=null;
+function lockCfg(){
+  try{const c=JSON.parse(localStorage.getItem(LK_KEY));return c&&typeof c.h==='string'&&typeof c.s==='string'&&(c.len===4||c.len===6)?c:null;}
+  catch(e){return null;}
+}
+function lkMsg(t){setText('lk-msg',t||'');}
+async function lkHash(pin,salt){
+  const k=await crypto.subtle.importKey('raw',new TextEncoder().encode(pin),'PBKDF2',false,['deriveBits']);
+  const bits=await crypto.subtle.deriveBits({name:'PBKDF2',hash:'SHA-256',salt:b64uToBytes(salt),iterations:LK_ITER},k,256);
+  return bytesToB64u(bits);
+}
+function lkFails(){
+  try{const f=JSON.parse(localStorage.getItem(LK_FAIL));return f&&typeof f==='object'?{n:+f.n||0,until:+f.until||0}:{n:0,until:0};}
+  catch(e){return {n:0,until:0};}
+}
+function lkWait(){return Math.max(0,Math.ceil((lkFails().until-Date.now())/1000));}
+function lkWaitText(w){return 'Too many tries. Wait '+w+(w===1?' second.':' seconds.');}
+function lkTick(){
+  clearInterval(LK_TM);
+  const w=lkWait();
+  if(!w)return;
+  lkMsg(lkWaitText(w));
+  LK_TM=setInterval(()=>{
+    const r=lkWait();
+    if(!r){clearInterval(LK_TM);lkMsg('');}else lkMsg(lkWaitText(r));
+  },1000);
+}
+function lkTitleText(){
+  const m=LK.mode;
+  if(m==='unlock')return 'Enter your PIN';
+  if(m==='verify')return 'Enter your current PIN';
+  if(LK.stage==='again')return 'Confirm your PIN';
+  return m==='reset'?'Set a new PIN':'Create a '+LK.len+' digit PIN';
+}
+function lkDraw(){
+  setText('lk-title',lkTitleText());
+  $('lk-dots').innerHTML=Array.from({length:LK.len},(_,i)=>'<span class="lk-dot'+(i<LK.buf.length?' on':'')+'"></span>').join('');
+  const m=LK.mode;
+  $('lk-forgot').classList.toggle('hidden',!(m==='unlock'||m==='verify'));
+  $('lk-cancel').classList.toggle('hidden',!(m==='set'||m==='verify'||m==='reset'));
+}
+function lkStart(mode,o){
+  o=o||{};
+  const c=lockCfg();
+  const len=(mode==='unlock'||mode==='verify')&&c?c.len:(o.len||LK_PICK);
+  LK={mode:mode,len:len,buf:'',first:'',stage:(mode==='set'||mode==='reset')?'new':'enter',after:o.after||null,busy:false};
+  $('lock').classList.remove('fp');
+  document.documentElement.classList.add('lock-on');
+  lkMsg('');lkDraw();lkTick();
+}
+function lkClose(){
+  clearInterval(LK_TM);
+  LK.buf='';
+  document.documentElement.classList.remove('lock-on');
+}
+function lkCancel(){
+  if(LK.mode==='reset'){lkStart('unlock');return;}
+  lkClose();
+}
+function lkKey(k){
+  if(LK.busy)return;
+  if((LK.mode==='unlock'||LK.mode==='verify')&&lkWait())return;
+  if(k==='back'){LK.buf=LK.buf.slice(0,-1);lkMsg('');lkDraw();return;}
+  if(!/^\d$/.test(k)||LK.buf.length>=LK.len)return;
+  LK.buf+=k;lkMsg('');lkDraw();
+  if(LK.buf.length===LK.len)setTimeout(lkSubmit,120);
+}
+async function lkSave(pin,len){
+  try{
+    if(!(window.crypto&&crypto.subtle))return false;
+    const s=bytesToB64u(crypto.getRandomValues(new Uint8Array(16)));
+    const h=await lkHash(pin,s);
+    const a=getAuth(),old=lockCfg();
+    const e=(a&&a.user.email)||(old&&old.e)||'';
+    localStorage.setItem(LK_KEY,JSON.stringify({len:len,s:s,h:h,e:e}));
+    localStorage.removeItem(LK_FAIL);
+    return true;
+  }catch(e){return false;}
+}
+async function lkSubmit(){
+  if(LK.busy)return;
+  const pin=LK.buf,m=LK.mode;
+  if(pin.length!==LK.len)return;
+  LK.busy=true;
+  try{
+    if(m==='unlock'||m==='verify'){
+      const c=lockCfg();
+      if(!c){lkClose();return;}
+      const h=await lkHash(pin,c.s);
+      if(h===c.h){
+        try{localStorage.removeItem(LK_FAIL);}catch(e){}
+        const f=LK.after;
+        if(m==='unlock')lkClose();
+        else if(f)f();
+        return;
+      }
+      const n=lkFails().n+1;
+      const until=n>=5?Date.now()+Math.min(900,30*Math.pow(2,n-5))*1000:0;
+      try{localStorage.setItem(LK_FAIL,JSON.stringify({n:n,until:until}));}catch(e){}
+      LK.buf='';lkDraw();
+      if(until)lkTick();
+      else lkMsg('Wrong PIN. '+(5-n)+(5-n===1?' try':' tries')+' left.');
+      return;
+    }
+    if(LK.stage==='new'){LK.first=pin;LK.buf='';LK.stage='again';lkDraw();return;}
+    if(pin!==LK.first){LK.first='';LK.buf='';LK.stage='new';lkDraw();lkMsg('The PINs did not match. Try again.');return;}
+    const ok=await lkSave(pin,LK.len);
+    if(!ok){LK.first='';LK.buf='';LK.stage='new';lkDraw();lkMsg('Could not save the PIN on this phone.');return;}
+    const f=LK.after;
+    lkClose();
+    if(f)f();
+  }catch(e){
+    LK.buf='';lkDraw();lkMsg('Something went wrong. Try again.');
+  }finally{
+    LK.busy=false;
+  }
+}
+function lkForgot(){
+  $('lock').classList.add('fp');
+  $('lk-pw').value='';setText('lk-fmsg','');
+}
+function lkForgotBack(){$('lock').classList.remove('fp');}
+async function lkForgotGo(){
+  const c=lockCfg(),pw=$('lk-pw').value;
+  if(!c||!c.e){setText('lk-fmsg','No account is linked to this lock.');return;}
+  if(!pw){setText('lk-fmsg','Enter your account password.');return;}
+  const b=$('lk-fgo');
+  b.disabled=true;setText('lk-fmsg','Checking.');
+  try{
+    const r=await sbFetch('/auth/v1/token?grant_type=password',{method:'POST',body:{email:c.e,password:pw}});
+    if(!r.ok){setText('lk-fmsg',(r.status===400||r.status===401)?'That password is wrong.':authErrText(r));return;}
+    $('lk-pw').value='';setText('lk-fmsg','');
+    try{localStorage.removeItem(LK_FAIL);}catch(e){}
+    lkStart('reset',{len:c.len,after:()=>{renderLock();toast('New PIN saved');}});
+  }catch(e){
+    setText('lk-fmsg','No connection. Connect to the internet and try again.');
+  }finally{
+    b.disabled=false;
+  }
+}
+function lockNow(){if(lockCfg())lkStart('unlock');}
+function lkInit(){
+  if(lockCfg())lkStart('unlock');
+  else document.documentElement.classList.remove('lock-on');
+  const L=$('lock');
+  ['touchstart','touchmove','touchend','touchcancel'].forEach(t=>L.addEventListener(t,e=>e.stopPropagation(),{passive:true}));
+  window.addEventListener('pagehide',lockNow);
+  renderLock();
+}
+function renderLock(){
+  const c=lockCfg(),a=getAuth();
+  setText('lock-sub',c?'On, '+c.len+' digits':'Off');
+  const b=$('lock-body');
+  if(!b)return;
+  if(!c&&!a){
+    b.innerHTML='<div class="info-box">Sign in to Cloud sync before you turn on app lock. If you forget your PIN, your account password lets you set a new one.</div>'
+      +'<button class="sheet-btn" style="margin-top:0" data-act="lock-signin">Open Cloud sync</button>'
+      +'<button class="sheet-btn ghost" data-act="close-sheet" data-sheet="sh-lock">Close</button>';
+    return;
+  }
+  if(c)LK_PICK=c.len;
+  const lens='<div class="sheet-lbl">PIN length</div><div class="lk-lens">'
+    +[4,6].map(n=>'<button class="lk-len'+(LK_PICK===n?' on':'')+'" data-act="lock-len" data-n="'+n+'" aria-pressed="'+(LK_PICK===n)+'">'+n+' digits</button>').join('')+'</div>';
+  b.innerHTML=c
+    ?'<div class="info-box">App lock is on. DNY asks for your PIN every time you open it or come back to it. Forgot your PIN? Your account password sets a new one.</div>'
+      +lens
+      +'<button class="sheet-btn" data-act="lock-change">Change PIN</button>'
+      +'<button class="sheet-btn danger" data-act="lock-off">Turn off app lock</button>'
+      +'<button class="sheet-btn ghost" data-act="close-sheet" data-sheet="sh-lock">Close</button>'
+    :'<div class="info-box">App lock asks for a PIN every time you open DNY or come back to it. Forgot your PIN? Your account password sets a new one.</div>'
+      +lens
+      +'<button class="sheet-btn" data-act="lock-set">Set PIN</button>'
+      +'<button class="sheet-btn ghost" data-act="close-sheet" data-sheet="sh-lock">Close</button>';
+}
+function lockSet(){
+  if(!(window.crypto&&crypto.subtle)){toast('App lock needs a secure connection');return;}
+  if(!getAuth()){toast('Sign in to Cloud sync first');return;}
+  lkStart('set',{len:LK_PICK,after:()=>{renderLock();toast('App lock is on');}});
+}
+function lockChange(){
+  lkStart('verify',{after:()=>lkStart('set',{len:LK_PICK,after:()=>{renderLock();toast('PIN changed');}})});
+}
+function lockOff(){
+  lkStart('verify',{after:()=>{
+    try{localStorage.removeItem(LK_KEY);localStorage.removeItem(LK_FAIL);}catch(e){}
+    lkClose();renderLock();toast('App lock is off');
+  }});
+}
+
+// ===== DELETE ACCOUNT =====
+// Needs the account password. The database function removes the login and every row that belongs to it.
+function delMsg(t){setText('del-msg',t||'');}
+function renderDelete(){
+  const a=getAuth(),b=$('del-body');
+  if(!b)return;
+  if(!a){
+    b.innerHTML='<div class="info-box">You are not signed in, so there is no cloud account to delete. To erase DNY from this phone, use Reset all data.</div>'
+      +'<button class="sheet-btn ghost" style="margin-top:0" data-act="close-sheet" data-sheet="sh-delete">Close</button>';
+    return;
+  }
+  b.innerHTML='<div class="info-box">This deletes your login and everything saved in the cloud. That includes your habits, history, reminders, friends and any shared habit you started. DNY on this phone is cleared too. You cannot undo this.</div>'
+    +'<label class="sheet-lbl" for="del-pw">Your password</label>'
+    +'<input class="sheet-input" id="del-pw" type="password" autocomplete="current-password" maxlength="72"/>'
+    +'<div class="sheet-note err-note" id="del-msg"></div>'
+    +'<button class="sheet-btn danger" id="del-go" data-act="delete-account">Delete my account</button>'
+    +'<button class="sheet-btn ghost" data-act="close-sheet" data-sheet="sh-delete">Cancel</button>';
+}
+async function deleteAccount(){
+  const a=getAuth();
+  if(!a)return;
+  const pw=$('del-pw').value;
+  if(!pw){delMsg('Enter your password to continue.');return;}
+  const b=$('del-go');
+  b.disabled=true;delMsg('Checking your password.');
+  try{
+    const r=await sbFetch('/auth/v1/token?grant_type=password',{method:'POST',body:{email:a.user.email,password:pw}});
+    if(!r.ok){delMsg((r.status===400||r.status===401)?'That password is wrong.':authErrText(r));return;}
+    const n=authFromResponse(r.json);
+    if(!n||n.user.id!==a.user.id){delMsg('That password does not match this account.');return;}
+    if(!confirm("Delete your account for good? Your cloud data and the data on this phone will be erased.")){delMsg('');return;}
+    delMsg('Deleting your account.');
+    const d=await sbFetch('/rest/v1/rpc/dny_delete_account',{method:'POST',headers:{Authorization:'Bearer '+n.access_token},body:{}});
+    if(!d.ok){delMsg('Could not delete your account. Check your connection and try again.');return;}
+    clearTimeout(pushTimer);
+    NO_SAVE=true;
+    await removePush();
+    try{[KEY,'dny-notif','dny-push','dny-auth','dny-sync','dny-seen','dny-invite','dny-askpush',LK_KEY,LK_FAIL].concat(Object.values(TK)).forEach(k=>localStorage.removeItem(k));}catch(e){}
+    location.reload();
+  }catch(e){
+    delMsg('No connection. Connect to the internet and try again.');
+  }finally{
+    b.disabled=false;
+  }
+}
+
 // ===== ACTIONS =====
 let OB_G='';
 // Everyone must have a gender. People who joined before this update answer once, then see What's New.
@@ -4524,6 +4966,20 @@ function pickGender(g){
   maybeWhatsNew();
 }
 const ACTIONS={
+  'starter-add':el=>addStarter(el.dataset.id),
+  'day-open':el=>openDay(el.dataset.k),
+  'day-mark':el=>dayMark(el.dataset.id,+el.dataset.v),
+  'lock-key':el=>lkKey(el.dataset.k),
+  'lock-forgot':lkForgot,
+  'lock-forgot-back':lkForgotBack,
+  'lock-forgot-go':lkForgotGo,
+  'lock-cancel':lkCancel,
+  'lock-set':lockSet,
+  'lock-change':lockChange,
+  'lock-off':lockOff,
+  'lock-len':el=>{LK_PICK=+el.dataset.n===6?6:4;renderLock();},
+  'lock-signin':()=>{closeSheet('sh-lock');openSheet('sh-account');},
+  'delete-account':deleteAccount,
   'skip-splash':()=>skipSplash(),
   'arr-up':el=>arrangeMove(el.dataset.id,-1),
   'arr-down':el=>arrangeMove(el.dataset.id,1),
@@ -5024,6 +5480,7 @@ captureInviteLink();
 // Alerts are always on. The phone still needs one tap of permission, so ask once on the first tap after sign in.
 document.addEventListener('pointerup',function askOnce(){
   try{
+    if(document.documentElement.classList.contains('lock-on'))return;
     if(!getAuth()||!pushSupported()||(isIOS()&&!isStandalone()))return;
     if(Notification.permission!=='default'||localStorage.getItem('dny-askpush'))return;
     localStorage.setItem('dny-askpush','1');
@@ -5081,6 +5538,7 @@ function registerSW(){
 
 document.addEventListener('visibilitychange',()=>{
   if(document.hidden){
+    lockNow();
     if(started){recordToday();syncNow();}
     return;
   }
@@ -5093,6 +5551,7 @@ document.addEventListener('visibilitychange',()=>{
   }
 });
 
+lkInit();
 registerSW();
 </script>
 </body>
